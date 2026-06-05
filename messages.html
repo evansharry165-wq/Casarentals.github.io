@@ -297,7 +297,7 @@
 // DATA
 // ═══════════════════
 const CONVOS = [
-  { id:'sarah', name:'Sarah R.', ni:true, av:'S', avc:'', prop:'Stone Cottage, Windermere', time:'2 hrs', tag:'enquiry', tagLabel:'Awaiting your reply', unread:true, online:true, preview:"Lovely — we'd be very happy to host you…", st:'accepted', stTitle:"Sarah accepted your enquiry — ready to confirm", stBody:"Agree the price below, then pay by bank transfer to lock the dates.", meta:"Active now — usually replies within 2 hours", badge:true, qr:["That works perfectly 👍","Could you send bank details?","What time is check-in?","We'll pay the deposit today"], msgs:[
+  { id:'sarah', name:'Sarah R.', ni:true, av:'S', avc:'', prop:'Stone Cottage, Windermere', time:'2 hrs', tag:'enquiry', tagLabel:'Awaiting your reply', unread:true, online:true, concierge:true, preview:"Lovely — we'd be very happy to host you…", st:'accepted', stTitle:"Sarah accepted your enquiry — ready to confirm", stBody:"Agree the price below, then pay by bank transfer to lock the dates.", meta:"Active now — usually replies within 2 hours", badge:true, qr:["That works perfectly 👍","Could you send bank details?","What time is check-in?","We'll pay the deposit today"], msgs:[
     {f:'me', t:"Hi Sarah — we'd love to stay at the Stone Cottage for the week of <i>12–19 July</i>. Family of four (kids 5 and 8) with one well-behaved Labrador.\n\nAre those dates still available? And is there parking for two cars?", ts:'14:22', prop:true},
     {f:'them', t:"Hi James — lovely to hear from you! The cottage <i>is</i> free 12–19 July and we'd be delighted to host you. Labrador very welcome — we have two of our own.\n\nYes, <i>off-street parking for two cars</i> right outside.", ts:'09:14'},
     {f:'them', t:"Here's the price for your week:", ts:'09:16', payment:true},
@@ -383,7 +383,11 @@ function renderThread() {
   avEl.className = `th-av${c.avc?' '+c.avc:''}`;
   document.getElementById('thName').innerHTML = `${c.ni?`<i>${c.name}</i>`:c.name}` +
     (c.badge ? ` <span class="badge moss"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> Verified host</span>` : '');
-  document.getElementById('thMeta').innerHTML = `${c.online?'<span class="ld"></span> Active now':'Last seen '+c.time}`;
+  let metaHtml = `${c.online?'<span class="ld"></span> Active now':'Last seen '+c.time}`;
+  if (c.concierge || (c.id === 'sarah' && typeof casaConciergeEnabled === 'function' && casaConciergeEnabled())) {
+    metaHtml += ' · <span style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--moss)">Uses Casa Concierge</span>';
+  }
+  document.getElementById('thMeta').innerHTML = metaHtml;
   document.getElementById('typingAv').textContent = c.av;
 
   // Status
@@ -556,6 +560,7 @@ function esc(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>
 renderList();
 renderThread();
 </script>
+<script src="casa-concierge.js"></script>
 <script src="casa.js"></script>
 </body>
 </html>

@@ -265,6 +265,7 @@
   <div class="nav-right">
     <a class="nav-link" href="host.html" style="color:var(--brick);font-weight:500">Dashboard</a>
     <a class="nav-link" href="messages.html">Inbox <span class="badge" id="navBadge" style="margin-left:4px">3</span></a>
+    <a class="nav-link" href="host-concierge.html">Concierge</a>
     <a class="nav-link" href="list.html">Add listing</a>
     <a class="nav-link" href="profile.html"><span class="nav-avatar" style="background:var(--ink)">S</span></a>
   </div>
@@ -454,6 +455,14 @@
 
     <!-- SIDEBAR -->
     <aside class="dh-side">
+
+      <div class="side-block" id="conciergeCard" style="background:linear-gradient(135deg, var(--ink) 0%, #2a2620 100%);border-color:var(--ink);color:var(--paper)">
+        <h3 style="color:var(--paper)">Casa <i style="color:var(--brick-2)">Concierge</i></h3>
+        <div class="meta" style="color:rgba(250,248,244,.55)">AI handles enquiries within your rules</div>
+        <p style="font-size:13px;line-height:1.5;color:rgba(250,248,244,.75);margin:12px 0 16px" id="conciergeBlurb">Optional add-on — £24/mo or 2% per confirmed booking. Middleman admin without losing direct pay.</p>
+        <a class="btn btn-primary btn-sm" href="host-concierge.html" style="width:100%;margin-bottom:8px">Configure Concierge</a>
+        <span id="conciergeStatus" style="font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(250,248,244,.45)">Status: off</span>
+      </div>
 
       <div class="side-block payout-block">
         <h3>Next <i>payout</i></h3>
@@ -909,6 +918,16 @@ renderEnquiries();
 renderCal();
 </script>
 
+<script src="casa-concierge.js"></script>
 <script src="casa.js"></script>
+<script>
+(function () {
+  const s = typeof casaGetConciergeSettings === 'function' ? casaGetConciergeSettings() : { enabled: false };
+  const st = document.getElementById('conciergeStatus');
+  const blurb = document.getElementById('conciergeBlurb');
+  if (st) st.textContent = s.enabled ? 'Status: active on your listings' : 'Status: off';
+  if (blurb && s.enabled) blurb.textContent = 'Concierge is replying to enquiries within your rules. Review escalations in Inbox.';
+})();
+</script>
 </body>
 </html>
