@@ -23,17 +23,25 @@ _Last updated: June 2026_
 
 ### Recommended launch phases
 
-**Phase A — Credibility (this sprint)** ✅ in progress
+**Phase A — Credibility** ✅ shipped
 - Privacy & terms pages
 - Favicon, footer links fixed
 - **Casa Concierge** host add-on (prototype + pricing story)
 - Waitlist as primary pre-launch CTA
+- Context-aware navigation (`casa-nav.js`)
+- Help centre, 404, sitemap, robots.txt
 
-**Phase B — Closed beta (4–6 weeks engineering)**
+**Phase B — Functional beta (prototype layer shipped; production backend next)**
+- ✅ Enquiry → messages persistence (`casa-data.js` + localStorage)
+- ✅ Waitlist persistence (local queue until Google Form / API)
+- ✅ Saved listings from shared catalogue
+- ✅ Mobile nav drawer + messages inbox on small screens
+- ✅ SEO meta injection (`casa-seo.js`)
+- 🔜 Supabase auth (replace demo signup)
 - Supabase auth (signup/signin for real)
-- Host listing persistence
-- Enquiry → message thread wiring
-- Email notifications (Resend / Postmark)
+- Host listing persistence (DB + images)
+- Email notifications (Resend / Postmark) on enquiry + waitlist
+- Analytics (Plausible or GA4) + error monitoring
 
 **Phase C — Regional opening (Lake District first)**
 - 20–30 real host listings (manual onboarding)

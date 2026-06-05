@@ -162,25 +162,20 @@
   .det-row.tot{font-weight:500;padding-top:6px;border-top:1px solid var(--rule-2);margin-top:4px}
   .det-row.tot .v{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--brick)}
   .full-btn{width:100%;margin-top:10px}
+  .th-back{display:none;align-items:center;gap:6px;background:none;border:1px solid var(--rule);border-radius:8px;padding:6px 10px;font-size:12px;color:var(--ink-2);cursor:pointer;font-family:var(--sans);margin-right:4px}
+  .th-back svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8}
   @media(max-width:1100px){.msg-page{grid-template-columns:300px 1fr}.side-prop{display:none}}
-  @media(max-width:720px){.msg-page{grid-template-columns:1fr}.conv-list{display:none}}
+  @media(max-width:720px){
+    .msg-page{grid-template-columns:1fr}
+    .th-back{display:inline-flex}
+    .msg-page.show-thread .conv-list{display:none}
+    .msg-page:not(.show-thread) .thread{display:none}
+  }
 </style>
 </head>
-<body>
-<nav class="casa-nav solid">
-  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
-  <div class="nav-right">
-    <a class="nav-link" href="browse.html">Browse</a>
-    <a class="nav-link" href="map.html">Map</a>
-    <a class="nav-link" href="feed.html">Feed</a>
-    <a class="nav-link" href="list.html">Become a host</a>
-    <div style="width:1px;height:20px;background:var(--rule);margin:0 4px"></div>
-    <a class="nav-link" href="saved.html">Saved</a>
-    <a class="nav-link" href="messages.html" style="color:var(--brick);font-weight:500">Messages</a>
-    <a class="nav-link" href="profile.html"><span class="nav-avatar">J</span></a>
-  </div>
-</nav>
-<div class="msg-page">
+<body data-casa-nav="guest" data-casa-page="messages" data-casa-solid="true">
+<nav class="casa-nav"></nav>
+<div class="msg-page" id="msgPage">
   <aside class="conv-list">
     <div class="cl-head">
       <h1><i>Inbox</i></h1>
@@ -201,6 +196,10 @@
 
   <main class="thread">
     <div class="th-head">
+      <button type="button" class="th-back" onclick="showInbox()" aria-label="Back to inbox">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M11 5l-7 7 7 7"/></svg>
+        Inbox
+      </button>
       <div class="th-av" id="thAv">S</div>
       <div class="th-who">
         <h2 id="thName"><i>Sarah R.</i></h2>
@@ -292,11 +291,13 @@
   </aside>
 </div>
 
+<script src="casa-properties.js"></script>
+<script src="casa-data.js"></script>
 <script>
 // ═══════════════════
 // DATA
 // ═══════════════════
-const CONVOS = [
+const DEMO_CONVOS = [
   { id:'sarah', name:'Sarah R.', ni:true, av:'S', avc:'', prop:'Stone Cottage, Windermere', time:'2 hrs', tag:'enquiry', tagLabel:'Awaiting your reply', unread:true, online:true, concierge:true, preview:"Lovely — we'd be very happy to host you…", st:'accepted', stTitle:"Sarah accepted your enquiry — ready to confirm", stBody:"Agree the price below, then pay by bank transfer to lock the dates.", meta:"Active now — usually replies within 2 hours", badge:true, qr:["That works perfectly 👍","Could you send bank details?","What time is check-in?","We'll pay the deposit today"], msgs:[
     {f:'me', t:"Hi Sarah — we'd love to stay at the Stone Cottage for the week of <i>12–19 July</i>. Family of four (kids 5 and 8) with one well-behaved Labrador.\n\nAre those dates still available? And is there parking for two cars?", ts:'14:22', prop:true},
     {f:'them', t:"Hi James — lovely to hear from you! The cottage <i>is</i> free 12–19 July and we'd be delighted to host you. Labrador very welcome — we have two of our own.\n\nYes, <i>off-street parking for two cars</i> right outside.", ts:'09:14'},
@@ -340,9 +341,26 @@ const CONVOS = [
 
 const EMOJIS = ['😊','👍','🏡','🐕','⭐','🙏','✅','🔑','🏔️','🌊','❤️','👋','😂','🎉','💯','🌿','☀️','🌧️','🍃','🦆','🐑','🍺','☕','🎒','🗝️','💷','📅','✉️','🏴󠁧󠁢󠁳󠁣󠁴󠁿','🇬🇧','🌸','🏖️'];
 
+let CONVOS = [];
 let active = 'sarah';
 let filterMode = 'all';
 let searchStr = '';
+
+function mergeConvos() {
+  const stored = (window.casaGetEnquiries ? casaGetEnquiries() : []).map(casaEnquiryToConvo);
+  const storedIds = new Set(stored.map(c => c.id));
+  CONVOS = [...stored, ...DEMO_CONVOS.filter(c => !storedIds.has(c.id))];
+}
+
+function showInbox() {
+  document.getElementById('msgPage')?.classList.remove('show-thread');
+}
+
+function showThreadPane() {
+  if (window.matchMedia('(max-width: 720px)').matches) {
+    document.getElementById('msgPage')?.classList.add('show-thread');
+  }
+}
 
 // ── BUILD EMOJI ──
 document.getElementById('emojiGrid').innerHTML = EMOJIS.map(e =>
@@ -414,7 +432,17 @@ function renderThread() {
     row.style.animationDelay = (i * 0.05) + 's';
     const av = m.f === 'me' ? 'J' : c.av;
     let extra = '';
-    if (m.prop) extra = `<a class="msg-prop" href="property.html"><div class="ph warm" style="width:56px;height:56px;border-radius:7px;flex-shrink:0"></div><div><div class="pn">Stone Cottage, <i>Windermere</i></div><div class="pd">£175/night · 12–19 Jul · 2 adults · 1 dog</div></div></a>`;
+    if (m.prop) {
+      const propId = m.propertyId || c.propertyId || 1;
+      const propTitle = (m.propertyTitle || c.prop || 'Property').split(',');
+      const titleMain = propTitle[0] || 'Property';
+      const titleLoc = propTitle[1]?.trim() || '';
+      const price = m.pricePerNight ? `£${m.pricePerNight}/night` : '';
+      const dates = m.dates || '';
+      const guestLine = m.guests ? `${m.guests} guest${m.guests > 1 ? 's' : ''}${m.pets ? ' · pets' : ''}` : '';
+      const pd = [price, dates, guestLine].filter(Boolean).join(' · ');
+      extra = `<a class="msg-prop" href="property.html?id=${propId}"><div class="ph warm" style="width:56px;height:56px;border-radius:7px;flex-shrink:0"></div><div><div class="pn">${titleMain}${titleLoc ? `, <i>${titleLoc}</i>` : ''}</div><div class="pd">${pd || 'View listing'}</div></div></a>`;
+    }
     if (m.payment) extra = `<div class="pay-card"><h5>Confirmed price — £1,285 total</h5><div class="pr"><span>£175 × 7 nights</span><span>£1,225</span></div><div class="pr"><span>Cleaning</span><span>£60</span></div><div class="pr"><span>Casa booking fee</span><span style="color:var(--moss);font-weight:500">£0</span></div><div class="pr tot"><span>Total to me, direct</span><span class="v">£1,285</span></div><div class="pf">Bank transfer — £200 deposit to hold dates, balance 4 weeks before.</div></div>`;
     row.innerHTML = `<div class="av-sm">${av}</div><div class="bubble-wrap"><div class="msg-bubble"><p>${m.t.replace(/\n/g,'<br>')}</p><span class="meta-time">${m.ts}</span></div>${extra}</div>`;
     stream.appendChild(row);
@@ -438,6 +466,7 @@ function switchConvo(id) {
   if (c) c.unread = false;
   renderList();
   renderThread();
+  showThreadPane();
 }
 
 // ── SEND ──
@@ -556,11 +585,21 @@ function toast(msg) {
 
 function esc(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// ── INIT ──
-renderList();
-renderThread();
+function casaMessagesInit() {
+  mergeConvos();
+  const threadParam = new URLSearchParams(location.search).get('thread');
+  if (threadParam && CONVOS.find(c => c.id === threadParam)) {
+    active = threadParam;
+    showThreadPane();
+  }
+  renderList();
+  renderThread();
+}
+document.addEventListener('DOMContentLoaded', casaMessagesInit);
 </script>
 <script src="casa-concierge.js"></script>
+<script src="casa-nav.js"></script>
+<script src="casa-seo.js"></script>
 <script src="casa.js"></script>
 </body>
 </html>
