@@ -192,7 +192,7 @@
   @media(max-width:1100px){.dh-grid{grid-template-columns:1fr}.kpi-row{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
-<body>
+<body data-casa-nav="host" data-casa-page="dashboard" data-casa-solid="true">
 
 <!-- ACCEPT MODAL -->
 <div class="modal-overlay" id="acceptModal">
@@ -256,20 +256,7 @@
 
 <div id="hostToast"></div>
 
-<nav class="casa-nav solid">
-  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
-  <div style="display:flex;align-items:center;gap:12px">
-    <span class="host-badge">Host mode</span>
-    <a href="profile.html" style="font-size:13px;color:var(--ink-3);text-decoration:underline;text-underline-offset:3px">Switch to guest</a>
-  </div>
-  <div class="nav-right">
-    <a class="nav-link" href="host.html" style="color:var(--brick);font-weight:500">Dashboard</a>
-    <a class="nav-link" href="messages.html">Inbox <span class="badge" id="navBadge" style="margin-left:4px">3</span></a>
-    <a class="nav-link" href="host-concierge.html">Concierge</a>
-    <a class="nav-link" href="list.html">Add listing</a>
-    <a class="nav-link" href="profile.html"><span class="nav-avatar" style="background:var(--ink)">S</span></a>
-  </div>
-</nav>
+<nav class="casa-nav"></nav>
 
 <div class="wrap-wide">
 
@@ -919,6 +906,7 @@ renderCal();
 </script>
 
 <script src="casa-concierge.js"></script>
+<script src="casa-nav.js"></script>
 <script src="casa.js"></script>
 <script>
 (function () {

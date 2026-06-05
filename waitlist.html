@@ -136,26 +136,14 @@
   @media (max-width: 560px) { .grid-2 { grid-template-columns: 1fr; } }
 </style>
 </head>
-<body>
+<body data-casa-nav="marketing" data-casa-page="waitlist" data-casa-solid="true">
 
 <div class="loading" id="loadingOverlay">
   <div class="spinner"></div>
   <p>Saving your place…</p>
 </div>
 
-<nav class="casa-nav solid">
-  <a class="brand-lockup" href="index.html">
-    <span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span>
-  </a>
-  <div class="nav-right">
-    <a class="nav-link" href="browse.html">Browse</a>
-    <a class="nav-link" href="feed.html">Feed</a>
-    <a class="nav-link" href="how-it-works.html">How it works</a>
-    <div style="width:1px;height:20px;background:var(--rule);margin:0 4px"></div>
-    <a class="nav-link" href="signup.html">Sign in</a>
-    <a class="nav-link primary" href="signup.html">Join free</a>
-  </div>
-</nav>
+<nav class="casa-nav"></nav>
 
 <div class="wl-page">
 
@@ -472,6 +460,7 @@ document.querySelectorAll('.field input, .field select, .field textarea').forEac
 document.getElementById('guestFields').style.display = 'block';
 </script>
 
+<script src="casa-nav.js"></script>
 <script src="casa.js"></script>
 </body>
 </html>

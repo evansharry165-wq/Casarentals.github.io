@@ -74,9 +74,10 @@ html, body {
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--rule);
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex; align-items: center; justify-content: flex-start;
   padding: 0 32px; height: 64px; gap: 24px;
 }
+.casa-nav .nav-right { margin-left: auto; }
 .casa-nav.solid { background: var(--surface); backdrop-filter: none; }
 
 .brand-lockup { display:flex; align-items: baseline; gap: 4px; text-decoration:none; flex-shrink: 0; }
@@ -138,6 +139,25 @@ html, body {
   display: inline-flex; align-items: center; justify-content: center;
   font-family: var(--serif); font-style: italic; font-size: 14px;
   margin-left: 4px;
+}
+.nav-divider {
+  width: 1px; height: 20px; background: var(--rule); margin: 0 4px; flex-shrink: 0;
+}
+.nav-host-meta {
+  display: flex; align-items: center; gap: 12px; margin-right: auto; margin-left: 24px;
+}
+.nav-host-switch {
+  font-size: 13px; color: var(--ink-3); text-decoration: underline; text-underline-offset: 3px;
+}
+.nav-host-switch:hover { color: var(--ink); }
+.nav-back-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 13.5px; color: var(--ink-2); text-decoration: none;
+  padding: 8px 12px; border-radius: var(--r-md); transition: background .12s;
+}
+.nav-back-btn:hover { background: rgba(22,20,15,0.05); color: var(--ink); }
+.nav-back-btn svg {
+  width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8;
 }
 
 /* ─── Buttons ─── */

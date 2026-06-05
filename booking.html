@@ -287,20 +287,10 @@
   }
 </style>
 </head>
-<body>
+<body data-casa-nav="flow" data-casa-page="booking">
 
 <!-- NAV -->
-<nav class="casa-nav">
-  <a class="brand-lockup" href="index.html">
-    <span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span>
-  </a>
-  <div class="nav-right">
-    <a class="nav-back-btn" href="property.html" id="backToProperty">
-      <svg viewBox="0 0 24 24"><path d="M19 12H5M11 5l-7 7 7 7"/></svg>
-      Back to property
-    </a>
-  </div>
-</nav>
+<nav class="casa-nav"></nav>
 
 <!-- LOADING OVERLAY -->
 <div class="loading-overlay" id="loadingOverlay">
@@ -442,7 +432,7 @@
 
       <div class="lock-strip">
         <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        <p>Your contact details are shared only with this host once you send your enquiry. We don't store or sell your information. See our <a href="#" style="color:var(--brick)">privacy policy</a>.</p>
+        <p>Your contact details are shared only with this host once you send your enquiry. We don't store or sell your information. See our <a href="privacy.html" style="color:var(--brick)">privacy policy</a>.</p>
       </div>
 
       <!-- CONSENT -->
@@ -450,7 +440,7 @@
         <div class="section-eye"><span class="dot"></span> Before you send</div>
         <div class="consent-item" id="ci-1">
           <input type="checkbox" id="c1">
-          <span>I agree to Casa's <a href="#">community guidelines</a> and <a href="#">terms of use</a>. I understand this is a direct enquiry to the host, not a confirmed booking.</span>
+          <span>I agree to Casa's <a href="how-it-works.html">community guidelines</a> and <a href="terms.html">terms of use</a>. I understand this is a direct enquiry to the host, not a confirmed booking.</span>
         </div>
         <div class="consent-item" id="ci-2">
           <input type="checkbox" id="c2">
@@ -570,6 +560,7 @@
 </div>
 
 <script src="casa-properties.js"></script>
+<script src="casa-nav.js"></script>
 <script>
 // ═══════════════════════════════════════════
 // READ URL PARAMS

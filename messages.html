@@ -166,20 +166,8 @@
   @media(max-width:720px){.msg-page{grid-template-columns:1fr}.conv-list{display:none}}
 </style>
 </head>
-<body>
-<nav class="casa-nav solid">
-  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
-  <div class="nav-right">
-    <a class="nav-link" href="browse.html">Browse</a>
-    <a class="nav-link" href="map.html">Map</a>
-    <a class="nav-link" href="feed.html">Feed</a>
-    <a class="nav-link" href="list.html">Become a host</a>
-    <div style="width:1px;height:20px;background:var(--rule);margin:0 4px"></div>
-    <a class="nav-link" href="saved.html">Saved</a>
-    <a class="nav-link" href="messages.html" style="color:var(--brick);font-weight:500">Messages</a>
-    <a class="nav-link" href="profile.html"><span class="nav-avatar">J</span></a>
-  </div>
-</nav>
+<body data-casa-nav="guest" data-casa-page="messages" data-casa-solid="true">
+<nav class="casa-nav"></nav>
 <div class="msg-page">
   <aside class="conv-list">
     <div class="cl-head">
@@ -561,6 +549,7 @@ renderList();
 renderThread();
 </script>
 <script src="casa-concierge.js"></script>
+<script src="casa-nav.js"></script>
 <script src="casa.js"></script>
 </body>
 </html>

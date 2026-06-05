@@ -272,25 +272,9 @@
   }
 </style>
 </head>
-<body class="mode-guest">
+<body class="mode-guest" data-casa-nav="guest" data-casa-page="profile" data-casa-solid="true">
 
-<nav class="casa-nav solid">
-  <a class="brand-lockup" href="index.html">
-    <span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span>
-  </a>
-  <div class="nav-right">
-    <a class="nav-link" href="browse.html">Browse</a>
-    <a class="nav-link" href="map.html">Map</a>
-    <a class="nav-link" href="feed.html">Feed</a>
-    <a class="nav-link" href="list.html">Become a host</a>
-    <div style="width:1px;height:20px;background:var(--rule);margin:0 4px"></div>
-    <a class="nav-link" href="saved.html">Saved</a>
-    <a class="nav-link" href="messages.html">Messages</a>
-    <div style="width:1px;height:20px;background:var(--rule);margin:0 4px"></div>
-    <a class="nav-link" href="signup.html">Sign in</a>
-    <a class="nav-link" href="profile.html" style="color:var(--brick);font-weight:500"><span class="nav-avatar">J</span></a>
-  </div>
-</nav>
+<nav class="casa-nav"></nav>
 
 <!-- BANNER -->
 <section class="profile-banner">
@@ -351,8 +335,9 @@
     <a href="#feed" class="stab">My feed</a>
     <a href="saved.html" class="stab guest-only">Saved <span class="ct">12</span></a>
     <a href="#preferences" class="stab">Preferences</a>
+    <a href="host-concierge.html" class="stab host-only">Concierge</a>
     <div style="flex:1"></div>
-    <a href="host.html" class="stab" style="color: var(--brick); font-weight: 500">→ Open host dashboard</a>
+    <a href="host.html" class="stab host-only" style="color: var(--brick); font-weight: 500">→ Open host dashboard</a>
   </div>
 </div>
 
@@ -742,6 +727,22 @@
             <option>Hosts only (when I enquire)</option>
           </select>
         </div>
+        <div class="ef full host-only" id="concierge-pref">
+          <label>Casa Concierge</label>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px;border:1px solid var(--rule);border-radius:12px;background:var(--surface);flex-wrap:wrap">
+            <div style="flex:1;min-width:200px">
+              <div style="font-family:var(--serif);font-style:italic;font-size:18px;color:var(--ink)">AI host assistant</div>
+              <p style="font-size:13px;color:var(--ink-3);margin-top:4px" id="conciergePrefSummary">Off — you reply to every enquiry yourself</p>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center">
+              <label class="checkbox-row" style="margin:0">
+                <input type="checkbox" id="conciergePrefToggle">
+                <span>Enabled</span>
+              </label>
+              <a href="host-concierge.html" class="btn btn-sm btn-outline">Settings</a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -847,7 +848,7 @@
       <a href="#" class="side-link"><span>Notifications</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
       <a href="#" class="side-link"><span>Payment methods</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
       <a href="#" class="side-link"><span>Privacy</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
-      <a href="#" class="side-link danger"><span>Sign out</span><svg viewBox="0 0 24 24"><path d="M9 12h12l-3-3M21 12l-3 3"/></svg></a>
+      <a href="index.html" class="side-link danger" data-casa-signout><span>Sign out</span><svg viewBox="0 0 24 24"><path d="M9 12h12l-3-3M21 12l-3 3"/></svg></a>
     </div>
 
   </aside>
@@ -907,6 +908,29 @@ function toggleEdit() {
   document.getElementById('about').scrollIntoView({ behavior: 'smooth', block: 'start' });
   document.getElementById('bio').focus();
 }
+
+function syncConciergePref() {
+  if (!window.casaGetConciergeSettings) return;
+  const s = casaGetConciergeSettings();
+  const toggle = document.getElementById('conciergePrefToggle');
+  const summary = document.getElementById('conciergePrefSummary');
+  if (!toggle || !summary) return;
+  toggle.checked = !!s.enabled;
+  summary.textContent = s.enabled
+    ? `On — ${casaConciergePriceLabel(s.plan)}`
+    : 'Off — you reply to every enquiry yourself';
+}
+
+document.getElementById('conciergePrefToggle')?.addEventListener('change', (e) => {
+  if (!window.casaSaveConciergeSettings) return;
+  const s = casaGetConciergeSettings();
+  s.enabled = e.target.checked;
+  casaSaveConciergeSettings(s);
+  syncConciergePref();
+  if (window.casaToast) casaToast(s.enabled ? 'Concierge enabled — set your rules in Settings' : 'Concierge turned off');
+});
+
+document.addEventListener('DOMContentLoaded', syncConciergePref);
 </script>
 
 <footer class="casa-foot">
@@ -925,6 +949,8 @@ function toggleEdit() {
   </div>
 </footer>
 
+<script src="casa-concierge.js"></script>
+<script src="casa-nav.js"></script>
 <script src="casa.js"></script>
 </body>
 </html>
