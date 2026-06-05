@@ -54,16 +54,9 @@
   }
 </style>
 </head>
-<body>
+<body data-casa-nav="host" data-casa-page="concierge" data-casa-solid="true">
 
-<nav class="casa-nav solid">
-  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
-  <div class="nav-right">
-    <a class="nav-link" href="host.html">Dashboard</a>
-    <a class="nav-link" href="messages.html">Inbox</a>
-    <a class="nav-link" href="host-concierge.html" style="color:var(--brick);font-weight:500">Concierge</a>
-  </div>
-</nav>
+<nav class="casa-nav"></nav>
 
 <div class="wrap-wide">
   <header class="cc-hero">
@@ -162,6 +155,7 @@
 </div>
 
 <script src="casa-concierge.js"></script>
+<script src="casa-nav.js"></script>
 <script src="casa.js"></script>
 <script>
 let state = casaGetConciergeSettings();

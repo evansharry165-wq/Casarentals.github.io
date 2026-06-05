@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page not found — Casa</title>
+<link rel="icon" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+  .nf { min-height: calc(100vh - 64px); display: flex; align-items: center; justify-content: center; padding: 48px 24px; text-align: center; }
+  .nf h1 { font-family: var(--serif); font-size: 88px; line-height: 1; margin-bottom: 16px; }
+  .nf h1 i { font-style: italic; color: var(--brick); }
+  .nf p { color: var(--ink-3); max-width: 420px; margin: 0 auto 24px; line-height: 1.55; }
+  .nf-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+</style>
+</head>
+<body data-casa-nav="minimal" data-casa-description="Page not found on Casa.co.uk.">
+<nav class="casa-nav"></nav>
+<div class="nf">
+  <div>
+    <h1>404 — <i>lost?</i></h1>
+    <p>This page doesn't exist or has moved. Try browsing UK stays or head back to the homepage.</p>
+    <div class="nf-actions">
+      <a href="index.html" class="btn btn-primary">Home</a>
+      <a href="browse.html" class="btn btn-outline">Browse stays</a>
+      <a href="help.html" class="btn btn-outline">Help centre</a>
+    </div>
+  </div>
+</div>
+<script src="casa-nav.js"></script>
+<script src="casa-seo.js"></script>
+<script src="casa.js"></script>
+</body>
+</html>

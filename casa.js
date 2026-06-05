@@ -58,6 +58,26 @@ function casaHandleAuthRedirectToasts() {
   }
 }
 
+(function casaLoadSeo() {
+  if (document.querySelector('script[src*="casa-seo.js"]')) return;
+  const s = document.createElement('script');
+  s.src = 'casa-seo.js';
+  document.head.appendChild(s);
+})();
+
+(function casaLoadBackend() {
+  if (!document.querySelector('script[src="casa-config.js"]')) {
+    const cfg = document.createElement('script');
+    cfg.src = 'casa-config.js';
+    document.head.appendChild(cfg);
+  }
+  if (!document.querySelector('script[src="casa-supabase.js"]')) {
+    const sb = document.createElement('script');
+    sb.src = 'casa-supabase.js';
+    document.head.appendChild(sb);
+  }
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
   casaHandleAuthRedirectToasts();
 
