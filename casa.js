@@ -18,6 +18,36 @@ function casaToast(message, duration = 3000) {
 
 window.casaToast = casaToast;
 
+const CASA_SAVED_KEY = 'casa:saved';
+
+function casaGetSavedIds() {
+  try {
+    return JSON.parse(localStorage.getItem(CASA_SAVED_KEY) || '[]').map(Number);
+  } catch {
+    return [];
+  }
+}
+
+function casaIsSaved(id) {
+  return casaGetSavedIds().includes(Number(id));
+}
+
+function casaToggleSaved(id, btn) {
+  const ids = casaGetSavedIds();
+  const num = Number(id);
+  const idx = ids.indexOf(num);
+  if (idx >= 0) ids.splice(idx, 1);
+  else ids.push(num);
+  localStorage.setItem(CASA_SAVED_KEY, JSON.stringify(ids));
+  const saved = ids.includes(num);
+  if (btn) btn.classList.toggle('saved', saved);
+  casaToast(saved ? 'Saved to your list ♥' : 'Removed from saved');
+  return saved;
+}
+
+window.casaIsSaved = casaIsSaved;
+window.casaToggleSaved = casaToggleSaved;
+
 /** Show welcome / signed-in toast from URL params (?welcome=1 or ?signedin=1) */
 function casaHandleAuthRedirectToasts() {
   const qp = new URLSearchParams(location.search);

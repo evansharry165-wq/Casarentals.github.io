@@ -305,6 +305,7 @@
 </footer>
 
 <script src="casa-properties.js"></script>
+<script src="casa.js"></script>
 <script>
 const PROPS = CASA_PROPERTIES;
 
@@ -346,8 +347,9 @@ function card(p,i) {
   const img=`<div style="width:100%;height:100%;background:${p.col};display:flex;align-items:flex-end;padding:10px"><span style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,0.75)">${p.title.toUpperCase()} · ${p.loc.toUpperCase()}</span></div>`;
   const bdg=p.badge?`<div class="badge-row"><span class="badge ${BADGE_CFG[p.badge].cls}">${BADGE_CFG[p.badge].text}</span></div>`:'';
   const tags=p.tags.slice(0,3).map(t=>TAG_LABELS[t]||t).join(' · ');
+  const heartSaved = typeof casaIsSaved === 'function' && casaIsSaved(p.id);
   return`<a class="pc" href="property.html?id=${p.id}" style="animation:rise .4s ${i*.06}s ease both;opacity:0">
-<div class="pc-image">${img}${bdg}<button class="save-heart" onclick="event.preventDefault();this.classList.toggle('saved')"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button><div class="img-nav"><span class="dt on"></span><span class="dt"></span><span class="dt"></span></div></div>
+<div class="pc-image">${img}${bdg}<button class="save-heart${heartSaved?' saved':''}" onclick="event.preventDefault();casaToggleSaved(${p.id},this)"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button><div class="img-nav"><span class="dt on"></span><span class="dt"></span><span class="dt"></span></div></div>
 <div class="pc-body"><div class="pc-row1"><div class="pc-title">${p.title}, <i>${p.loc}</i></div><div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>${p.rating} <span class="ct">(${p.reviews})</span></div></div>
 <div class="pc-loc"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>${p.loc}, ${p.rLabel}</div>
 <div class="pc-meta"><span>Sleeps ${p.sleeps}</span><span>${p.beds} bed</span><span>${tags}</span></div>
@@ -427,8 +429,18 @@ if(urlR){
   }
 }
 if(qp.get('guests')){
-  const g=qp.get('guests');
-  document.getElementById('navGuests').textContent=g+' guest'+(parseInt(g)>1?'s':'');
+  const g=parseInt(qp.get('guests'),10)||parseInt(String(qp.get('guests')).match(/\d+/)?.[0],10)||2;
+  document.getElementById('navGuests').textContent=g+' guest'+(g>1?'s':'');
+  const metaG=document.getElementById('metaGuests');
+  if(metaG) metaG.textContent=g+' guest'+(g>1?'s':'');
+}
+if(qp.get('dates')){
+  const dates=qp.get('dates');
+  const metaD=document.getElementById('metaDates');
+  if(metaD) metaD.textContent=dates;
+  const parts=dates.split(/\s*[-–]\s*/);
+  if(parts[0]) document.getElementById('navIn').textContent=parts[0].trim();
+  if(parts[1]) document.getElementById('navOut').textContent=parts[1].trim();
 }
 
 // ── NAV SEARCH FUNCTIONS ──
@@ -505,6 +517,5 @@ document.addEventListener('click',e=>{
 
 render();
 </script>
-<script src="casa.js"></script>
 </body>
 </html>
