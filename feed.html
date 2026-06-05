@@ -638,6 +638,14 @@ function renderFeed() {
   }
 
   container.innerHTML = visible.map((p,i) => renderPost(p,i)).join('');
+  container.querySelectorAll('.post-body .tag').forEach(tag => {
+    tag.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const t = tag.textContent.trim();
+      if (t.startsWith('#')) filterByTag(t);
+    });
+  });
   document.getElementById('loadMoreWrap').style.display = visible.length < ps.length ? 'block' : 'none';
 
   // Counts
