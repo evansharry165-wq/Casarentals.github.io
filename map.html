@@ -93,6 +93,9 @@
   .ac-text{font-size:12.5px;color:var(--ink-2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .ac-loc{font-size:11px;color:var(--ink-4);margin-top:4px;display:flex;align-items:center;gap:3px}
   .ac-loc svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:1.8}
+  .map-ac .ac-actions{display:flex;align-items:center;gap:10px;margin-top:6px}
+  .map-ac .ac-open-feed{font-size:11px;color:var(--brick);font-weight:500;display:inline-flex;align-items:center;gap:4px;text-decoration:none}
+  .map-ac .ac-open-feed svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2}
 
   .section-head{padding:10px 20px 6px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);background:var(--paper-2);border-bottom:1px solid var(--rule-2);display:flex;align-items:center;gap:6px;position:sticky;top:41px;z-index:1}
   .section-head .sh-dot{width:7px;height:7px;border-radius:50%}
@@ -431,82 +434,50 @@
   </div>
 </div>
 
+<script src="casa-properties.js"></script>
+<script src="casa-regions.js"></script>
+<script src="casa-feed-data.js"></script>
+<script src="casa.js"></script>
 <script>
-// ══════════════════════════════════════════
-// DATA
-// ══════════════════════════════════════════
+const PROPS = CASA_PROPERTIES.map(p => ({
+  ...p,
+  county: p.region,
+  col: p.mapCol || 'warm',
+  x: p.mapX,
+  y: p.mapY,
+}));
+const FEED_ACTS = CASA_FEED_ACTIVITIES.map(a => ({ ...a, county: a.region }));
 
-// Properties — each has x/y coords on the SVG map
-const PROPS = [
-  {id:1,title:'Stone Cottage',loc:'Windermere',county:'lake-district',type:'cottage',price:175,rating:4.9,reviews:23,sleeps:6,beds:3,tags:['woodburner','pets'],badge:'verified',col:'warm',x:132,y:222},
-  {id:2,title:'Slate Barn',loc:'Ambleside',county:'lake-district',type:'barn',price:215,rating:4.8,reviews:11,sleeps:4,beds:2,tags:['hottub'],badge:'new',col:'sage',x:142,y:232},
-  {id:3,title:'Lakeside Cabin',loc:'Coniston',county:'lake-district',type:'cabin',price:145,rating:5.0,reviews:34,sleeps:2,beds:1,tags:[],col:'cool',x:128,y:238},
-  {id:4,title:'Georgian House',loc:'Keswick',county:'lake-district',type:'cottage',price:240,rating:4.9,reviews:47,sleeps:8,beds:4,tags:['parking'],badge:'verified',col:'fog',x:138,y:214},
-  {id:5,title:"Shepherd's Hut",loc:'Buttermere',county:'lake-district',type:'glamping',price:95,rating:4.7,reviews:8,sleeps:2,beds:1,tags:['offgrid'],col:'dusk',x:122,y:225},
-  {id:6,title:"Miller's Cottage",loc:'Grasmere',county:'lake-district',type:'cottage',price:165,rating:4.8,reviews:19,sleeps:4,beds:2,tags:['woodburner'],col:'ink',x:135,y:228},
-  {id:7,title:'The Granary',loc:'Hawkshead',county:'lake-district',type:'farmhouse',price:195,rating:4.9,reviews:56,sleeps:5,beds:3,tags:['pets','woodburner'],badge:'editors',col:'brick',x:138,y:234},
-  {id:8,title:'Hillside Farmhouse',loc:'Grizedale',county:'lake-district',type:'farmhouse',price:385,rating:4.6,reviews:14,sleeps:10,beds:5,tags:['hottub'],col:'warm',x:144,y:238},
-  {id:9,title:'Cliffside Cottage',loc:'Porthcurno',county:'cornwall',type:'cottage',price:210,rating:4.9,reviews:41,sleeps:4,beds:2,tags:['seaview','woodburner'],badge:'verified',col:'cool',x:94,y:445},
-  {id:10,title:'Tregothnan Lodge',loc:'Truro',county:'cornwall',type:'cabin',price:320,rating:4.8,reviews:22,sleeps:8,beds:4,tags:['hottub','pets'],col:'sage',x:108,y:434},
-  {id:11,title:'Harbour Cottage',loc:'Mousehole',county:'cornwall',type:'cottage',price:155,rating:4.9,reviews:63,sleeps:3,beds:2,tags:['seaview'],badge:'editors',col:'dusk',x:92,y:443},
-  {id:12,title:'St Agnes Farmhouse',loc:'St Agnes',county:'cornwall',type:'farmhouse',price:185,rating:4.7,reviews:18,sleeps:6,beds:3,tags:['woodburner','pets'],col:'warm',x:100,y:438},
-  {id:13,title:'The Boathouse',loc:'Fowey',county:'cornwall',type:'houseboat',price:175,rating:5.0,reviews:29,sleeps:2,beds:1,tags:['seaview'],badge:'verified',col:'cool',x:113,y:437},
-  {id:14,title:'Mizen Shepherd Hut',loc:'Zennor',county:'cornwall',type:'glamping',price:115,rating:4.8,reviews:12,sleeps:2,beds:1,tags:['offgrid','seaview'],col:'fog',x:88,y:440},
-  {id:15,title:'Restored Blackhouse',loc:'Trotternish',county:'highlands',type:'cottage',price:195,rating:4.9,reviews:31,sleeps:4,beds:2,tags:['offgrid','hottub','seaview'],badge:'verified',col:'cool',x:98,y:72},
-  {id:16,title:'Glen Coe Bothy',loc:'Glencoe',county:'highlands',type:'cabin',price:130,rating:4.7,reviews:15,sleeps:3,beds:2,tags:['woodburner','offgrid'],col:'fog',x:132,y:88},
-  {id:17,title:'Loch Ness Lodge',loc:'Drumnadrochit',county:'highlands',type:'cabin',price:280,rating:4.8,reviews:44,sleeps:6,beds:3,tags:['seaview','hottub'],col:'sage',x:148,y:62},
-  {id:18,title:'Croft House',loc:'Torridon',county:'highlands',type:'farmhouse',price:165,rating:4.9,reviews:27,sleeps:4,beds:2,tags:['woodburner','pets'],badge:'verified',col:'warm',x:118,y:55},
-  {id:19,title:'Isle of Skye Hideaway',loc:'Portree',county:'skye',type:'cottage',price:220,rating:5.0,reviews:38,sleeps:2,beds:1,tags:['seaview','offgrid'],badge:'editors',col:'cool',x:93,y:73},
-  {id:20,title:'Burnham Overy Barn',loc:'Burnham Overy',county:'norfolk',type:'barn',price:195,rating:4.8,reviews:33,sleeps:6,beds:3,tags:['seaview','pets'],badge:'verified',col:'warm',x:218,y:282},
-  {id:21,title:'The Granary',loc:'Wells-next-the-Sea',county:'norfolk',type:'farmhouse',price:145,rating:4.7,reviews:21,sleeps:4,beds:2,tags:['woodburner'],col:'sage',x:224,y:278},
-  {id:22,title:'Saltmarsh Cabin',loc:'Blakeney',county:'norfolk',type:'cabin',price:110,rating:4.6,reviews:9,sleeps:2,beds:1,tags:['seaview','offgrid'],col:'cool',x:230,y:284},
-  {id:23,title:'Brancaster Hall',loc:'Brancaster',county:'norfolk',type:'manor',price:450,rating:4.9,reviews:17,sleeps:12,beds:6,tags:['hottub'],badge:'editors',col:'ink',x:215,y:277},
-  {id:24,title:'Moorland Cottage',loc:'Goathland',county:'yorkshire',type:'cottage',price:160,rating:4.8,reviews:28,sleeps:4,beds:2,tags:['woodburner','pets'],badge:'verified',col:'warm',x:185,y:248},
-  {id:25,title:'Dales Farmhouse',loc:'Wharfedale',county:'yorkshire',type:'farmhouse',price:225,rating:4.9,reviews:52,sleeps:8,beds:4,tags:['hottub','pets'],badge:'editors',col:'cool',x:175,y:244},
-  {id:26,title:'The Old Forge',loc:'Whitby',county:'yorkshire',type:'cottage',price:135,rating:4.7,reviews:14,sleeps:3,beds:2,tags:['seaview','woodburner'],col:'fog',x:195,y:240},
-  {id:27,title:'Honeysuckle Cottage',loc:'Bourton-on-the-Water',county:'cotswolds',type:'cottage',price:195,rating:4.9,reviews:44,sleeps:4,beds:2,tags:['woodburner'],badge:'verified',col:'warm',x:172,y:338},
-  {id:28,title:'Chipping Manor',loc:'Chipping Campden',county:'cotswolds',type:'manor',price:550,rating:5.0,reviews:19,sleeps:14,beds:7,tags:['hottub'],badge:'editors',col:'sage',x:180,y:333},
-  {id:29,title:'The Old Mill',loc:'Bourton-on-the-Hill',county:'cotswolds',type:'farmhouse',price:175,rating:4.8,reviews:31,sleeps:5,beds:3,tags:['woodburner','pets'],col:'dusk',x:178,y:344},
-  {id:30,title:'Pembroke Cliffside',loc:'St Davids',county:'pembrokeshire',type:'cottage',price:175,rating:4.9,reviews:36,sleeps:4,beds:2,tags:['seaview','woodburner'],badge:'verified',col:'cool',x:87,y:342},
-  {id:31,title:'The Boathouse',loc:'Solva',county:'pembrokeshire',type:'houseboat',price:155,rating:4.8,reviews:18,sleeps:2,beds:1,tags:['seaview'],col:'dusk',x:94,y:345},
-  {id:32,title:'Coast Path Glamping',loc:'Marloes',county:'pembrokeshire',type:'glamping',price:90,rating:4.7,reviews:11,sleeps:2,beds:1,tags:['seaview','offgrid'],col:'sage',x:82,y:348},
-  {id:33,title:'Hafod Cottage',loc:'Betws-y-Coed',county:'snowdonia',type:'cottage',price:145,rating:4.8,reviews:24,sleeps:4,beds:2,tags:['woodburner','pets'],badge:'verified',col:'warm',x:122,y:294},
-  {id:34,title:'Llyn Padarn Cabin',loc:'Llanberis',county:'snowdonia',type:'cabin',price:185,rating:4.9,reviews:39,sleeps:4,beds:2,tags:['seaview','hottub'],badge:'editors',col:'cool',x:115,y:298},
-  {id:35,title:"Giant's Causeway Cottage",loc:'Bushmills',county:'causeway',type:'cottage',price:165,rating:4.9,reviews:22,sleeps:4,beds:2,tags:['seaview','woodburner'],badge:'verified',col:'fog',x:82,y:148},
-  {id:36,title:'Dark Hedges Farmhouse',loc:'Armoy',county:'causeway',type:'farmhouse',price:190,rating:4.8,reviews:15,sleeps:6,beds:3,tags:['woodburner','pets'],col:'warm',x:92,y:155},
-];
-
-// Feed activity with map coordinates
-const FEED_ACTS = [
-  {id:'f1',type:'tip',county:'lake-district',name:'Hannah F.',text:"If you can get there before 8am, the climb up the Old Man of Coniston from Walna Scar is magic — completely empty.",loc:'Coniston, Cumbria',when:'2 days ago',x:126,y:242,emoji:'🥾'},
-  {id:'f2',type:'avail',county:'lake-district',name:'Sarah R.',text:"Just got a cancellation — 12–19 July now open at Stone Cottage. Sleeps 6, wood burner, dogs welcome.",loc:'Windermere, Cumbria',when:'2 hrs ago',x:134,y:220,emoji:'🏡'},
-  {id:'f3',type:'review',county:'lake-district',name:'Marcus J.',text:"Just back from a week at The Granary. Hannah was the easiest host we've ever booked with. Cannot recommend enough.",loc:'Hawkshead, Cumbria',when:'Yesterday',x:140,y:232,emoji:'⭐'},
-  {id:'f4',type:'tip',county:'lake-district',name:'Tom & Anna',text:"Buttermere this morning — the fells in the cloud and not a soul on the lake. June here is the secret time.",loc:'Buttermere, Cumbria',when:'Yesterday',x:120,y:227,emoji:'📸'},
-  {id:'f5',type:'tip',county:'cornwall',name:'Alice M.',text:"Zennor is one of those Cornish places that still hasn't been discovered. The walk to St Ives is 3 hours each way — utterly empty.",loc:'Zennor, Cornwall',when:'Yesterday',x:88,y:442,emoji:'🌊'},
-  {id:'f6',type:'avail',county:'cornwall',name:'Rachel B.',text:"Late cancellation — 20–27 July free at Harbour Cottage. Sea views, two minutes from the harbour wall.",loc:'Mousehole, Cornwall',when:'4 hrs ago',x:91,y:445,emoji:'⚓'},
-  {id:'f7',type:'review',county:'cornwall',name:'James T.',text:"Cliffside Cottage is everything the photos promised — the sea view from the bedroom is extraordinary.",loc:'Porthcurno, Cornwall',when:'1 hr ago',x:96,y:447,emoji:'⭐'},
-  {id:'f8',type:'tip',county:'highlands',name:'Neil F.',text:"The Lairig Ghru is Scotland's most dramatic mountain pass and 90% of tourists have never heard of it. 27 miles, camp wild.",loc:'Cairngorms, Scotland',when:'Yesterday',x:158,y:62,emoji:'🏔️'},
-  {id:'f9',type:'avail',county:'highlands',name:'Callum D.',text:"Two weeks free in August at Glen Coe Bothy. Off-grid, wood burner, the best walking in Scotland.",loc:'Glencoe, Highlands',when:'3 hrs ago',x:133,y:88,emoji:'🏕️'},
-  {id:'f10',type:'tip',county:'norfolk',name:'Charlie R.',text:"Wells at 7am in October — beach completely empty, boats coming in, bacon rolls at the Quayside Cafe are £3.50.",loc:'Wells-next-the-Sea, Norfolk',when:'Yesterday',x:226,y:280,emoji:'🌅'},
-  {id:'f11',type:'tip',county:'yorkshire',name:'Graham',text:"The Dales at their finest this morning — buttercups and the sound of nothing.",loc:'Wharfedale, Yorkshire',when:'2 hrs ago',x:177,y:244,emoji:'🌿'},
-  {id:'f12',type:'avail',county:'cornwall',name:'Martin & Sue',text:"The lodge garden this morning — roses in full bloom. August still has availability at Tregothnan.",loc:'Truro, Cornwall',when:'2 days ago',x:109,y:433,emoji:'🌹'},
-  {id:'f13',type:'tip',county:'causeway',name:'Fiona',text:"The Giant's Causeway at sunrise — completely alone for the first 20 minutes. Arrive by 6:30am.",loc:'Bushmills, Antrim',when:'3 days ago',x:85,y:150,emoji:'🪨'},
-  {id:'f14',type:'review',county:'highlands',name:'Sophie W.',text:"Croft House is the most remote and beautiful place we've ever stayed. Callum was exceptional.",loc:'Torridon, Highlands',when:'2 days ago',x:120,y:56,emoji:'⭐'},
-];
-
-const COUNTY_META = {
-  all:{title:'All <i>UK</i>',meta:'4,202 stays across the UK',stays:'4,202',posts:'94',active:'1,847',activity:'The most active feed today: Lake District with 18 new posts, Cornwall with 14.', browseLink:'browse.html',feedLink:'feed.html'},
-  'lake-district':{title:'Lake <i>District</i>',meta:'214 stays · Cumbria, England',stays:'214',posts:'18',active:'312',activity:"Sarah R. just posted a last-minute opening at Stone Cottage, Windermere. Hannah F. shared a Coniston walk tip that's been liked 128 times.",browseLink:'browse.html?region=lake-district',feedLink:'feed.html?county=cumbria'},
-  cornwall:{title:'<i>Cornwall</i>',meta:'198 stays · South West England',stays:'198',posts:'22',active:'287',activity:"Rachel B. just posted a last-minute cancellation at Harbour Cottage, Mousehole. James T. left a 5-star review for Cliffside Cottage.",browseLink:'browse.html?region=cornwall',feedLink:'feed.html?county=cornwall'},
-  highlands:{title:'Scottish <i>Highlands</i>',meta:'145 stays · Scotland',stays:'145',posts:'14',active:'198',activity:"Callum D. has two weeks free at Glen Coe Bothy in August. Neil F.'s Lairig Ghru tip has 88 likes and 34 replies.",browseLink:'browse.html?region=highlands',feedLink:'feed.html?county=highlands'},
-  norfolk:{title:'<i>Norfolk</i>',meta:'112 stays · East Anglia',stays:'112',posts:'11',active:'167',activity:"Bridget H. at Burnham Overy Barn has September wide open. Charlie R.'s Wells sunrise post is trending today.",browseLink:'browse.html?region=norfolk',feedLink:'feed.html?county=norfolk'},
-  yorkshire:{title:'<i>Yorkshire</i>',meta:'98 stays · Northern England',stays:'98',posts:'9',active:'143',activity:"Graham & Kate posted a beautiful Dales photo this morning — already 56 likes. August availability still open at Dales Farmhouse.",browseLink:'browse.html?region=yorkshire',feedLink:'feed.html?county=yorkshire'},
-  cotswolds:{title:'The <i>Cotswolds</i>',meta:'87 stays · Gloucestershire',stays:'87',posts:'8',active:'121',activity:"Honeysuckle Cottage and Chipping Manor both have summer availability. Quiet week on the feed — a good time to post.",browseLink:'browse.html?region=cotswolds',feedLink:'feed.html?county=cotswolds'},
-  skye:{title:'Isle of <i>Skye</i>',meta:'67 stays · Scotland',stays:'67',posts:'6',active:'89',activity:"Fiona M.'s Storr sunrise photo from the Blackhouse is the most liked post this week — 112 likes.",browseLink:'browse.html?region=skye',feedLink:'feed.html?county=highlands'},
-  snowdonia:{title:'<i>Snowdonia</i>',meta:'54 stays · Wales',stays:'54',posts:'6',active:'89',activity:"Llyn Padarn Cabin has late July availability. Hafod Cottage just received a 5-star review from a returning guest.",browseLink:'browse.html?region=snowdonia',feedLink:'feed.html?county=snowdonia'},
-  pembrokeshire:{title:'<i>Pembrokeshire</i>',meta:'48 stays · Wales',stays:'48',posts:'5',active:'78',activity:"Pembroke Cliffside just dropped their September price. Three new reviews posted this week.",browseLink:'browse.html?region=pembrokeshire',feedLink:'feed.html?county=pembrokeshire'},
-  causeway:{title:'Causeway <i>Coast</i>',meta:'29 stays · N. Ireland',stays:'29',posts:'3',active:'44',activity:"Fiona's sunrise tip at the Causeway is getting traction — 3 new bookings this week.",browseLink:'browse.html?region=causeway',feedLink:'feed.html?county=causeway'},
-};
+function buildCountyMeta() {
+  const meta = {
+    all: {
+      title: 'All <i>UK</i>',
+      meta: '4,202 stays across the UK',
+      stays: '4,202',
+      posts: String(CASA_FEED_POSTS_SEED.length),
+      active: '1,847',
+      activity: 'The most active feed today: Lake District with 18 new posts, Cornwall with 14.',
+      browseLink: 'browse.html',
+      feedLink: 'feed.html',
+    },
+  };
+  Object.values(CASA_REGIONS).forEach(r => {
+    if (r.key === 'all') return;
+    const stayCount = getCasaPropertiesByRegion(r.browseKey).length;
+    meta[r.mapKey || r.key] = {
+      title: r.mapTitle?.replace('The ', '').replace('Lake ', 'Lake ') || `<i>${r.label}</i>`,
+      meta: `${stayCount} stays · ${r.mapSub || r.label}`,
+      stays: String(stayCount),
+      posts: String(r.feedPosts || 0),
+      active: String(r.members || 0),
+      activity: r.activity || 'Community activity from hosts and guests.',
+      browseLink: casaBrowseRegionUrl(r.browseKey),
+      feedLink: casaFeedCountyUrl(r.feedKey),
+    };
+  });
+  return meta;
+}
+const COUNTY_META = buildCountyMeta();
 
 const TAG_LABELS = {woodburner:'Wood burner',hottub:'Hot tub',pets:'Pets ok',seaview:'Sea view',offgrid:'Off-grid'};
 const BADGE_CFG  = {verified:{cls:'moss',text:'✓ Verified'},editors:{cls:'',text:"Editor's pick"},new:{cls:'ink',text:'New'}};
@@ -540,7 +511,7 @@ function renderMapPins() {
   const acts = state.county === 'all' ? FEED_ACTS : FEED_ACTS.filter(a => a.county === state.county);
   const typeColors = {tip:'#8A6848', avail:'var(--brick)', review:'#7C6432', photo:'#5A6078'};
   actLayer.innerHTML = showFeed ? acts.map(a => `
-    <g class="act-pin ${a.type}" id="ap-${a.id}" onclick="event.stopPropagation();actPinClick('${a.id}')"
+    <g class="act-pin ${a.type}" id="ap-${a.id}" onclick="event.stopPropagation();actPinClick('${a.id}')" ondblclick="event.stopPropagation();actPinDblClick('${a.id}')"
        onmouseenter="showActTip(event,'${a.id}')" onmouseleave="hideTip()">
       <rect class="ap-bg" x="${a.x-7}" y="${a.y-7}" width="14" height="14" rx="4"/>
       <text x="${a.x}" y="${a.y+4}" font-size="8" text-anchor="middle" pointer-events="none">${a.emoji}</text>
@@ -599,7 +570,7 @@ function renderList() {
     html += acts.map(a => {
       const icons = {tip:'<path d="M3 20 9 10l4 6 2-3 6 7z"/>',avail:'<path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/>',review:'<path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/>',photo:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/>'};
       const typeLabel = {tip:'Local tip',avail:'Availability',review:'Review',photo:'Photo'}[a.type] || a.type;
-      return `<div class="map-ac" id="lac-${a.id}" onclick="actCardClick('${a.id}')">
+      return `<div class="map-ac" id="lac-${a.id}" onclick="actCardClick('${a.id}', event)" ondblclick="actPinDblClick('${a.id}')">
         <div class="ac-icon ${a.type}"><svg viewBox="0 0 24 24">${icons[a.type]||''}</svg></div>
         <div class="ac-body">
           <div class="ac-meta">
@@ -609,6 +580,7 @@ function renderList() {
           </div>
           <div class="ac-text">${a.text}</div>
           <div class="ac-loc"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>${a.loc}</div>
+          ${a.postId ? `<div class="ac-actions"><a class="ac-open-feed" href="feed.html?post=${a.postId}" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.4 7.3L4 21l1.7-5.6A8 8 0 1 1 21 12z"/></svg>Open in feed</a></div>` : ''}
         </div>
       </div>`;
     }).join('');
@@ -669,6 +641,25 @@ function showCountyCard(county) {
   document.getElementById('mocBrowse').href = m.browseLink;
   document.getElementById('mocFeed').href = m.feedLink;
   card.style.display = 'block';
+  focusCountyOnMap(county);
+}
+
+function focusCountyOnMap(county) {
+  if (county === 'all') return;
+  const region = getCasaRegion(county);
+  const center = region.mapCenter;
+  if (!center) return;
+  mapScale = center.scale || 1.8;
+  const panel = document.getElementById('mapPanel');
+  const svg = document.getElementById('ukMap');
+  if (!panel || !svg) return;
+  const panelRect = panel.getBoundingClientRect();
+  const offsetX = (panelRect.width / 2) - center.x * mapScale;
+  const offsetY = (panelRect.height / 2) - center.y * mapScale;
+  mapTX = offsetX / mapScale;
+  mapTY = offsetY / mapScale;
+  svg.style.transform = `scale(${mapScale}) translate(${mapTX}px, ${mapTY}px)`;
+  svg.style.transformOrigin = '0 0';
 }
 
 function closeOverlay() {
@@ -728,8 +719,7 @@ function propPinClick(id) {
 function cardClick(e, id) {
   e.preventDefault();
   propPinClick(id);
-  // Brief flash then navigate
-  setTimeout(() => window.location.href = 'property.html', 400);
+  setTimeout(() => { window.location.href = casaPropertyUrl(id); }, 300);
 }
 
 // Activity pin clicked
@@ -741,15 +731,22 @@ function actPinClick(id) {
   if (card) { card.classList.add('active'); card.scrollIntoView({behavior:'smooth', block:'nearest'}); }
 }
 
-function actCardClick(id) {
+function actCardClick(id, event) {
+  if (event?.target?.closest('.ac-open-feed')) return;
   actPinClick(id);
   const act = FEED_ACTS.find(a => a.id === id);
-  if (act) {
-    // Zoom map to that area
-    document.querySelectorAll('.county-zone').forEach(z => z.classList.remove('active'));
-    document.getElementById('zone-' + act.county)?.classList.add('active');
-    showCountyCard(act.county);
-  }
+  if (!act) return;
+  document.querySelectorAll('.county-zone').forEach(z => z.classList.remove('active'));
+  document.getElementById('zone-' + act.county)?.classList.add('active');
+  document.querySelectorAll('.cty-pill').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.cty-pill[data-county="${act.county}"]`)?.classList.add('active');
+  state.county = act.county;
+  showCountyCard(act.county);
+}
+
+function actPinDblClick(id) {
+  const act = FEED_ACTS.find(a => a.id === id);
+  if (act?.postId) window.location.href = `feed.html?post=${act.postId}`;
 }
 
 // ══════════════════════════════════════════
@@ -812,8 +809,9 @@ let mapTX = 0, mapTY = 0;
 
 function mapZoom(factor) {
   mapScale = Math.min(3, Math.max(0.8, mapScale * factor));
-  document.getElementById('ukMap').style.transform = `scale(${mapScale}) translate(${mapTX}px,${mapTY}px)`;
-  document.getElementById('ukMap').style.transformOrigin = 'center center';
+  const svg = document.getElementById('ukMap');
+  svg.style.transform = `scale(${mapScale}) translate(${mapTX}px, ${mapTY}px)`;
+  svg.style.transformOrigin = '0 0';
 }
 
 function resetView() {
@@ -836,6 +834,5 @@ if (qp.get('county')) {
 
 render();
 </script>
-<script src="casa.js"></script>
 </body>
 </html>

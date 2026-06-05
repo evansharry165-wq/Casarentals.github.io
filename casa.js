@@ -48,6 +48,85 @@ function casaToggleSaved(id, btn) {
 window.casaIsSaved = casaIsSaved;
 window.casaToggleSaved = casaToggleSaved;
 
+/* ─── Feed persistence (localStorage) ─── */
+const CASA_FEED_POSTS_KEY = 'casa:feed:posts';
+const CASA_FEED_REPLIES_KEY = 'casa:feed:replies';
+const CASA_FEED_LIKES_KEY = 'casa:feed:likes';
+const CASA_FEED_SAVED_KEY = 'casa:feed:saved';
+const CASA_FEED_FOLLOWS_KEY = 'casa:feed:follows';
+
+function casaReadJson(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function casaWriteJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch { /* quota */ }
+}
+
+function casaGetFeedPosts() {
+  const custom = casaReadJson(CASA_FEED_POSTS_KEY, null);
+  if (Array.isArray(custom) && custom.length) return custom;
+  return typeof CASA_FEED_POSTS_SEED !== 'undefined' ? CASA_FEED_POSTS_SEED.slice() : [];
+}
+
+function casaSaveFeedPosts(posts) {
+  casaWriteJson(CASA_FEED_POSTS_KEY, posts);
+}
+
+function casaGetFeedReplies() {
+  const custom = casaReadJson(CASA_FEED_REPLIES_KEY, null);
+  if (custom && typeof custom === 'object') {
+    return { ...(typeof CASA_FEED_REPLIES !== 'undefined' ? CASA_FEED_REPLIES : {}), ...custom };
+  }
+  return typeof CASA_FEED_REPLIES !== 'undefined' ? { ...CASA_FEED_REPLIES } : {};
+}
+
+function casaSaveFeedReplies(replies) {
+  casaWriteJson(CASA_FEED_REPLIES_KEY, replies);
+}
+
+function casaGetFeedLikes() {
+  return new Set(casaReadJson(CASA_FEED_LIKES_KEY, []));
+}
+
+function casaSaveFeedLikes(likesSet) {
+  casaWriteJson(CASA_FEED_LIKES_KEY, [...likesSet]);
+}
+
+function casaGetFeedSaved() {
+  return new Set(casaReadJson(CASA_FEED_SAVED_KEY, []));
+}
+
+function casaSaveFeedSaved(savedSet) {
+  casaWriteJson(CASA_FEED_SAVED_KEY, [...savedSet]);
+}
+
+function casaGetFeedFollows() {
+  return new Set(casaReadJson(CASA_FEED_FOLLOWS_KEY, ['sarah-r', 'hannah-f', 'rachel-b', 'fiona-m']));
+}
+
+function casaSaveFeedFollows(followsSet) {
+  casaWriteJson(CASA_FEED_FOLLOWS_KEY, [...followsSet]);
+}
+
+window.casaGetFeedPosts = casaGetFeedPosts;
+window.casaSaveFeedPosts = casaSaveFeedPosts;
+window.casaGetFeedReplies = casaGetFeedReplies;
+window.casaSaveFeedReplies = casaSaveFeedReplies;
+window.casaGetFeedLikes = casaGetFeedLikes;
+window.casaSaveFeedLikes = casaSaveFeedLikes;
+window.casaGetFeedSaved = casaGetFeedSaved;
+window.casaSaveFeedSaved = casaSaveFeedSaved;
+window.casaGetFeedFollows = casaGetFeedFollows;
+window.casaSaveFeedFollows = casaSaveFeedFollows;
+
 /** Show welcome / signed-in toast from URL params (?welcome=1 or ?signedin=1) */
 function casaHandleAuthRedirectToasts() {
   const qp = new URLSearchParams(location.search);
