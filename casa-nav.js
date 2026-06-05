@@ -23,15 +23,31 @@ function casaUserInitial() {
   return name ? name[0].toUpperCase() : '?';
 }
 
-function casaSignOut() {
-  localStorage.removeItem(CASA_USER_KEY);
+async function casaSignOut() {
+  if (window.casaAuthSignOut) {
+    try { await casaAuthSignOut(); } catch { /* continue local sign-out */ }
+  } else {
+    localStorage.removeItem(CASA_USER_KEY);
+  }
   if (window.casaToast) casaToast('Signed out — see you soon');
+  if (window.casaNavRefresh) casaNavRefresh();
   setTimeout(() => { window.location.href = 'index.html'; }, 400);
+}
+
+function casaNavRefresh() {
+  const nav = document.querySelector('.casa-nav');
+  if (!nav) return;
+  nav.dataset.mobileReady = '';
+  nav.querySelector('.nav-menu-btn')?.remove();
+  document.querySelector('.casa-nav-backdrop')?.remove();
+  document.querySelector('.casa-nav-drawer')?.remove();
+  casaNavInit();
 }
 
 window.casaGetUser = casaGetUser;
 window.casaIsSignedIn = casaIsSignedIn;
 window.casaSignOut = casaSignOut;
+window.casaNavRefresh = casaNavRefresh;
 
 function navDivider() {
   return '<div class="nav-divider" aria-hidden="true"></div>';
@@ -399,4 +415,8 @@ document.addEventListener('DOMContentLoaded', () => {
   casaEnhanceProfileFromUser();
   casaWireSignOutLinks();
   casaWireSidebarDeadLinks();
+  window.addEventListener('casa:auth', () => casaNavRefresh());
+  if (window.casaOnAuthReady) {
+    casaOnAuthReady(() => casaNavRefresh());
+  }
 });

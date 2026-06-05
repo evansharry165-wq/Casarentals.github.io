@@ -291,6 +291,8 @@
   </aside>
 </div>
 
+<script src="casa-config.js"></script>
+<script src="casa-supabase.js"></script>
 <script src="casa-properties.js"></script>
 <script src="casa-data.js"></script>
 <script>
@@ -346,8 +348,11 @@ let active = 'sarah';
 let filterMode = 'all';
 let searchStr = '';
 
-function mergeConvos() {
-  const stored = (window.casaGetEnquiries ? casaGetEnquiries() : []).map(casaEnquiryToConvo);
+async function mergeConvos() {
+  const enquiries = window.casaFetchEnquiries
+    ? await casaFetchEnquiries()
+    : casaGetEnquiries();
+  const stored = enquiries.map(casaEnquiryToConvo);
   const storedIds = new Set(stored.map(c => c.id));
   CONVOS = [...stored, ...DEMO_CONVOS.filter(c => !storedIds.has(c.id))];
 }
@@ -585,8 +590,8 @@ function toast(msg) {
 
 function esc(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-function casaMessagesInit() {
-  mergeConvos();
+async function casaMessagesInit() {
+  await mergeConvos();
   const threadParam = new URLSearchParams(location.search).get('thread');
   if (threadParam && CONVOS.find(c => c.id === threadParam)) {
     active = threadParam;
@@ -595,7 +600,7 @@ function casaMessagesInit() {
   renderList();
   renderThread();
 }
-document.addEventListener('DOMContentLoaded', casaMessagesInit);
+document.addEventListener('DOMContentLoaded', () => { casaMessagesInit(); });
 </script>
 <script src="casa-concierge.js"></script>
 <script src="casa-nav.js"></script>

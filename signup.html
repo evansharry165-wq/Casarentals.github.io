@@ -344,11 +344,26 @@
     btn.classList.add('loading');
     btn.innerHTML = 'Creating your account… <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>';
 
-    // DEMO: simulate network
-    await new Promise(r => setTimeout(r, 1400));
-
-    // Store session hint in localStorage (Supabase will handle real sessions)
-    localStorage.setItem('casa:user', JSON.stringify({ name: fname, role: currentRole, email, signedIn: true }));
+    try {
+      if (window.casaSupabaseConfigured?.()) {
+        const result = await casaAuthSignUp({ email, password: pwd, fname, lname, role: currentRole });
+        if (result.mode === 'supabase') {
+          if (result.needsConfirm && window.casaToast) {
+            casaToast('Account created — check your email to confirm');
+          }
+        }
+      } else {
+        await new Promise(r => setTimeout(r, 900));
+        localStorage.setItem('casa:user', JSON.stringify({ name: fname, role: currentRole, email, signedIn: true }));
+      }
+    } catch (err) {
+      btn.classList.remove('loading');
+      btn.innerHTML = 'Create my Casa account <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
+      const msg = err?.message || 'Could not create account';
+      if (window.casaToast) casaToast(msg);
+      else alert(msg);
+      return;
+    }
 
     const conciergeOn = currentRole === 'host' && document.getElementById('conciergeOptIn')?.checked;
     if (conciergeOn && window.casaSaveConciergeSettings) {
@@ -381,14 +396,26 @@
     btn.classList.add('loading');
     btn.innerHTML = 'Signing in… <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>';
 
-    await new Promise(r => setTimeout(r, 1200));
+    try {
+      if (window.casaSupabaseConfigured?.()) {
+        await casaAuthSignIn({ email, password: pwd });
+      } else {
+        await new Promise(r => setTimeout(r, 900));
+        const stored = JSON.parse(localStorage.getItem('casa:user') || '{}');
+        const role = stored.role || 'guest';
+        localStorage.setItem('casa:user', JSON.stringify({ ...stored, email, signedIn: true }));
+      }
+    } catch (err) {
+      btn.classList.remove('loading');
+      btn.innerHTML = 'Sign in <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
+      const msg = err?.message || 'Sign in failed';
+      if (window.casaToast) casaToast(msg);
+      else alert(msg);
+      return;
+    }
 
-    // Restore role from localStorage if present, default to guest
-    const stored = JSON.parse(localStorage.getItem('casa:user') || '{}');
-    const role = stored.role || 'guest';
-    localStorage.setItem('casa:user', JSON.stringify({ ...stored, email, signedIn: true }));
-
-    // Redirect with welcome toast trigger
+    const user = JSON.parse(localStorage.getItem('casa:user') || '{}');
+    const role = user.role || 'guest';
     window.location.href = (role === 'host' ? 'host.html' : 'index.html') + '?signedin=1';
   }
 
@@ -409,6 +436,8 @@
   // Welcome / signed-in toasts: handled by casa.js (?welcome=1, ?signedin=1)
 </script>
 
+<script src="casa-config.js"></script>
+<script src="casa-supabase.js"></script>
 <script src="casa-concierge.js"></script>
 <script src="casa.js"></script>
 </body>

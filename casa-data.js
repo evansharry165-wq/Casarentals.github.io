@@ -1,9 +1,9 @@
-/** Casa client-side data layer — swap for Supabase in production */
+/** Casa data layer — Supabase when configured, localStorage fallback */
 
 const CASA_ENQUIRIES_KEY = 'casa:enquiries';
 const CASA_WAITLIST_KEY = 'casa:waitlist';
 
-function casaGetEnquiries() {
+function casaGetEnquiriesLocal() {
   try {
     return JSON.parse(localStorage.getItem(CASA_ENQUIRIES_KEY) || '[]');
   } catch {
@@ -11,8 +11,15 @@ function casaGetEnquiries() {
   }
 }
 
-function casaSaveEnquiry(enquiry) {
-  const entry = {
+function casaSaveEnquiryLocal(entry) {
+  const list = casaGetEnquiriesLocal();
+  list.unshift(entry);
+  localStorage.setItem(CASA_ENQUIRIES_KEY, JSON.stringify(list));
+  return entry;
+}
+
+function casaBuildEnquiryEntry(enquiry) {
+  return {
     id: enquiry.id || `enq-${Date.now()}`,
     ref: enquiry.ref,
     propertyId: enquiry.propertyId,
@@ -30,10 +37,50 @@ function casaSaveEnquiry(enquiry) {
     status: enquiry.status || 'pending',
     createdAt: enquiry.createdAt || new Date().toISOString(),
   };
-  const list = casaGetEnquiries();
-  list.unshift(entry);
-  localStorage.setItem(CASA_ENQUIRIES_KEY, JSON.stringify(list));
-  return entry;
+}
+
+/** Save enquiry — tries Supabase first, always mirrors to localStorage */
+async function casaSaveEnquiry(enquiry) {
+  let entry = casaBuildEnquiryEntry(enquiry);
+
+  if (window.casaSupabaseConfigured?.() && window.casaSupabaseInsertEnquiry) {
+    try {
+      const remote = await casaSupabaseInsertEnquiry(entry);
+      if (remote) entry = remote;
+    } catch (err) {
+      console.warn('[Casa] Supabase enquiry save failed, using local only', err);
+      if (window.casaToast) casaToast('Saved locally — sync when back online');
+    }
+  }
+
+  return casaSaveEnquiryLocal(entry);
+}
+
+/** Sync read for legacy callers — local cache only */
+function casaGetEnquiries() {
+  return casaGetEnquiriesLocal();
+}
+
+/** Fetch enquiries — remote (if signed in) merged with local */
+async function casaFetchEnquiries() {
+  let remote = [];
+  if (window.casaSupabaseConfigured?.() && window.casaSupabaseFetchEnquiries) {
+    try {
+      remote = await casaSupabaseFetchEnquiries();
+    } catch (err) {
+      console.warn('[Casa] Could not fetch remote enquiries', err);
+    }
+  }
+
+  const local = casaGetEnquiriesLocal();
+  const remoteRefs = new Set(remote.map((e) => e.ref));
+  const merged = [
+    ...remote,
+    ...local.filter((e) => !remoteRefs.has(e.ref)),
+  ];
+
+  merged.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  return merged;
 }
 
 function casaFormatEnquiryDates(checkin, checkout) {
@@ -44,7 +91,6 @@ function casaFormatEnquiryDates(checkin, checkout) {
 
 function casaEnquiryToConvo(enq) {
   const hostFirst = (enq.hostName || 'Host').split(' ')[0];
-  const guestInitial = (enq.guestName || 'You')[0]?.toUpperCase() || 'Y';
   const now = new Date(enq.createdAt);
   const ts = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
   const dateLabel = casaFormatEnquiryDates(enq.checkin, enq.checkout);
@@ -86,7 +132,7 @@ function casaEnquiryToConvo(enq) {
   };
 }
 
-function casaGetWaitlist() {
+function casaGetWaitlistLocal() {
   try {
     return JSON.parse(localStorage.getItem(CASA_WAITLIST_KEY) || '[]');
   } catch {
@@ -94,8 +140,7 @@ function casaGetWaitlist() {
   }
 }
 
-function casaSaveWaitlistEntry(entry) {
-  const list = casaGetWaitlist();
+async function casaSaveWaitlistEntry(entry) {
   const record = {
     id: `wl-${Date.now()}`,
     fname: entry.fname,
@@ -106,16 +151,46 @@ function casaSaveWaitlistEntry(entry) {
     notes: entry.notes || '',
     createdAt: new Date().toISOString(),
   };
+
+  if (window.casaSupabaseConfigured?.() && window.casaSupabaseInsertWaitlist) {
+    try {
+      await casaSupabaseInsertWaitlist(entry);
+    } catch (err) {
+      console.warn('[Casa] Supabase waitlist save failed', err);
+    }
+  }
+
+  const list = casaGetWaitlistLocal();
   list.push(record);
   localStorage.setItem(CASA_WAITLIST_KEY, JSON.stringify(list));
-  return { record, position: list.length };
+
+  let position = list.length;
+  if (window.casaSupabaseWaitlistCount) {
+    try {
+      const total = await casaSupabaseWaitlistCount();
+      if (total) position = total;
+    } catch { /* use local position */ }
+  }
+
+  return { record, position };
 }
 
-function casaWaitlistCount() {
-  return casaGetWaitlist().length;
+function casaGetWaitlist() {
+  return casaGetWaitlistLocal();
+}
+
+async function casaWaitlistCount() {
+  if (window.casaSupabaseConfigured?.() && window.casaSupabaseWaitlistCount) {
+    try {
+      const total = await casaSupabaseWaitlistCount();
+      if (total) return total;
+    } catch { /* fall through */ }
+  }
+  return casaGetWaitlistLocal().length;
 }
 
 window.casaGetEnquiries = casaGetEnquiries;
+window.casaFetchEnquiries = casaFetchEnquiries;
 window.casaSaveEnquiry = casaSaveEnquiry;
 window.casaEnquiryToConvo = casaEnquiryToConvo;
 window.casaGetWaitlist = casaGetWaitlist;

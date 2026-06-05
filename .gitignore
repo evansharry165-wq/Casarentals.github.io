@@ -1,0 +1,6 @@
+# Optional local overrides (production uses committed casa-config.js)
+casa-config.local.js
+
+# OS / editor
+.DS_Store
+*.swp

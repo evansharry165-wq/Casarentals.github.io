@@ -37,7 +37,8 @@ _Last updated: June 2026_
 - ✅ Saved listings from shared catalogue
 - ✅ Mobile nav drawer + messages inbox on small screens
 - ✅ SEO meta injection (`casa-seo.js`)
-- 🔜 Supabase auth (replace demo signup)
+- ✅ Supabase auth + schema (`casa-supabase.js`, `supabase/schema.sql`) — configure `casa-config.js`
+- 🔜 Email notifications on enquiry + waitlist
 - Supabase auth (signup/signin for real)
 - Host listing persistence (DB + images)
 - Email notifications (Resend / Postmark) on enquiry + waitlist

@@ -439,7 +439,7 @@ async function submitWaitlist() {
   const region = currentRole === 'host'
     ? document.getElementById('hostRegion').value
     : document.getElementById('guestRegion').value;
-  const saved = casaSaveWaitlistEntry({
+  const saved = await casaSaveWaitlistEntry({
     fname, lname, email, role: currentRole, region,
     notes: document.getElementById('notes')?.value || '',
   });
@@ -465,15 +465,17 @@ document.querySelectorAll('.field input, .field select, .field textarea').forEac
 // Init guest fields visible
 document.getElementById('guestFields').style.display = 'block';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   if (window.casaWaitlistCount) {
-    waitlistCount = 48 + casaWaitlistCount();
+    waitlistCount = 48 + await casaWaitlistCount();
     const pos = document.getElementById('positionNum');
     if (pos) pos.textContent = waitlistCount + 1;
   }
 });
 </script>
 
+<script src="casa-config.js"></script>
+<script src="casa-supabase.js"></script>
 <script src="casa-data.js"></script>
 <script src="casa-nav.js"></script>
 <script src="casa-seo.js"></script>
