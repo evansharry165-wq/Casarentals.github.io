@@ -58,6 +58,13 @@ function casaHandleAuthRedirectToasts() {
   }
 }
 
+(function casaLoadSeo() {
+  if (document.querySelector('script[src*="casa-seo.js"]')) return;
+  const s = document.createElement('script');
+  s.src = 'casa-seo.js';
+  document.head.appendChild(s);
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
   casaHandleAuthRedirectToasts();
 

@@ -206,6 +206,8 @@ function inferNavContext() {
     'privacy.html': { nav: 'minimal', page: 'privacy' },
     'terms.html': { nav: 'minimal', page: 'terms' },
     'signup.html': { nav: 'auth', page: 'signup' },
+    'help.html': { nav: 'minimal', page: 'help' },
+    '404.html': { nav: 'minimal', page: '404' },
   };
   return map[path] || { nav: 'guest', page: '' };
 }
@@ -228,16 +230,19 @@ function casaNavInit() {
 
   if (context === 'host') {
     nav.innerHTML = renderHostNav(page);
+    casaNavMobileEnhance(nav);
     return;
   }
 
   if (context === 'flow') {
     nav.innerHTML = renderFlowNav(page);
+    casaNavMobileEnhance(nav);
     return;
   }
 
   if (context === 'minimal') {
     nav.innerHTML = renderMinimalNav();
+    casaNavMobileEnhance(nav);
     return;
   }
 
@@ -253,10 +258,72 @@ function casaNavInit() {
       nav.appendChild(rightEl);
     }
     rightEl.innerHTML = right;
+    casaNavMobileEnhance(nav);
     return;
   }
 
   nav.innerHTML = `${renderBrand()}<div class="nav-right">${right}</div>`;
+  casaNavMobileEnhance(nav);
+}
+
+function casaNavMobileEnhance(nav) {
+  if (!nav || nav.dataset.mobileReady) return;
+  nav.dataset.mobileReady = '1';
+
+  const menuBtn = document.createElement('button');
+  menuBtn.type = 'button';
+  menuBtn.className = 'nav-menu-btn';
+  menuBtn.setAttribute('aria-label', 'Open menu');
+  menuBtn.setAttribute('aria-expanded', 'false');
+  menuBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'casa-nav-backdrop';
+  const drawer = document.createElement('div');
+  drawer.className = 'casa-nav-drawer';
+  drawer.setAttribute('role', 'dialog');
+  drawer.setAttribute('aria-label', 'Site menu');
+  drawer.innerHTML = '<div class="cnd-head"><span class="cnd-title">Menu</span><button type="button" class="cnd-close" aria-label="Close menu">×</button></div><div class="cnd-links"></div>';
+
+  nav.appendChild(menuBtn);
+  document.body.appendChild(backdrop);
+  document.body.appendChild(drawer);
+
+  const linksHost = drawer.querySelector('.cnd-links');
+  const closeBtn = drawer.querySelector('.cnd-close');
+
+  function syncDrawerLinks() {
+    const sources = nav.querySelectorAll('.nav-right .nav-link, .nav-right .nav-back-btn, .nav-host-switch');
+    linksHost.innerHTML = '';
+    sources.forEach((src) => {
+      const a = document.createElement('a');
+      a.className = 'cnd-link';
+      a.href = src.getAttribute('href') || '#';
+      a.innerHTML = src.innerHTML;
+      if (src.classList.contains('primary')) a.classList.add('primary');
+      a.addEventListener('click', closeDrawer);
+      linksHost.appendChild(a);
+    });
+  }
+
+  function openDrawer() {
+    syncDrawerLinks();
+    drawer.classList.add('open');
+    backdrop.classList.add('open');
+    menuBtn.setAttribute('aria-expanded', 'true');
+    document.body.classList.add('casa-nav-open');
+  }
+
+  function closeDrawer() {
+    drawer.classList.remove('open');
+    backdrop.classList.remove('open');
+    menuBtn.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('casa-nav-open');
+  }
+
+  menuBtn.addEventListener('click', openDrawer);
+  closeBtn.addEventListener('click', closeDrawer);
+  backdrop.addEventListener('click', closeDrawer);
 }
 
 function casaEnhanceHostFlowBar() {

@@ -137,9 +137,9 @@
 
   <!-- RESULTS -->
   <div class="saved-layout">
-    <div class="results">
-
-      <a class="pc" href="property.html?id=1">
+    <div class="results" id="savedResults">
+      <!-- rendered by casa-saved.js inline below -->
+      <a class="pc" href="property.html?id=1" data-seed-card style="display:none">
         <div class="pc-image">
           <div class="ph warm" data-label="STONE COTTAGE · WINDERMERE"></div>
           <button class="save-heart saved" onclick="event.preventDefault();const id=parseInt(this.closest('a.pc').href.split('id=')[1],10);casaToggleSaved(id,this)"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
@@ -310,7 +310,55 @@
   </div>
 </footer>
 
+<script src="casa-properties.js"></script>
+<script>
+const SAVED_PH = ['warm','sage','cool','dusk','fog','ink','brick'];
+function renderSavedGrid() {
+  const root = document.getElementById('savedResults');
+  if (!root || !window.casaGetSavedIds) return;
+  if (!localStorage.getItem('casa:saved')) {
+    localStorage.setItem('casa:saved', JSON.stringify([1, 15, 7, 5, 3]));
+  }
+  const ids = casaGetSavedIds();
+  root.innerHTML = '';
+  if (!ids.length) {
+    root.innerHTML = `<div style="grid-column:1/-1;padding:48px 24px;text-align:center;border:1px dashed var(--rule);border-radius:16px;background:var(--surface)">
+      <h3 style="font-family:var(--serif);font-size:28px;margin-bottom:8px">No saved stays <i>yet</i></h3>
+      <p style="color:var(--ink-3);margin-bottom:16px">Tap the heart on any listing while you browse.</p>
+      <a href="browse.html" class="btn btn-primary">Browse stays</a>
+    </div>`;
+    return;
+  }
+  root.innerHTML = ids.map((id) => {
+    const p = getCasaProperty(id);
+    const ph = SAVED_PH[id % SAVED_PH.length];
+    const pets = p.tags?.includes('pets') ? ' · Dogs ok' : '';
+    const label = `${p.title.toUpperCase()} · ${p.loc.toUpperCase()}`;
+    return `<a class="pc" href="property.html?id=${p.id}">
+      <div class="pc-image">
+        <div class="ph ${ph}" data-label="${label}"></div>
+        <button class="save-heart saved" onclick="event.preventDefault();const pid=parseInt(this.closest('a.pc').href.split('id=')[1],10);casaToggleSaved(pid,this);renderSavedGrid()"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
+      </div>
+      <div class="pc-body">
+        <div class="pc-row1">
+          <div class="pc-title">${p.title}, <i>${p.loc}</i></div>
+          <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> ${p.rating}</div>
+        </div>
+        <div class="pc-loc">${p.rLabel} · Sleeps ${p.sleeps}${pets}</div>
+        <div class="pc-price-row">
+          <div><span class="p-amt"><i>£${p.price}</i></span><span class="p-per"> / night</span></div>
+          <span class="pc-action">Enquire →</span>
+        </div>
+      </div>
+    </a>`;
+  }).join('');
+  const countEl = document.querySelector('.head-strip .stat .n, .saved-count');
+  if (countEl) countEl.textContent = ids.length;
+}
+document.addEventListener('DOMContentLoaded', renderSavedGrid);
+</script>
 <script src="casa-nav.js"></script>
+<script src="casa-seo.js"></script>
 <script src="casa.js"></script>
 </body>
 </html>

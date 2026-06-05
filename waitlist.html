@@ -436,8 +436,14 @@ async function submitWaitlist() {
   // Demo delay (remove when Google Form is live)
   await new Promise(r => setTimeout(r, 1200));
 
-  // Show success
-  waitlistCount++;
+  const region = currentRole === 'host'
+    ? document.getElementById('hostRegion').value
+    : document.getElementById('guestRegion').value;
+  const saved = casaSaveWaitlistEntry({
+    fname, lname, email, role: currentRole, region,
+    notes: document.getElementById('notes')?.value || '',
+  });
+  waitlistCount = saved.position + 48;
   document.getElementById('successEmail').textContent = email;
   document.getElementById('successPos').textContent = waitlistCount;
   document.getElementById('positionNum').textContent = waitlistCount;
@@ -458,9 +464,19 @@ document.querySelectorAll('.field input, .field select, .field textarea').forEac
 
 // Init guest fields visible
 document.getElementById('guestFields').style.display = 'block';
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.casaWaitlistCount) {
+    waitlistCount = 48 + casaWaitlistCount();
+    const pos = document.getElementById('positionNum');
+    if (pos) pos.textContent = waitlistCount + 1;
+  }
+});
 </script>
 
+<script src="casa-data.js"></script>
 <script src="casa-nav.js"></script>
+<script src="casa-seo.js"></script>
 <script src="casa.js"></script>
 </body>
 </html>

@@ -358,15 +358,48 @@ h1, h2, h3, h4, h5 { font-weight: 400; }
 }
 .casa-toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+.nav-menu-btn {
+  display: none; margin-left: auto;
+  width: 40px; height: 40px; border-radius: 10px;
+  border: 1px solid var(--rule); background: var(--surface);
+  color: var(--ink); cursor: pointer; align-items: center; justify-content: center;
+}
+.nav-menu-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+.casa-nav-backdrop {
+  position: fixed; inset: 0; background: rgba(22,20,15,0.35);
+  opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 80;
+}
+.casa-nav-backdrop.open { opacity: 1; pointer-events: auto; }
+.casa-nav-drawer {
+  position: fixed; top: 0; right: 0; width: min(320px, 88vw); height: 100vh;
+  background: var(--paper); border-left: 1px solid var(--rule);
+  transform: translateX(100%); transition: transform .22s ease; z-index: 90;
+  display: flex; flex-direction: column; padding: 18px;
+}
+.casa-nav-drawer.open { transform: translateX(0); }
+.cnd-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.cnd-title { font-family: var(--serif); font-style: italic; font-size: 24px; color: var(--brick); }
+.cnd-close { background: none; border: none; font-size: 28px; line-height: 1; color: var(--ink-3); cursor: pointer; }
+.cnd-links { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
+.cnd-link {
+  display: block; padding: 12px 14px; border-radius: 10px;
+  text-decoration: none; color: var(--ink-2); font-size: 15px;
+}
+.cnd-link:hover { background: var(--surface); color: var(--ink); }
+.cnd-link.primary { background: var(--ink); color: var(--paper); }
+body.casa-nav-open { overflow: hidden; }
+
 @media (max-width: 760px) {
   .casa-nav {
-    height: auto;
+    height: 64px;
     min-height: 64px;
-    align-items: flex-start;
-    padding: 14px 18px;
-    flex-wrap: wrap;
+    align-items: center;
+    padding: 0 18px;
+    flex-wrap: nowrap;
   }
-  .nav-right { width: 100%; overflow-x: auto; padding-bottom: 2px; }
+  .nav-menu-btn { display: inline-flex; }
+  .casa-nav .nav-right { display: none; }
+  .nav-host-meta { display: none; }
   .nav-link { white-space: nowrap; }
   .nav-center, .nav-search { order: 3; width: 100%; min-width: 0; overflow-x: auto; }
   .wrap, .wrap-wide { padding: 0 18px; }
