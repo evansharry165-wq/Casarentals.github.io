@@ -389,11 +389,7 @@
     });
   });
 
-  // ── Show welcome toast if redirected back ──
-  const qp = new URLSearchParams(location.search);
-  if (qp.get('welcome') && window.casaToast) {
-    setTimeout(() => casaToast('Welcome to Casa — you\'re all set 🏡'), 400);
-  }
+  // Welcome / signed-in toasts: handled by casa.js (?welcome=1, ?signedin=1)
 </script>
 
 <script src="casa.js"></script>
