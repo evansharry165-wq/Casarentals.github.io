@@ -117,7 +117,13 @@
   .rise-4 { animation:rise .45s .21s ease both; }
   @keyframes rise { from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)} }
   @media(max-width:1080px){.layout{grid-template-columns:1fr}.side{position:relative;top:auto;height:380px}}
-  @media(max-width:680px){.results{grid-template-columns:1fr}.head-strip h1{font-size:40px}.nav-search{display:none}.wrap{padding:0 16px}}
+  .filter-panel-wrap{grid-column:span 2}
+  .browse-context{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+  .browse-context .ctx-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--rule);font-size:12.5px;color:var(--ink-2)}
+  .browse-context .ctx-pill strong{font-family:var(--serif);font-style:italic;color:var(--brick);font-weight:400}
+  .browse-context .ctx-link{font-size:12.5px;color:var(--brick);text-decoration:none;font-weight:500}
+  .browse-context .ctx-link:hover{text-decoration:underline;text-underline-offset:2px}
+  @media(max-width:680px){.results{grid-template-columns:1fr}.head-strip h1{font-size:40px}.wrap{padding:0 16px}.filter-panel-wrap{grid-column:span 1}}
 </style>
 </head>
 <body>
@@ -237,9 +243,9 @@
     </div>
 
     <div class="filter-bar">
-      <button class="fb-pill" onclick="this.classList.toggle('active')">
+      <button class="fb-pill" id="filtersBtn" onclick="toggleFilterPanel()">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="M4 5h16l-6 8v6l-4-2v-4z"/></svg>
-        Filters
+        Filters <span id="filterCountBadge" style="font-family:var(--mono);font-size:10px;opacity:.6"></span>
       </button>
       <div class="fb-sep"></div>
       <button class="fb-pill" id="fpPets" onclick="togglePill(this,'pets')">🐾 Pet friendly</button>
@@ -257,6 +263,36 @@
         </select>
       </div>
     </div>
+
+    <div class="filter-panel" id="filterPanel">
+      <div class="fp-group">
+        <label>Location</label>
+        <input type="text" id="fpLocation" placeholder="Town, village, or area…" oninput="state.locationQuery=this.value;render()">
+      </div>
+      <div class="fp-group">
+        <label>Min price / night</label>
+        <input type="number" id="fpPriceMin" min="0" step="10" placeholder="£0" onchange="state.priceMin=parseInt(this.value)||0;render()">
+      </div>
+      <div class="fp-group">
+        <label>Max price / night</label>
+        <input type="number" id="fpPriceMax" min="0" step="10" placeholder="Any" onchange="state.priceMax=parseInt(this.value)||9999;render()">
+      </div>
+      <div class="fp-group">
+        <label>Min bedrooms</label>
+        <select id="fpBeds" onchange="state.beds=parseInt(this.value)||0;render()">
+          <option value="0">Any</option>
+          <option value="1">1+</option>
+          <option value="2">2+</option>
+          <option value="3">3+</option>
+          <option value="4">4+</option>
+        </select>
+      </div>
+      <div class="fp-actions">
+        <button class="fp-clear" type="button" onclick="clearAdvancedFilters()">Clear all filters</button>
+        <button class="fp-apply" type="button" onclick="toggleFilterPanel(false)">Show results</button>
+      </div>
+    </div>
+    <div class="active-filters" id="activeFilters"></div>
   </div>
 
   <div class="layout">
@@ -279,7 +315,7 @@
           <button title="Zoom in"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
           <button title="Zoom out"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
         </div>
-        <a href="map.html" class="open-map-btn">
+        <a href="map.html" class="open-map-btn" id="openMapBtn">
           <svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>
           Full map
         </a>
@@ -305,42 +341,125 @@
 </footer>
 
 <script src="casa-properties.js"></script>
+<script src="casa-regions.js"></script>
 <script src="casa.js"></script>
 <script>
 const PROPS = CASA_PROPERTIES;
-
-const REGION_META = {
-  'all':          {label:'All UK stays',italic:'All UK',mapTitle:'The whole <i>UK</i>',mapSub:'4,202 stays nationwide',from:'£85',avg:'£195',pins:[{x:'33%',y:'45%',p:'£95'},{x:'20%',y:'24%',p:'£195'},{x:'15%',y:'84%',p:'£155'},{x:'62%',y:'48%',p:'£110'},{x:'42%',y:'61%',p:'£195'},{x:'46%',y:'41%',p:'£160'},{x:'25%',y:'53%',p:'£145'},{x:'16%',y:'62%',p:'£175'},{x:'29%',y:'17%',p:'£165'}]},
-  'lake-district':{label:'The Lake District',italic:'Lake District',mapTitle:'The <i>Lake District</i>',mapSub:'214 stays · Cumbria',from:'£85',avg:'£175',pins:[{x:'36%',y:'44%',p:'£175'},{x:'32%',y:'46%',p:'£215'},{x:'34%',y:'48%',p:'£145'},{x:'31%',y:'43%',p:'£240'},{x:'30%',y:'45%',p:'£95'},{x:'33%',y:'47%',p:'£165'},{x:'35%',y:'49%',p:'£195'},{x:'33%',y:'50%',p:'£385'}]},
-  'cornwall':     {label:'Cornwall',italic:'Cornwall',mapTitle:'<i>Cornwall</i>',mapSub:'198 stays',from:'£90',avg:'£185',pins:[{x:'13%',y:'83%',p:'£155'},{x:'14%',y:'84%',p:'£210'},{x:'16%',y:'82%',p:'£320'},{x:'17%',y:'83%',p:'£175'},{x:'12%',y:'84%',p:'£115'},{x:'15%',y:'83%',p:'£185'}]},
-  'highlands':    {label:'Scottish Highlands',italic:'Scottish Highlands',mapTitle:'The <i>Highlands</i>',mapSub:'145 stays · Scotland',from:'£110',avg:'£195',pins:[{x:'24%',y:'28%',p:'£130'},{x:'28%',y:'26%',p:'£280'},{x:'22%',y:'23%',p:'£165'},{x:'20%',y:'22%',p:'£195'}]},
-  'norfolk':      {label:'Norfolk',italic:'Norfolk',mapTitle:'<i>Norfolk</i>',mapSub:'112 stays · East Anglia',from:'£95',avg:'£165',pins:[{x:'61%',y:'47%',p:'£450'},{x:'62%',y:'48%',p:'£195'},{x:'63%',y:'47%',p:'£145'},{x:'63%',y:'46%',p:'£110'}]},
-  'yorkshire':    {label:'Yorkshire',italic:'Yorkshire',mapTitle:'<i>Yorkshire</i>',mapSub:'98 stays',from:'£100',avg:'£170',pins:[{x:'42%',y:'42%',p:'£225'},{x:'46%',y:'40%',p:'£160'},{x:'48%',y:'39%',p:'£135'}]},
-  'cotswolds':    {label:'Cotswolds',italic:'Cotswolds',mapTitle:'The <i>Cotswolds</i>',mapSub:'87 stays · Gloucestershire',from:'£140',avg:'£195',pins:[{x:'41%',y:'61%',p:'£550'},{x:'42%',y:'60%',p:'£195'},{x:'40%',y:'60%',p:'£175'}]},
-  'skye':         {label:'Isle of Skye',italic:'Isle of Skye',mapTitle:'<i>Isle of Skye</i>',mapSub:'67 stays · Scotland',from:'£110',avg:'£210',pins:[{x:'18%',y:'24%',p:'£220'},{x:'19%',y:'25%',p:'£195'},{x:'17%',y:'23%',p:'£175'}]},
-  'pembrokeshire':{label:'Pembrokeshire',italic:'Pembrokeshire',mapTitle:'<i>Pembrokeshire</i>',mapSub:'48 stays · Wales',from:'£85',avg:'£155',pins:[{x:'16%',y:'62%',p:'£175'},{x:'15%',y:'63%',p:'£155'},{x:'14%',y:'63%',p:'£90'}]},
-  'snowdonia':    {label:'Snowdonia',italic:'Snowdonia',mapTitle:'<i>Snowdonia</i>',mapSub:'54 stays · Wales',from:'£95',avg:'£165',pins:[{x:'24%',y:'53%',p:'£185'},{x:'25%',y:'52%',p:'£145'},{x:'23%',y:'54%',p:'£120'}]},
-  'causeway':     {label:'Causeway Coast',italic:'Causeway Coast',mapTitle:'<i>Causeway Coast</i>',mapSub:'29 stays · N. Ireland',from:'£110',avg:'£175',pins:[{x:'28%',y:'16%',p:'£165'},{x:'30%',y:'18%',p:'£190'},{x:'27%',y:'17%',p:'£145'}]},
-};
+const MAP_VIEWBOX = { w: 460, h: 640 };
 
 const TAG_LABELS = {woodburner:'Wood burner',hottub:'Hot tub',pets:'Pets ok',seaview:'Sea view',offgrid:'Off-grid',garden:'Garden',parking:'Parking',sauna:'Sauna',riverside:'Riverside',romantic:'Romantic',fire:'Open fire'};
 const BADGE_CFG = {verified:{cls:'moss',text:'✓ Verified'},editors:{cls:'',text:"Editor's pick"},new:{cls:'ink',text:'New'}};
 
-let state = {region:'lake-district',type:'all',sort:'curated',filters:new Set()};
+let state = {
+  region:'lake-district', type:'all', sort:'curated', filters:new Set(),
+  guests:2, priceMin:0, priceMax:9999, beds:0, locationQuery:'',
+  page:1, perPage:8,
+};
 
 function getFiltered() {
   let p = PROPS.slice();
-  if(state.region!=='all') p=p.filter(x=>x.region===state.region);
-  if(state.type!=='all') p=p.filter(x=>x.type===state.type||x.tags.includes(state.type));
-  if(state.filters.has('pets'))    p=p.filter(x=>x.tags.includes('pets'));
-  if(state.filters.has('fire'))    p=p.filter(x=>x.tags.includes('woodburner'));
-  if(state.filters.has('sea'))     p=p.filter(x=>x.tags.includes('seaview'));
-  if(state.filters.has('tub'))     p=p.filter(x=>x.tags.includes('hottub'));
-  if(state.filters.has('offgrid')) p=p.filter(x=>x.tags.includes('offgrid'));
-  if(state.sort==='price-asc')  p=[...p].sort((a,b)=>a.price-b.price);
-  if(state.sort==='price-desc') p=[...p].sort((a,b)=>b.price-a.price);
-  if(state.sort==='rating')     p=[...p].sort((a,b)=>b.rating-a.rating);
+  if (state.region !== 'all') p = p.filter(x => x.region === state.region);
+  if (state.type !== 'all') {
+    if (state.type === 'lastminute') p = p.filter(x => x.badge === 'new' || x.price < 150);
+    else if (state.type === 'longstay') p = p.filter(x => x.sleeps >= 6);
+    else p = p.filter(x => x.type === state.type || x.tags.includes(state.type));
+  }
+  if (state.filters.has('pets')) p = p.filter(x => x.tags.includes('pets'));
+  if (state.filters.has('fire')) p = p.filter(x => x.tags.includes('woodburner'));
+  if (state.filters.has('sea')) p = p.filter(x => x.tags.includes('seaview'));
+  if (state.filters.has('tub')) p = p.filter(x => x.tags.includes('hottub'));
+  if (state.filters.has('offgrid')) p = p.filter(x => x.tags.includes('offgrid'));
+  if (state.guests) p = p.filter(x => x.sleeps >= state.guests);
+  if (state.beds) p = p.filter(x => x.beds >= state.beds);
+  if (state.priceMin) p = p.filter(x => x.price >= state.priceMin);
+  if (state.priceMax < 9999) p = p.filter(x => x.price <= state.priceMax);
+  if (state.locationQuery.trim()) {
+    const q = state.locationQuery.toLowerCase().trim();
+    p = p.filter(x =>
+      x.loc.toLowerCase().includes(q) ||
+      x.title.toLowerCase().includes(q) ||
+      x.rLabel.toLowerCase().includes(q)
+    );
+  }
+  if (state.sort === 'price-asc') p = [...p].sort((a, b) => a.price - b.price);
+  if (state.sort === 'price-desc') p = [...p].sort((a, b) => b.price - a.price);
+  if (state.sort === 'rating') p = [...p].sort((a, b) => b.rating - a.rating);
   return p;
+}
+
+function regionMeta(key) {
+  const r = getCasaRegion(key);
+  const regionProps = getCasaPropertiesByRegion(key);
+  const prices = regionProps.map(p => p.price);
+  const from = prices.length ? `£${Math.min(...prices)}` : r.from;
+  const avg = prices.length ? `£${Math.round(prices.reduce((a, b) => a + b, 0) / prices.length)}` : r.avg;
+  return {
+    label: r.browseLabel || r.label,
+    italic: r.italic,
+    mapTitle: r.mapTitle,
+    mapSub: r.mapSub || `${regionProps.length} stays`,
+    from,
+    avg,
+    feedKey: r.feedKey,
+    mapKey: r.mapKey || r.key,
+  };
+}
+
+function renderMiniMapPins(props) {
+  const pins = props.filter(p => p.mapX && p.mapY).slice(0, 12);
+  document.getElementById('mapPins').innerHTML = pins.map((pin, i) => {
+    const left = (pin.mapX / MAP_VIEWBOX.w) * 100;
+    const top = (pin.mapY / MAP_VIEWBOX.h) * 100;
+    return `<div class="pin${i === 0 ? ' active' : ''}" style="left:${left}%;top:${top}%" onclick="activatePin(this);window.location.href='property.html?id=${pin.id}'" title="${pin.title}, ${pin.loc}">£${pin.price}</div>`;
+  }).join('');
+}
+
+function renderActiveFilters() {
+  const chips = [];
+  if (state.guests > 1) chips.push({ label: `${state.guests} guests`, clear: () => { state.guests = 1; syncGuestInputs(1); render(); } });
+  if (state.beds) chips.push({ label: `${state.beds}+ beds`, clear: () => { state.beds = 0; document.getElementById('fpBeds').value = '0'; render(); } });
+  if (state.priceMin) chips.push({ label: `From £${state.priceMin}`, clear: () => { state.priceMin = 0; document.getElementById('fpPriceMin').value = ''; render(); } });
+  if (state.priceMax < 9999) chips.push({ label: `Up to £${state.priceMax}`, clear: () => { state.priceMax = 9999; document.getElementById('fpPriceMax').value = ''; render(); } });
+  if (state.locationQuery.trim()) chips.push({ label: `"${state.locationQuery.trim()}"`, clear: () => { state.locationQuery = ''; document.getElementById('fpLocation').value = ''; render(); } });
+  state.filters.forEach(f => {
+    const labels = { pets:'Pet friendly', fire:'Wood burner', sea:'Sea view', tub:'Hot tub', offgrid:'Off-grid' };
+    chips.push({ label: labels[f] || f, clear: () => { state.filters.delete(f); document.getElementById({pets:'fpPets',fire:'fpFire',sea:'fpSea',tub:'fpTub',offgrid:'fpOffgrid'}[f])?.classList.remove('active'); render(); } });
+  });
+  document.getElementById('activeFilters').innerHTML = chips.map((c, i) =>
+    `<button class="af-chip" onclick="clearChip(${i})">${c.label} ×</button>`
+  ).join('');
+  window._afChips = chips;
+  const advCount = chips.length;
+  document.getElementById('filterCountBadge').textContent = advCount ? `(${advCount})` : '';
+  document.getElementById('filtersBtn').classList.toggle('active', advCount > 0);
+}
+
+function clearChip(i) { window._afChips?.[i]?.clear?.(); }
+
+function toggleFilterPanel(force) {
+  const panel = document.getElementById('filterPanel');
+  const open = typeof force === 'boolean' ? force : !panel.classList.contains('open');
+  panel.classList.toggle('open', open);
+}
+
+function clearAdvancedFilters() {
+  state.priceMin = 0; state.priceMax = 9999; state.beds = 0; state.locationQuery = '';
+  state.filters.clear();
+  document.getElementById('fpLocation').value = '';
+  document.getElementById('fpPriceMin').value = '';
+  document.getElementById('fpPriceMax').value = '';
+  document.getElementById('fpBeds').value = '0';
+  ['fpPets','fpFire','fpSea','fpTub','fpOffgrid'].forEach(id => document.getElementById(id)?.classList.remove('active'));
+  state.page = 1;
+  render();
+}
+
+function syncGuestInputs(g) {
+  state.guests = g;
+  document.getElementById('navGuests').textContent = g + ' guest' + (g > 1 ? 's' : '');
+  document.getElementById('metaGuests').textContent = g + ' guest' + (g > 1 ? 's' : '');
+  const sel = document.getElementById('nsGuests');
+  if (sel) sel.value = String(g >= 12 ? 12 : g);
 }
 
 function card(p,i) {
@@ -357,41 +476,74 @@ function card(p,i) {
 }
 
 function render() {
-  const grid=document.getElementById('resultsGrid');
-  const props=getFiltered();
-  const meta=REGION_META[state.region]||REGION_META.all;
-  document.getElementById('pageTitle').innerHTML=`Stays in <i>${meta.italic}</i>`;
-  document.getElementById('crumbRegion').textContent=meta.label;
-  document.getElementById('resultCount').textContent=props.length+' stays';
-  document.getElementById('metaPrice').textContent=`From ${meta.from} · avg. ${meta.avg} / night`;
-  document.getElementById('fbCount').textContent=props.length+' stays';
-  document.getElementById('mapTitle').innerHTML=meta.mapTitle;
-  document.getElementById('mapSub').textContent=meta.mapSub;
-  document.getElementById('mapPins').innerHTML=meta.pins.map((pin,i)=>`<div class="pin${i===0?' active':''}" style="left:${pin.x};top:${pin.y}" onclick="activatePin(this)">${pin.p}</div>`).join('');
+  const grid = document.getElementById('resultsGrid');
+  const allProps = getFiltered();
+  const meta = regionMeta(state.region);
+  const totalPages = Math.max(1, Math.ceil(allProps.length / state.perPage));
+  if (state.page > totalPages) state.page = totalPages;
+  const start = (state.page - 1) * state.perPage;
+  const props = allProps.slice(start, start + state.perPage);
 
-  if(!props.length){
-    grid.innerHTML=`<div class="empty-state"><h3>No stays match those filters.</h3><p>Try clearing a filter, or browse another region:</p><div class="region-suggestions">
-      <a class="rs-card" onclick="setRegionKey('lake-district')"><div class="rs-name">Lake District</div><div class="rs-ct">214 stays</div></a>
-      <a class="rs-card" onclick="setRegionKey('cornwall')"><div class="rs-name">Cornwall</div><div class="rs-ct">198 stays</div></a>
-      <a class="rs-card" onclick="setRegionKey('highlands')"><div class="rs-name">Scottish Highlands</div><div class="rs-ct">145 stays</div></a>
-      <a class="rs-card" onclick="setRegionKey('norfolk')"><div class="rs-name">Norfolk</div><div class="rs-ct">112 stays</div></a>
-    </div></div>`;return;
+  document.getElementById('pageTitle').innerHTML = `Stays in <i>${meta.italic}</i>`;
+  document.getElementById('crumbRegion').textContent = meta.label;
+  document.getElementById('resultCount').textContent = allProps.length + ' stays';
+  document.getElementById('metaPrice').textContent = allProps.length
+    ? `From ${meta.from} · avg. ${meta.avg} / night`
+    : 'Adjust filters to see pricing';
+  document.getElementById('fbCount').textContent = allProps.length + ' stays';
+  document.getElementById('mapTitle').innerHTML = meta.mapTitle;
+  document.getElementById('mapSub').textContent = `${allProps.length} shown · ${meta.mapSub}`;
+  document.getElementById('openMapBtn').href = casaMapRegionUrl(meta.mapKey);
+  renderMiniMapPins(allProps);
+  renderActiveFilters();
+
+  if (!allProps.length) {
+    grid.innerHTML = `<div class="empty-state"><h3>No stays match those filters.</h3><p>Try clearing a filter, widening your dates, or browse another region:</p><div class="region-suggestions">
+      <a class="rs-card" onclick="setRegionKey('lake-district')"><div class="rs-name">Lake District</div><div class="rs-ct">${getCasaPropertiesByRegion('lake-district').length} stays</div></a>
+      <a class="rs-card" onclick="setRegionKey('cornwall')"><div class="rs-name">Cornwall</div><div class="rs-ct">${getCasaPropertiesByRegion('cornwall').length} stays</div></a>
+      <a class="rs-card" onclick="setRegionKey('highlands')"><div class="rs-name">Scottish Highlands</div><div class="rs-ct">${getCasaPropertiesByRegion('highlands').length} stays</div></a>
+      <a class="rs-card" onclick="setRegionKey('norfolk')"><div class="rs-name">Norfolk</div><div class="rs-ct">${getCasaPropertiesByRegion('norfolk').length} stays</div></a>
+    </div></div>`;
+    return;
   }
 
-  let html='';
-  props.forEach((p,i)=>{
-    if(i===4&&state.region==='all') html+=`<div class="featured-banner"><div><h3>Stays across <i>all of the UK.</i></h3><p>Lake District · Cornwall · Highlands · Norfolk · Yorkshire · and more.</p></div></div>`;
-    else if(i===4&&state.region!=='all') html+=`<div class="featured-banner"><div><h3>Also popular: <i>other UK regions.</i></h3><p>Cornwall · Scottish Highlands · Norfolk · Cotswolds.</p></div><button class="fb-cta" onclick="setRegionKey('all')">Browse all UK →</button></div>`;
-    html+=card(p,i%6);
+  let html = `<div class="browse-context filter-panel-wrap">
+    <span class="ctx-pill"><strong>${allProps.length}</strong> stays match</span>
+    <span class="ctx-pill">${state.guests} guest${state.guests > 1 ? 's' : ''}</span>
+    <a class="ctx-link" href="${casaFeedCountyUrl(meta.feedKey)}">See community posts →</a>
+    <a class="ctx-link" href="${casaMapRegionUrl(meta.mapKey)}">View on map →</a>
+  </div>`;
+
+  props.forEach((p, i) => {
+    if (i === 3 && state.region === 'all') html += `<div class="featured-banner filter-panel-wrap"><div><h3>Stays across <i>all of the UK.</i></h3><p>Lake District · Cornwall · Highlands · Norfolk · Yorkshire · and more.</p></div></div>`;
+    else if (i === 3 && state.region !== 'all') html += `<div class="featured-banner filter-panel-wrap"><div><h3>Also popular: <i>other UK regions.</i></h3><p>Cornwall · Scottish Highlands · Norfolk · Cotswolds.</p></div><button class="fb-cta" onclick="setRegionKey('all')">Browse all UK →</button></div>`;
+    html += card(p, i % 6);
   });
-  if(props.length>=6) html+=`<div class="load-more-row"><button class="load-more-btn" onclick="this.textContent='Showing all available stays in this view'">Load more stays</button></div>`;
-  grid.innerHTML=html;
+
+  if (allProps.length > state.perPage) {
+    const showing = Math.min(start + props.length, allProps.length);
+    html += `<div class="load-more-row filter-panel-wrap">
+      <button class="load-more-btn" onclick="loadMoreStays()" ${state.page >= totalPages ? 'disabled style="opacity:.5;cursor:default"' : ''}>
+        ${state.page >= totalPages ? `Showing all ${allProps.length} stays` : `Load more · ${showing} of ${allProps.length}`}
+      </button>
+    </div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function loadMoreStays() {
+  const allProps = getFiltered();
+  const totalPages = Math.ceil(allProps.length / state.perPage);
+  if (state.page < totalPages) { state.page++; render(); }
 }
 
 function setRegion(btn){
   document.querySelectorAll('.region-pill').forEach(p=>p.classList.remove('active'));
   btn.classList.add('active');
   state.region=btn.dataset.region;
+  state.page=1;
+  const m=regionMeta(state.region);
+  document.getElementById('navWhere').textContent=m.label;
   render();
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -403,11 +555,13 @@ function setType(tile){
   document.querySelectorAll('.cat-tile').forEach(t=>t.classList.remove('active'));
   tile.classList.add('active');
   state.type=tile.dataset.type;
+  state.page=1;
   render();
 }
 function togglePill(btn,filter){
   btn.classList.toggle('active');
   state.filters.has(filter)?state.filters.delete(filter):state.filters.add(filter);
+  state.page=1;
   render();
 }
 function sortAndRender(){state.sort=document.getElementById('sortSelect').value;render();}
@@ -417,22 +571,22 @@ function activatePin(pin){document.querySelectorAll('.mini-map .pin').forEach(p=
 const qp=new URLSearchParams(location.search);
 const urlR=qp.get('region')||qp.get('where');
 if(urlR){
-  const key=urlR.toLowerCase().replace(/\s+/g,'-');
-  const match=Object.keys(REGION_META).find(k=>k===key||REGION_META[k].italic.toLowerCase().includes(urlR.toLowerCase())||k.includes(key));
-  if(match){
-    state.region=match;
+  const resolved=resolveCasaRegionFromQuery(urlR)||getCasaRegion(urlR);
+  if(resolved&&resolved.key!=='all'){
+    state.region=resolved.browseKey||resolved.key;
     document.querySelectorAll('.region-pill').forEach(p=>p.classList.remove('active'));
-    const b=document.querySelector(`.region-pill[data-region="${match}"]`);
+    const b=document.querySelector(`.region-pill[data-region="${state.region}"]`);
     if(b)b.classList.add('active');
-    // Update nav where label
-    document.getElementById('navWhere').textContent=REGION_META[match]?.label||urlR;
+    document.getElementById('navWhere').textContent=resolved.browseLabel||resolved.label;
   }
 }
 if(qp.get('guests')){
   const g=parseInt(qp.get('guests'),10)||parseInt(String(qp.get('guests')).match(/\d+/)?.[0],10)||2;
-  document.getElementById('navGuests').textContent=g+' guest'+(g>1?'s':'');
-  const metaG=document.getElementById('metaGuests');
-  if(metaG) metaG.textContent=g+' guest'+(g>1?'s':'');
+  syncGuestInputs(g);
+}
+if(qp.get('loc')){
+  state.locationQuery=qp.get('loc');
+  document.getElementById('fpLocation').value=state.locationQuery;
 }
 if(qp.get('dates')){
   const dates=qp.get('dates');
@@ -458,6 +612,7 @@ function pickWhere(label, regionKey){
   document.getElementById('navWhere').textContent=label;
   document.getElementById('wherePanel').style.display='none';
   state.region=regionKey;
+  state.page=1;
   document.querySelectorAll('.region-pill').forEach(p=>p.classList.remove('active'));
   const b=document.querySelector(`.region-pill[data-region="${regionKey}"]`);
   if(b)b.classList.add('active');
@@ -483,24 +638,36 @@ function updateNavDate(which, val){
 }
 
 function updateNavGuests(val){
-  document.getElementById('navGuests').textContent=val+' guest'+(parseInt(val)>1?'s':'');
-  document.getElementById('metaGuests').textContent=val+' guest'+(parseInt(val)>1?'s':'');
+  const g=parseInt(val,10)||1;
+  syncGuestInputs(g);
+  state.page=1;
+  render();
 }
 
 function runNavSearch(){
   document.getElementById('wherePanel').style.display='none';
   const input=document.getElementById('whereInput')?.value?.trim();
+  state.page=1;
   if(input){
-    const REGION_MAP={'lake district':'lake-district','lakes':'lake-district','cumbria':'lake-district','windermere':'lake-district','keswick':'lake-district','cornwall':'cornwall','highlands':'highlands','highland':'highlands','scotland':'highlands','skye':'skye','isle of skye':'skye','norfolk':'norfolk','wells':'norfolk','yorkshire':'yorkshire','dales':'yorkshire','whitby':'yorkshire','cotswolds':'cotswolds','gloucestershire':'cotswolds','snowdonia':'snowdonia','wales':'snowdonia','pembrokeshire':'pembrokeshire','causeway':'causeway','antrim':'causeway','devon':'devon','dartmoor':'devon'};
-    const lc=input.toLowerCase();
-    let matched=null;
-    for(const [term,key] of Object.entries(REGION_MAP)){if(lc.includes(term)){matched=key;break;}}
-    if(matched){
-      state.region=matched;
+    const townMatch=searchCasaProperties(input, state.region);
+    if(townMatch.length===1){
+      state.locationQuery=input;
+      document.getElementById('fpLocation').value=input;
+    } else if(townMatch.length>1){
+      state.locationQuery=input;
+      document.getElementById('fpLocation').value=input;
+    }
+    const resolved=resolveCasaRegionFromQuery(input);
+    if(resolved&&resolved.key!=='all'){
+      state.region=resolved.browseKey||resolved.key;
       document.querySelectorAll('.region-pill').forEach(p=>p.classList.remove('active'));
-      const b=document.querySelector(`.region-pill[data-region="${matched}"]`);
+      const b=document.querySelector(`.region-pill[data-region="${state.region}"]`);
       if(b)b.classList.add('active');
-      document.getElementById('navWhere').textContent=REGION_META[matched]?.label||input;
+      document.getElementById('navWhere').textContent=resolved.browseLabel||resolved.label;
+    } else {
+      state.locationQuery=input;
+      document.getElementById('fpLocation').value=input;
+      document.getElementById('navWhere').textContent=input;
     }
   }
   render();
