@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join the waitlist — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+  html, body { min-height: 100vh; }
+
+  /* ── TWO COLUMN LAYOUT ── */
+  .wl-page { display: grid; grid-template-columns: 1fr 1fr; min-height: calc(100vh - 64px); }
+
+  /* ── LEFT: EDITORIAL ── */
+  .wl-left {
+    background: var(--ink); color: var(--paper);
+    padding: 64px 72px; display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  .wl-left::before {
+    content: ''; position: absolute; right: -120px; top: 30%;
+    width: 480px; height: 480px; border-radius: 50%;
+    background: radial-gradient(circle at center, rgba(176,85,51,0.18), transparent 65%);
+    pointer-events: none;
+  }
+  .wl-eyebrow { font-family: var(--mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: rgba(250,248,244,0.45); margin-bottom: 32px; }
+  .wl-left h1 { font-family: var(--serif); font-size: 72px; line-height: .92; letter-spacing: -.03em; margin-bottom: 24px; position: relative; }
+  .wl-left h1 i { font-style: italic; color: var(--brick-2); }
+  .wl-left .lede { font-family: var(--serif); font-size: 20px; line-height: 1.45; color: rgba(250,248,244,.75); max-width: 420px; position: relative; margin-bottom: 48px; }
+  .wl-left .lede i { font-style: italic; color: var(--brick-2); }
+
+  .proof-row { display: flex; gap: 32px; margin-bottom: 48px; position: relative; }
+  .proof-stat .n { font-family: var(--serif); font-style: italic; font-size: 42px; line-height: 1; color: var(--brick-2); }
+  .proof-stat .l { font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; color: rgba(250,248,244,.4); margin-top: 4px; }
+
+  .quote-block { border-left: 2px solid var(--brick); padding-left: 20px; position: relative; }
+  .quote-block p { font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1.5; color: rgba(250,248,244,.8); margin-bottom: 8px; }
+  .quote-block .qwho { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: rgba(250,248,244,.35); }
+
+  .host-avatars { display: flex; align-items: center; gap: 0; position: relative; }
+  .host-avatars .av { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--ink); display: inline-flex; align-items: center; justify-content: center; font-family: var(--serif); font-style: italic; font-size: 16px; color: white; margin-right: -10px; }
+  .host-avatars .av:nth-child(1) { background: var(--brick); }
+  .host-avatars .av:nth-child(2) { background: var(--moss); }
+  .host-avatars .av:nth-child(3) { background: #5A6078; }
+  .host-avatars .av:nth-child(4) { background: #78694A; }
+  .host-avatars .more { margin-left: 20px; font-size: 13px; color: rgba(250,248,244,.55); }
+
+  /* ── RIGHT: FORM ── */
+  .wl-right { background: var(--paper); padding: 64px 72px; display: flex; flex-direction: column; justify-content: center; }
+  .wl-right-inner { max-width: 440px; }
+
+  .role-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 32px; }
+  .role-card {
+    border: 1.5px solid var(--rule); border-radius: 14px; padding: 18px 16px;
+    cursor: pointer; transition: all .15s; text-align: left;
+  }
+  .role-card:hover { border-color: var(--rule-3); }
+  .role-card.sel { border-color: var(--brick); background: var(--brick-pale); }
+  .role-card .ri { width: 36px; height: 36px; border-radius: 10px; background: var(--ink); color: var(--paper); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .role-card.sel .ri { background: var(--brick); }
+  .role-card .ri svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+  .role-card .rt { font-family: var(--serif); font-size: 18px; margin-bottom: 4px; }
+  .role-card.sel .rt { color: var(--brick); }
+  .role-card .rd { font-size: 12px; color: var(--ink-3); line-height: 1.4; }
+
+  /* Form fields */
+  .field { margin-bottom: 14px; }
+  .field label { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); display: block; margin-bottom: 6px; }
+  .field label .req { color: var(--brick); }
+  .field input, .field select, .field textarea {
+    width: 100%; border: 1px solid var(--rule); background: var(--surface);
+    border-radius: 10px; padding: 11px 14px; font-family: var(--sans); font-size: 14px;
+    color: var(--ink); outline: none; transition: border-color .12s, box-shadow .12s;
+  }
+  .field input::placeholder, .field textarea::placeholder { color: var(--ink-4); }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--brick); box-shadow: 0 0 0 3px rgba(176,85,51,.07);
+  }
+  .field input.err { border-color: #C0392B; }
+  .field .err-msg { font-size: 12px; color: #C0392B; margin-top: 4px; display: none; }
+  .field.has-err .err-msg { display: block; }
+  .field.has-err input, .field.has-err select { border-color: #C0392B; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* Host-specific fields */
+  .host-fields { display: none; animation: fadeUp .3s ease; }
+  .host-fields.show { display: block; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+  .submit-btn {
+    width: 100%; background: var(--brick); color: white; border: none;
+    border-radius: 12px; padding: 16px; font-family: var(--sans); font-size: 15px;
+    font-weight: 500; cursor: pointer; display: flex; align-items: center;
+    justify-content: space-between; transition: background .12s; margin-top: 6px;
+  }
+  .submit-btn:hover:not(:disabled) { background: var(--brick-2); }
+  .submit-btn:disabled { opacity: .5; cursor: default; }
+  .submit-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  .submit-note { font-size: 12px; color: var(--ink-3); margin-top: 10px; text-align: center; line-height: 1.5; }
+
+  /* Loading */
+  .loading { display: none; position: fixed; inset: 0; background: rgba(250,248,244,.8); z-index: 100; align-items: center; justify-content: center; flex-direction: column; gap: 14px; backdrop-filter: blur(3px); }
+  .loading.show { display: flex; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--rule); border-top-color: var(--brick); border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading p { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--ink); }
+
+  /* Success */
+  .success-screen { display: none; }
+  .success-screen.show { display: block; animation: fadeUp .4s ease; }
+  .success-icon { width: 68px; height: 68px; background: var(--moss-pale); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+  .success-icon svg { width: 30px; height: 30px; stroke: var(--moss); fill: none; stroke-width: 1.6; }
+  .success-screen h2 { font-family: var(--serif); font-size: 48px; line-height: .95; letter-spacing: -.025em; margin-bottom: 10px; }
+  .success-screen h2 i { font-style: italic; color: var(--brick); }
+  .success-screen .lede { font-size: 15px; color: var(--ink-2); line-height: 1.6; max-width: 400px; margin-bottom: 24px; }
+  .success-screen .lede strong { color: var(--ink); font-weight: 500; }
+  .next-steps { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 18px; margin-bottom: 20px; }
+  .ns-head { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 12px; }
+  .ns-item { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--rule-2); }
+  .ns-item:last-child { border-bottom: none; }
+  .ns-num { width: 22px; height: 22px; border-radius: 50%; background: var(--brick); color: white; font-family: var(--mono); font-size: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .ns-item p { font-size: 13px; color: var(--ink-2); line-height: 1.5; }
+  .ns-item p strong { color: var(--ink); font-weight: 500; }
+  .success-btns { display: flex; gap: 10px; }
+
+  /* Position count badge */
+  .position-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--moss-pale); border: 1px solid rgba(77,92,64,.2); border-radius: 999px; padding: 5px 12px; font-size: 12.5px; color: var(--moss); margin-bottom: 20px; }
+  .position-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--moss); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+
+  @media (max-width: 960px) { .wl-page { grid-template-columns: 1fr; } .wl-left { padding: 48px 32px; } .wl-right { padding: 48px 32px; } .wl-left h1 { font-size: 52px; } .wl-right-inner { max-width: 100%; } }
+  @media (max-width: 560px) { .grid-2 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="loading" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p>Saving your place…</p>
+</div>
+
+<nav class="casa-nav solid">
+  <a class="brand-lockup" href="index.html">
+    <span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span>
+  </a>
+  <div class="nav-right">
+    <a class="nav-link" href="browse.html">Browse</a>
+    <a class="nav-link" href="feed.html">Feed</a>
+    <a class="nav-link" href="how-it-works.html">How it works</a>
+    <div style="width:1px;height:20px;background:var(--rule);margin:0 4px"></div>
+    <a class="nav-link" href="signup.html">Sign in</a>
+    <a class="nav-link primary" href="signup.html">Join free</a>
+  </div>
+</nav>
+
+<div class="wl-page">
+
+  <!-- LEFT: EDITORIAL -->
+  <div class="wl-left">
+    <div>
+      <div class="wl-eyebrow">Casa · Early access · 2026</div>
+      <h1>Be here <i>first.</i></h1>
+      <p class="lede">Casa is opening its doors region by region — starting with the <i>Lake District</i>. Join the waitlist and you'll be among the first hosts and guests on the platform.</p>
+
+      <div class="proof-row">
+        <div class="proof-stat"><div class="n">£0</div><div class="l">Guest fees</div></div>
+        <div class="proof-stat"><div class="n">0%</div><div class="l">Host commission</div></div>
+        <div class="proof-stat"><div class="n">£19</div><div class="l">Hosts / month</div></div>
+      </div>
+
+      <div class="quote-block" style="margin-bottom:40px">
+        <p>"I made an extra £8,200 last year switching to direct booking. Same guests, same nights — just no commission going somewhere else."</p>
+        <div class="qwho">Tom & Anna · Shepherd's Hut, Buttermere · Early host</div>
+      </div>
+
+      <div style="margin-bottom:12px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(250,248,244,.35)">Hosts already on the waitlist</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="host-avatars">
+          <div class="av">S</div>
+          <div class="av">F</div>
+          <div class="av">T</div>
+          <div class="av">B</div>
+        </div>
+        <span class="more">+ 47 more hosts waiting</span>
+      </div>
+    </div>
+
+    <div style="margin-top:48px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(250,248,244,.25)">
+      © 2026 Casa.co.uk · fee-free, always
+    </div>
+  </div>
+
+  <!-- RIGHT: FORM -->
+  <div class="wl-right">
+    <div class="wl-right-inner">
+
+      <!-- FORM STATE -->
+      <div id="formState">
+        <div class="position-badge">
+          <span class="dot"></span>
+          <span><strong id="positionNum">48</strong> people on the waitlist · <strong>Lake District opening first</strong></span>
+        </div>
+
+        <h2 style="font-family:var(--serif);font-size:40px;line-height:1;letter-spacing:-.02em;margin-bottom:6px">Get <i style="font-style:italic;color:var(--brick)">early access.</i></h2>
+        <p style="font-size:15px;color:var(--ink-2);margin-bottom:28px;line-height:1.5">Tell us a little about yourself. We'll be in touch as soon as we open your region.</p>
+
+        <!-- Role selector -->
+        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px">I am a…</div>
+        <div class="role-toggle">
+          <div class="role-card sel" id="roleGuest" onclick="pickRole('guest')">
+            <div class="ri"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+            <div class="rt">Guest</div>
+            <div class="rd">I'm looking for places to stay across the UK</div>
+          </div>
+          <div class="role-card" id="roleHost" onclick="pickRole('host')">
+            <div class="ri"><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/></svg></div>
+            <div class="rt">Host</div>
+            <div class="rd">I have a property to list — I want 0% commission</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field" id="f-fname">
+            <label>First name <span class="req">*</span></label>
+            <input type="text" id="fname" placeholder="James">
+            <span class="err-msg">Required</span>
+          </div>
+          <div class="field" id="f-lname">
+            <label>Last name <span class="req">*</span></label>
+            <input type="text" id="lname" placeholder="Harrison">
+            <span class="err-msg">Required</span>
+          </div>
+        </div>
+
+        <div class="field" id="f-email">
+          <label>Email address <span class="req">*</span></label>
+          <input type="email" id="email" placeholder="you@example.com">
+          <span class="err-msg">Please enter a valid email</span>
+        </div>
+
+        <!-- HOST ONLY FIELDS -->
+        <div class="host-fields" id="hostFields">
+          <div class="field">
+            <label>Property type</label>
+            <select id="propType">
+              <option value="">Select type…</option>
+              <option>Cottage</option>
+              <option>Farmhouse</option>
+              <option>Barn conversion</option>
+              <option>Lodge / cabin</option>
+              <option>Glamping</option>
+              <option>Manor / estate</option>
+              <option>Houseboat</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="field" id="f-region">
+            <label>Region <span class="req">*</span></label>
+            <select id="hostRegion">
+              <option value="">Select your region…</option>
+              <option>Lake District / Cumbria</option>
+              <option>Cornwall</option>
+              <option>Scottish Highlands</option>
+              <option>Norfolk</option>
+              <option>Yorkshire</option>
+              <option>Cotswolds</option>
+              <option>Isle of Skye</option>
+              <option>Snowdonia / Wales</option>
+              <option>Pembrokeshire</option>
+              <option>Causeway Coast / N. Ireland</option>
+              <option>Devon</option>
+              <option>Somewhere else</option>
+            </select>
+            <span class="err-msg">Please select your region</span>
+          </div>
+          <div class="field">
+            <label>Anything you'd like us to know?</label>
+            <textarea id="notes" rows="2" placeholder="e.g. I currently list on Airbnb and want to switch. Property sleeps 8…"></textarea>
+          </div>
+        </div>
+
+        <!-- GUEST ONLY FIELDS -->
+        <div class="guest-fields" id="guestFields">
+          <div class="field">
+            <label>Where are you hoping to stay?</label>
+            <select id="guestRegion">
+              <option value="">Select a region…</option>
+              <option>Lake District</option>
+              <option>Cornwall</option>
+              <option>Scottish Highlands</option>
+              <option>Norfolk</option>
+              <option>Yorkshire</option>
+              <option>Cotswolds</option>
+              <option>Isle of Skye</option>
+              <option>Snowdonia</option>
+              <option>Pembrokeshire</option>
+              <option>Causeway Coast</option>
+              <option>Devon</option>
+              <option>Not sure yet</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="submit-btn" id="submitBtn" onclick="submitWaitlist()">
+          Join the waitlist
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </button>
+        <p class="submit-note">No spam — ever. We'll email you once, when your region opens. Unsubscribe any time.</p>
+      </div>
+
+      <!-- SUCCESS STATE -->
+      <div class="success-screen" id="successState">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg>
+        </div>
+        <h2>You're <i>on the list.</i></h2>
+        <p class="lede">We'll email you at <strong id="successEmail">you@example.com</strong> the moment Casa opens in your area. You're number <strong id="successPos">49</strong> on the waitlist.</p>
+
+        <div class="next-steps">
+          <div class="ns-head">What happens next</div>
+          <div class="ns-item">
+            <div class="ns-num">1</div>
+            <p><strong>We open the Lake District first</strong> — personally onboarding the first 20 hosts. If that's you, we'll be in touch directly.</p>
+          </div>
+          <div class="ns-item" id="hostNextStep" style="display:none">
+            <div class="ns-num">2</div>
+            <p><strong>Your listing goes live</strong> — we'll help you set it up. £0 for the first month, then £19/month flat. No commission ever.</p>
+          </div>
+          <div class="ns-item" id="guestNextStep">
+            <div class="ns-num">2</div>
+            <p><strong>You'll be first to browse</strong> when stays go live in your region — direct to the host, zero booking fees.</p>
+          </div>
+          <div class="ns-item">
+            <div class="ns-num" id="finalStepNum">3</div>
+            <p><strong>Share Casa with someone</strong> — the more hosts and guests we have, the faster each region opens.</p>
+          </div>
+        </div>
+
+        <div class="success-btns">
+          <a href="index.html" class="btn btn-primary">Back to Casa<svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+          <a href="feed.html" class="btn btn-outline">Explore the feed</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+let currentRole = 'guest';
+let waitlistCount = 48;
+
+function pickRole(role) {
+  currentRole = role;
+  document.getElementById('roleGuest').classList.toggle('sel', role === 'guest');
+  document.getElementById('roleHost').classList.toggle('sel', role === 'host');
+  document.getElementById('hostFields').classList.toggle('show', role === 'host');
+  document.getElementById('guestFields').style.display = role === 'guest' ? 'block' : 'none';
+}
+
+// ═══════════════════════════════════════════════════════════
+// SUBMIT — POSTs to Google Form
+//
+// TO CONNECT TO YOUR GOOGLE FORM:
+// 1. Create a Google Form with fields:
+//    - First name (Short answer) → note the entry ID e.g. entry.123456
+//    - Last name                 → entry.234567
+//    - Email                     → entry.345678
+//    - Role (host/guest)         → entry.456789
+//    - Region                    → entry.567890
+//    - Property type             → entry.678901
+//    - Notes                     → entry.789012
+//
+// 2. Replace FORM_ID and ENTRY_IDs below with your actual values
+//    (Get them from the form's pre-filled link: Responses tab → ⋮ → Get pre-filled link)
+//
+// 3. The form will POST to Google, data lands in your Sheet automatically.
+// ═══════════════════════════════════════════════════════════
+const FORM_ID    = 'YOUR_FORM_ID_HERE';
+const ENTRY_FNAME = 'entry.XXXXXXX';
+const ENTRY_LNAME = 'entry.XXXXXXX';
+const ENTRY_EMAIL = 'entry.XXXXXXX';
+const ENTRY_ROLE  = 'entry.XXXXXXX';
+const ENTRY_REGION= 'entry.XXXXXXX';
+const ENTRY_PTYPE = 'entry.XXXXXXX';
+const ENTRY_NOTES = 'entry.XXXXXXX';
+
+async function submitWaitlist() {
+  // Validate
+  const fname = document.getElementById('fname').value.trim();
+  const lname = document.getElementById('lname').value.trim();
+  const email = document.getElementById('email').value.trim();
+
+  let ok = true;
+  const check = (fid, iid, fn) => {
+    const f = document.getElementById(fid);
+    const passes = fn(document.getElementById(iid).value.trim());
+    f.classList.toggle('has-err', !passes);
+    if (!passes) ok = false;
+  };
+  check('f-fname', 'fname', v => v.length > 0);
+  check('f-lname', 'lname', v => v.length > 0);
+  check('f-email', 'email', v => v.includes('@') && v.includes('.'));
+
+  if (currentRole === 'host') {
+    const region = document.getElementById('hostRegion').value;
+    const f = document.getElementById('f-region');
+    f.classList.toggle('has-err', !region);
+    if (!region) ok = false;
+  }
+
+  if (!ok) {
+    document.querySelector('.has-err')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  // Loading
+  document.getElementById('loadingOverlay').classList.add('show');
+  document.getElementById('submitBtn').disabled = true;
+
+  // ── POST TO GOOGLE FORM ──
+  // Comment this block out until you've filled in your Form ID and entry IDs above.
+  /*
+  try {
+    const region = currentRole === 'host'
+      ? document.getElementById('hostRegion').value
+      : document.getElementById('guestRegion').value;
+
+    const formData = new FormData();
+    formData.append(ENTRY_FNAME,  fname);
+    formData.append(ENTRY_LNAME,  lname);
+    formData.append(ENTRY_EMAIL,  email);
+    formData.append(ENTRY_ROLE,   currentRole);
+    formData.append(ENTRY_REGION, region);
+    formData.append(ENTRY_PTYPE,  document.getElementById('propType')?.value || '');
+    formData.append(ENTRY_NOTES,  document.getElementById('notes')?.value || '');
+
+    await fetch(`https://docs.google.com/forms/d/${FORM_ID}/formResponse`, {
+      method: 'POST', body: formData, mode: 'no-cors'
+    });
+  } catch(e) { console.log('Form submission:', e); }
+  */
+
+  // Demo delay (remove when Google Form is live)
+  await new Promise(r => setTimeout(r, 1200));
+
+  // Show success
+  waitlistCount++;
+  document.getElementById('successEmail').textContent = email;
+  document.getElementById('successPos').textContent = waitlistCount;
+  document.getElementById('positionNum').textContent = waitlistCount;
+  document.getElementById('hostNextStep').style.display = currentRole === 'host' ? 'flex' : 'none';
+  document.getElementById('guestNextStep').style.display = currentRole === 'guest' ? 'flex' : 'none';
+  document.getElementById('finalStepNum').textContent = currentRole === 'host' ? '3' : '3';
+
+  document.getElementById('loadingOverlay').classList.remove('show');
+  document.getElementById('formState').style.display = 'none';
+  document.getElementById('successState').classList.add('show');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Clear field errors on input
+document.querySelectorAll('.field input, .field select, .field textarea').forEach(el => {
+  el.addEventListener('input', () => el.closest('.field')?.classList.remove('has-err'));
+});
+
+// Init guest fields visible
+document.getElementById('guestFields').style.display = 'block';
+</script>
+
+<script src="casa.js"></script>
+</body>
+</html>

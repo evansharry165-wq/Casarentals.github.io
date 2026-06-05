@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enquire to book — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+
+  /* ── NAV ── */
+  .nav-back-btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13px; color: var(--ink-2); text-decoration: none;
+    padding: 8px 14px; border: 1px solid var(--rule); border-radius: 999px;
+    transition: all .12s;
+  }
+  .nav-back-btn:hover { border-color: var(--ink); color: var(--ink); }
+  .nav-back-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.7; }
+
+  /* ── PAGE LAYOUT ── */
+  .b-wrap {
+    max-width: 1100px; margin: 0 auto; padding: 36px 32px 80px;
+    display: grid; grid-template-columns: 1fr 380px; gap: 56px; align-items: start;
+  }
+
+  /* ── BREADCRUMB ── */
+  .crumb { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 20px; }
+  .crumb a { color: var(--ink-3); text-decoration: none; }
+  .crumb a:hover { color: var(--brick); }
+  .crumb .sep { margin: 0 8px; color: var(--rule-3); }
+
+  /* ── PAGE HEADER ── */
+  .b-head { margin-bottom: 32px; }
+  .b-head h1 { font-family: var(--serif); font-size: 56px; line-height: 0.95; letter-spacing: -0.025em; margin-bottom: 10px; }
+  .b-head h1 i { font-style: italic; color: var(--brick); }
+  .b-head p { font-family: var(--serif); font-size: 18px; line-height: 1.5; color: var(--ink-2); max-width: 500px; }
+  .b-head p i { font-style: italic; color: var(--brick); }
+
+  /* ── STEP INDICATOR ── */
+  .steps {
+    display: flex; gap: 0; margin-bottom: 32px;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 14px;
+    padding: 12px 16px; align-items: center;
+  }
+  .step { display: flex; align-items: center; gap: 9px; flex: 1; }
+  .step + .step::before {
+    content: ''; display: block; width: 1px; height: 20px;
+    background: var(--rule); margin-right: 16px; flex-shrink: 0;
+  }
+  .step-num {
+    width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--mono); font-size: 11px; font-weight: 500;
+    background: var(--paper-2); color: var(--ink-3);
+    transition: all .2s;
+  }
+  .step.active .step-num { background: var(--brick); color: white; }
+  .step.done .step-num { background: var(--moss); color: white; }
+  .step-lbl { font-size: 13px; color: var(--ink-3); transition: color .2s; }
+  .step.active .step-lbl { color: var(--ink); font-weight: 500; }
+  .step.done .step-lbl { color: var(--moss); }
+
+  /* ── FORM SECTIONS ── */
+  .form-section {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 18px; padding: 24px 24px 20px; margin-bottom: 14px;
+    transition: border-color .15s;
+  }
+  .form-section:focus-within { border-color: var(--rule-3); }
+  .section-eye {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-3); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-eye .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brick); }
+
+  /* ── FIELDS ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .grid-2:last-child { margin-bottom: 0; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  .field label .req { color: var(--brick); margin-left: 2px; }
+
+  .field input, .field select, .field textarea {
+    background: var(--paper); border: 1px solid var(--rule);
+    border-radius: 10px; padding: 11px 14px;
+    font-family: var(--sans); font-size: 14px; color: var(--ink);
+    outline: none; transition: border-color .12s, box-shadow .12s;
+    width: 100%;
+  }
+  .field input::placeholder, .field textarea::placeholder { color: var(--ink-4); }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--brick); box-shadow: 0 0 0 3px rgba(176,85,51,0.08);
+  }
+  .field input.error, .field select.error, .field textarea.error {
+    border-color: #C0392B; box-shadow: 0 0 0 3px rgba(192,57,43,0.08);
+  }
+  .field textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
+  .field .hint { font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+  .field .err-msg { font-size: 12px; color: #C0392B; display: none; }
+  .field.has-error .err-msg { display: block; }
+  .field.has-error input, .field.has-error select, .field.has-error textarea { border-color: #C0392B; }
+
+  /* ── GUEST COUNT STEPPER ── */
+  .guest-stepper {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--paper); border: 1px solid var(--rule); border-radius: 10px;
+    padding: 10px 14px;
+  }
+  .gs-label { font-size: 14px; color: var(--ink); }
+  .gs-ctl { display: flex; align-items: center; gap: 12px; }
+  .gs-btn {
+    width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--rule);
+    background: var(--surface); display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: all .12s; color: var(--ink-2);
+  }
+  .gs-btn:hover:not(:disabled) { border-color: var(--ink); color: var(--ink); }
+  .gs-btn:disabled { opacity: 0.3; cursor: default; }
+  .gs-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .gs-val { font-family: var(--serif); font-style: italic; font-size: 22px; color: var(--brick); min-width: 24px; text-align: center; }
+
+  /* ── PETS TOGGLE ── */
+  .pet-row { display: flex; align-items: center; justify-content: space-between; padding: 2px 0; }
+  .pet-row label { font-size: 14px; color: var(--ink-2); }
+  .toggle { position: relative; width: 44px; height: 24px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-track {
+    position: absolute; inset: 0; background: var(--rule); border-radius: 12px;
+    cursor: pointer; transition: background .2s;
+  }
+  .toggle input:checked + .toggle-track { background: var(--moss); }
+  .toggle-track::after {
+    content: ''; position: absolute; width: 18px; height: 18px; border-radius: 50%;
+    background: white; top: 3px; left: 3px; transition: transform .2s;
+    box-shadow: 0 1px 4px rgba(22,20,15,0.15);
+  }
+  .toggle input:checked + .toggle-track::after { transform: translateX(20px); }
+
+  /* ── MESSAGE CHAR COUNT ── */
+  .msg-wrap { position: relative; }
+  .char-count { position: absolute; bottom: 10px; right: 12px; font-family: var(--mono); font-size: 10px; letter-spacing: .08em; color: var(--ink-4); pointer-events: none; }
+  .char-count.warn { color: var(--brick); }
+
+  /* ── TRUST STRIP ── */
+  .trust-strip {
+    background: var(--moss-pale); border: 1px solid rgba(15,110,86,0.15);
+    border-radius: 14px; padding: 14px 18px; margin-bottom: 14px;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .trust-strip svg { width: 18px; height: 18px; stroke: var(--moss); fill: none; stroke-width: 1.6; flex-shrink: 0; margin-top: 1px; }
+  .trust-strip p { font-size: 13px; color: var(--moss); line-height: 1.55; }
+  .trust-strip p strong { font-weight: 500; }
+
+  .lock-strip {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 12px 16px; margin-bottom: 14px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .lock-strip svg { width: 15px; height: 15px; stroke: var(--ink-3); fill: none; stroke-width: 1.6; flex-shrink: 0; margin-top: 2px; }
+  .lock-strip p { font-size: 12.5px; color: var(--ink-3); line-height: 1.55; }
+
+  /* ── CONSENT ── */
+  .consent-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--rule-2);
+  }
+  .consent-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .consent-item input[type="checkbox"] {
+    width: 16px; height: 16px; margin-top: 2px;
+    accent-color: var(--brick); flex-shrink: 0; cursor: pointer;
+  }
+  .consent-item span { font-size: 13px; color: var(--ink-2); line-height: 1.55; }
+  .consent-item a { color: var(--brick); text-decoration: none; }
+  .consent-item a:hover { text-decoration: underline; }
+  .consent-item.error-consent span { color: #C0392B; }
+
+  /* ── SUBMIT BUTTON ── */
+  .submit-btn {
+    width: 100%; background: var(--brick); color: white;
+    border: none; border-radius: 14px; padding: 18px 28px;
+    font-family: var(--sans); font-size: 16px; font-weight: 500;
+    cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; transition: background .12s; margin-top: 16px;
+  }
+  .submit-btn:hover:not(:disabled) { background: var(--brick-2); }
+  .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+  .submit-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+  .submit-note { text-align: center; font-size: 12.5px; color: var(--ink-3); margin-top: 10px; line-height: 1.5; }
+
+  /* ── LOADING STATE ── */
+  .loading-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(250,248,244,0.85);
+    z-index: 100; align-items: center; justify-content: center; flex-direction: column; gap: 16px;
+    backdrop-filter: blur(2px);
+  }
+  .loading-overlay.show { display: flex; }
+  .spinner {
+    width: 36px; height: 36px; border: 3px solid var(--rule);
+    border-top-color: var(--brick); border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-overlay p { font-family: var(--serif); font-style: italic; font-size: 18px; color: var(--ink); }
+
+  /* ── SUCCESS SCREEN ── */
+  .success-screen { display: none; }
+  .success-screen.show { display: block; }
+  .success-icon {
+    width: 72px; height: 72px; background: var(--moss-pale); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;
+  }
+  .success-icon svg { width: 32px; height: 32px; stroke: var(--moss); fill: none; stroke-width: 1.6; }
+  .success-screen h2 { font-family: var(--serif); font-size: 52px; line-height: 0.95; letter-spacing: -0.025em; text-align: center; margin-bottom: 12px; }
+  .success-screen h2 i { font-style: italic; color: var(--brick); }
+  .success-screen .lede { font-family: var(--serif); font-size: 18px; line-height: 1.5; color: var(--ink-2); text-align: center; max-width: 460px; margin: 0 auto 32px; }
+  .success-recap {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 16px;
+    overflow: hidden; margin-bottom: 20px;
+  }
+  .recap-head { background: var(--ink); color: var(--paper); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .recap-head .ref { font-family: var(--mono); font-size: 13px; letter-spacing: .12em; color: var(--brick-2); }
+  .recap-head .sent { font-size: 12px; color: rgba(255,255,255,0.5); }
+  .recap-row { display: flex; justify-content: space-between; align-items: baseline; padding: 11px 20px; border-bottom: 1px solid var(--rule); font-size: 13.5px; }
+  .recap-row:last-child { border-bottom: none; }
+  .recap-row .l { color: var(--ink-3); }
+  .recap-row .v { color: var(--ink); font-weight: 500; }
+  .recap-row .v.green { color: var(--moss); }
+  .next-steps { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 20px; margin-bottom: 24px; }
+  .ns-head { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px; }
+  .ns-item { display: flex; gap: 12px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid var(--rule-2); }
+  .ns-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .ns-num { width: 22px; height: 22px; border-radius: 50%; background: var(--brick); color: white; font-family: var(--mono); font-size: 11px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .ns-item p { font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
+  .ns-item p strong { color: var(--ink); font-weight: 500; }
+  .success-actions { display: flex; gap: 12px; justify-content: center; }
+  .btn-primary { background: var(--brick); color: white; padding: 14px 28px; border-radius: 12px; text-decoration: none; font-size: 14px; font-weight: 500; transition: background .12s; display: inline-flex; align-items: center; gap: 8px; }
+  .btn-primary:hover { background: var(--brick-2); }
+  .btn-primary svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .btn-outline { background: transparent; color: var(--ink-2); padding: 14px 24px; border-radius: 12px; text-decoration: none; font-size: 14px; border: 1px solid var(--rule); transition: all .12s; display: inline-flex; align-items: center; gap: 8px; }
+  .btn-outline:hover { border-color: var(--ink); color: var(--ink); }
+
+  /* ── RIGHT SIDEBAR ── */
+  .pside { position: sticky; top: 88px; }
+  .prop-card {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 18px; overflow: hidden; margin-bottom: 14px;
+  }
+  .pc-img { aspect-ratio: 16/9; position: relative; }
+  .pc-img .ph { width: 100%; height: 100%; }
+  .pc-img .badge-row { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px; }
+  .pc-body { padding: 18px 20px; }
+  .pc-host-row { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--rule-2); margin-bottom: 14px; }
+  .pc-av { width: 38px; height: 38px; border-radius: 50%; background: var(--brick); color: white; display: inline-flex; align-items: center; justify-content: center; font-family: var(--serif); font-style: italic; font-size: 16px; flex-shrink: 0; }
+  .pc-hname { font-size: 13.5px; font-weight: 500; color: var(--ink); }
+  .pc-hmeta { font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+  .pc-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+  .pc-stat { background: var(--paper); border-radius: 10px; padding: 10px 8px; text-align: center; }
+  .pc-stat .n { font-family: var(--serif); font-style: italic; font-size: 22px; color: var(--brick); line-height: 1; }
+  .pc-stat .l { font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); margin-top: 4px; }
+  .price-breakdown { border-top: 1px solid var(--rule); padding-top: 14px; }
+  .pb-row { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--ink-2); padding: 5px 0; }
+  .pb-row.fee { color: var(--moss); }
+  .pb-row.save { font-size: 12px; color: var(--moss); }
+  .pb-row.total { border-top: 1px solid var(--rule); margin-top: 6px; padding-top: 10px; font-weight: 500; color: var(--ink); }
+  .pb-row.total .v { font-family: var(--serif); font-style: italic; font-size: 20px; color: var(--brick); }
+
+  .sidebar-note {
+    font-size: 12px; color: var(--ink-3); line-height: 1.6; text-align: center;
+    padding: 12px 16px; background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 12px;
+  }
+
+  @media (max-width: 880px) {
+    .b-wrap { grid-template-columns: 1fr; gap: 32px; }
+    .pside { position: relative; top: auto; }
+    .b-head h1 { font-size: 42px; }
+  }
+  @media (max-width: 560px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .b-wrap { padding: 24px 20px 60px; }
+    .steps { flex-wrap: wrap; gap: 8px; }
+    .step + .step::before { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="casa-nav">
+  <a class="brand-lockup" href="index.html">
+    <span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span>
+  </a>
+  <div class="nav-right">
+    <a class="nav-back-btn" href="property.html">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M11 5l-7 7 7 7"/></svg>
+      Back to property
+    </a>
+  </div>
+</nav>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <p>Sending your enquiry…</p>
+</div>
+
+<div class="b-wrap">
+
+  <!-- LEFT: FORM + SUCCESS -->
+  <div>
+
+    <!-- FORM STATE -->
+    <div id="formWrap">
+
+      <div class="crumb">
+        <a href="index.html">Casa</a><span class="sep">/</span>
+        <a href="browse.html">Browse</a><span class="sep">/</span>
+        <a href="property.html" id="crumbProp">Stone Cottage, Windermere</a><span class="sep">/</span>
+        <span style="color:var(--ink)">Enquire</span>
+      </div>
+
+      <div class="b-head">
+        <h1>Send <i id="hostFirstName">Sarah</i> an enquiry.</h1>
+        <p>Your message goes <i>straight to her inbox</i> — not ours, not a call centre's. She'll reply directly.</p>
+      </div>
+
+      <div class="steps">
+        <div class="step active" id="s1"><div class="step-num">1</div><div class="step-lbl">Your trip</div></div>
+        <div class="step" id="s2"><div class="step-num">2</div><div class="step-lbl">About you</div></div>
+        <div class="step" id="s3"><div class="step-num">3</div><div class="step-lbl">Message</div></div>
+      </div>
+
+      <!-- ── STEP 1: TRIP DETAILS ── -->
+      <div class="form-section">
+        <div class="section-eye"><span class="dot"></span> Step 01 — Your trip</div>
+
+        <div class="grid-2">
+          <div class="field" id="f-checkin">
+            <label>Check in <span class="req">*</span></label>
+            <input type="date" id="checkin" onchange="updatePricing(); progressStep()">
+            <span class="err-msg">Please choose a check-in date</span>
+          </div>
+          <div class="field" id="f-checkout">
+            <label>Check out <span class="req">*</span></label>
+            <input type="date" id="checkout" onchange="updatePricing(); progressStep()">
+            <span class="err-msg">Please choose a check-out date</span>
+          </div>
+        </div>
+
+        <div class="field" id="f-guests" style="margin-bottom:14px">
+          <label>Guests <span class="req">*</span></label>
+          <div class="guest-stepper">
+            <span class="gs-label" id="guestLabel">2 guests</span>
+            <div class="gs-ctl">
+              <button class="gs-btn" onclick="changeGuests(-1)" id="gMinus">
+                <svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
+              </button>
+              <span class="gs-val" id="guestCount">2</span>
+              <button class="gs-btn" onclick="changeGuests(1)">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+              </button>
+            </div>
+          </div>
+          <span class="err-msg">Please select your guest count</span>
+        </div>
+
+        <div class="field">
+          <label>Pets</label>
+          <div class="pet-row">
+            <span style="font-size:14px;color:var(--ink-2)">Bringing a pet?</span>
+            <label class="toggle">
+              <input type="checkbox" id="pets" onchange="progressStep()">
+              <div class="toggle-track"></div>
+            </label>
+          </div>
+          <span class="hint">This property welcomes pets. Let the host know in your message what you're bringing.</span>
+        </div>
+      </div>
+
+      <!-- ── STEP 2: CONTACT DETAILS ── -->
+      <div class="form-section">
+        <div class="section-eye"><span class="dot"></span> Step 02 — About you</div>
+
+        <div class="grid-2">
+          <div class="field" id="f-fname">
+            <label>First name <span class="req">*</span></label>
+            <input type="text" id="fname" placeholder="James" oninput="progressStep()">
+            <span class="err-msg">Please enter your first name</span>
+          </div>
+          <div class="field" id="f-lname">
+            <label>Last name <span class="req">*</span></label>
+            <input type="text" id="lname" placeholder="Harrison" oninput="progressStep()">
+            <span class="err-msg">Please enter your last name</span>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="field" id="f-email">
+            <label>Email address <span class="req">*</span></label>
+            <input type="email" id="email" placeholder="you@example.com" oninput="progressStep()">
+            <span class="hint">The host will reply to this address</span>
+            <span class="err-msg">Please enter a valid email address</span>
+          </div>
+          <div class="field" id="f-phone">
+            <label>Phone number</label>
+            <input type="tel" id="phone" placeholder="+44 7700 000000">
+            <span class="hint">Optional — some hosts prefer to call</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── STEP 3: MESSAGE ── -->
+      <div class="form-section">
+        <div class="section-eye"><span class="dot"></span> Step 03 — Your message</div>
+
+        <div class="field" id="f-message" style="margin-bottom:14px">
+          <label>Introduce yourself and your trip <span class="req">*</span></label>
+          <div class="msg-wrap">
+            <textarea id="message" placeholder="Hi Sarah, I'm looking to stay with my partner and two children for a week in July. We love walking and would love to explore the fells. A couple of questions — is the garden fully enclosed for kids? And do you have a cot we could borrow?" oninput="updateCharCount(); progressStep()"></textarea>
+            <span class="char-count" id="charCount">0 / 1000</span>
+          </div>
+          <span class="hint">The more context you give, the quicker the host can reply. Mention who's coming, why you're visiting, and any questions.</span>
+          <span class="err-msg">Please write a message to the host (at least 20 characters)</span>
+        </div>
+
+        <div class="field" id="f-special">
+          <label>Special requests</label>
+          <textarea id="special" placeholder="e.g. early check-in on arrival day, cot for a 1-year-old, wheelchair accessible bathroom…" style="min-height:80px"></textarea>
+          <span class="hint">Not guaranteed, but the host will do their best.</span>
+        </div>
+      </div>
+
+      <!-- TRUST STRIP -->
+      <div class="trust-strip">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <p><strong>Your enquiry goes directly to the host.</strong> Casa never sees your payment details — all payments are agreed and made directly between you and the host. There is no charge to enquire.</p>
+      </div>
+
+      <div class="lock-strip">
+        <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <p>Your contact details are shared only with this host once you send your enquiry. We don't store or sell your information. See our <a href="#" style="color:var(--brick)">privacy policy</a>.</p>
+      </div>
+
+      <!-- CONSENT -->
+      <div class="form-section">
+        <div class="section-eye"><span class="dot"></span> Before you send</div>
+        <div class="consent-item" id="ci-1">
+          <input type="checkbox" id="c1">
+          <span>I agree to Casa's <a href="#">community guidelines</a> and <a href="#">terms of use</a>. I understand this is a direct enquiry to the host, not a confirmed booking.</span>
+        </div>
+        <div class="consent-item" id="ci-2">
+          <input type="checkbox" id="c2">
+          <span>I understand that payment will be arranged directly with the host. Casa does not process or hold any funds on either side.</span>
+        </div>
+        <div class="consent-item" id="ci-3">
+          <input type="checkbox" id="c3">
+          <span>I'm happy for my contact details to be shared with this host to facilitate my enquiry.</span>
+        </div>
+      </div>
+
+      <button class="submit-btn" onclick="submitEnquiry()" id="submitBtn">
+        Send enquiry to Sarah
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </button>
+      <p class="submit-note">No charge to enquire. Sarah will reply directly to your email address, usually within a few hours.</p>
+
+    </div>
+    <!-- / FORM STATE -->
+
+    <!-- SUCCESS STATE -->
+    <div class="success-screen" id="successScreen">
+
+      <div class="success-icon">
+        <svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg>
+      </div>
+
+      <h2>Enquiry <i>sent.</i></h2>
+      <p class="lede">Your message is on its way to <span id="s-host">Sarah</span>'s inbox. She'll reply directly to your email — usually within a few hours.</p>
+
+      <div class="success-recap">
+        <div class="recap-head">
+          <span class="ref" id="s-ref">CSA-XXXXXX</span>
+          <span class="sent" id="s-sent">Sent just now</span>
+        </div>
+        <div class="recap-row"><span class="l">Property</span><span class="v" id="s-prop">Stone Cottage, Windermere</span></div>
+        <div class="recap-row"><span class="l">Requested dates</span><span class="v" id="s-dates">—</span></div>
+        <div class="recap-row"><span class="l">Guests</span><span class="v" id="s-guests">—</span></div>
+        <div class="recap-row"><span class="l">Your email</span><span class="v" id="s-email">—</span></div>
+        <div class="recap-row"><span class="l">Casa fee</span><span class="v green">£0</span></div>
+      </div>
+
+      <div class="next-steps">
+        <div class="ns-head">What happens next</div>
+        <div class="ns-item">
+          <div class="ns-num">1</div>
+          <p><strong>Sarah gets your message</strong> straight to her inbox — no platform middleman, no delay.</p>
+        </div>
+        <div class="ns-item">
+          <div class="ns-num">2</div>
+          <p><strong>She'll reply to confirm</strong> availability and answer your questions, usually within a few hours.</p>
+        </div>
+        <div class="ns-item">
+          <div class="ns-num">3</div>
+          <p><strong>You agree payment directly</strong> — bank transfer, PayPal, or whatever suits both of you. Zero Casa fees.</p>
+        </div>
+      </div>
+
+      <div class="success-actions">
+        <a href="messages.html" class="btn-primary">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          View in messages
+        </a>
+        <a href="browse.html" class="btn-outline">
+          Browse more stays
+        </a>
+      </div>
+
+    </div>
+    <!-- / SUCCESS STATE -->
+
+  </div>
+
+  <!-- RIGHT: PROPERTY SIDEBAR -->
+  <aside class="pside">
+
+    <div class="prop-card">
+      <div class="pc-img">
+        <div class="ph warm" data-label="STONE COTTAGE · WINDERMERE · 1 / 12"></div>
+        <div class="badge-row">
+          <span class="badge moss"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> Verified host</span>
+        </div>
+      </div>
+      <div class="pc-body">
+        <div style="font-family:var(--serif);font-size:22px;line-height:1.1;margin-bottom:4px">Stone Cottage, <i style="color:var(--brick)">Windermere</i></div>
+        <div style="font-size:12.5px;color:var(--ink-3);margin-bottom:14px">Windermere, Lake District · 4.9 ★ (23 reviews)</div>
+
+        <div class="pc-host-row">
+          <div class="pc-av">S</div>
+          <div>
+            <div class="pc-hname">Sarah R.</div>
+            <div class="pc-hmeta">Verified host · replies within 2 hrs</div>
+          </div>
+        </div>
+
+        <div class="pc-stats">
+          <div class="pc-stat"><div class="n">6</div><div class="l">Guests</div></div>
+          <div class="pc-stat"><div class="n">3</div><div class="l">Bedrooms</div></div>
+          <div class="pc-stat"><div class="n">2</div><div class="l">Bathrooms</div></div>
+        </div>
+
+        <div class="price-breakdown">
+          <div class="pb-row"><span id="nightCalc">£175 / night</span><span id="nightTotal">—</span></div>
+          <div class="pb-row fee"><span>Casa booking fee</span><span>£0</span></div>
+          <div class="pb-row save" id="saveRow" style="display:none"><span id="saveLabel">You save vs Booking.com</span><span id="saveAmt">—</span></div>
+          <div class="pb-row total"><span>Total to Sarah</span><span class="v" id="grandTotal">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-note">
+      You won't be charged yet. Sarah confirms your dates and arranges payment directly with you — no platform fees ever.
+    </div>
+
+  </aside>
+
+</div>
+
+<script>
+// ═══════════════════════════════════════════
+// CONFIGURATION
+// Property data would come from URL params / Supabase in production.
+// ═══════════════════════════════════════════
+const PROPERTY = {
+  id: 'stone-cottage-windermere',
+  title: 'Stone Cottage, Windermere',
+  host: 'Sarah',
+  hostFull: 'Sarah R.',
+  pricePerNight: 175,
+  maxGuests: 6,
+  petsWelcome: true,
+};
+
+// ═══════════════════════════════════════════
+// READ URL PARAMS
+// When navigating from property.html, dates + guests are passed as params.
+// e.g. booking.html?checkin=2026-07-12&checkout=2026-07-19&guests=2
+// ═══════════════════════════════════════════
+const qp = new URLSearchParams(location.search);
+if (qp.get('checkin'))  document.getElementById('checkin').value  = qp.get('checkin');
+if (qp.get('checkout')) document.getElementById('checkout').value = qp.get('checkout');
+if (qp.get('guests'))   setGuests(parseInt(qp.get('guests')) || 2);
+if (qp.get('prop'))     document.getElementById('crumbProp').textContent = qp.get('prop');
+
+// Host first name
+document.getElementById('hostFirstName').textContent = PROPERTY.host;
+document.getElementById('submitBtn').textContent = '';
+document.getElementById('submitBtn').innerHTML = `Send enquiry to ${PROPERTY.host} <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0"><path d="M5 12h14M13 5l7 7-7 7"/></svg>`;
+
+// ═══════════════════════════════════════════
+// GUEST STEPPER
+// ═══════════════════════════════════════════
+let guestCount = parseInt(qp.get('guests')) || 2;
+
+function setGuests(n) {
+  guestCount = Math.max(1, Math.min(PROPERTY.maxGuests, n));
+  document.getElementById('guestCount').textContent = guestCount;
+  document.getElementById('guestLabel').textContent = guestCount + ' guest' + (guestCount > 1 ? 's' : '');
+  document.getElementById('gMinus').disabled = guestCount <= 1;
+  updatePricing();
+}
+
+function changeGuests(delta) {
+  setGuests(guestCount + delta);
+  progressStep();
+}
+
+setGuests(guestCount);
+
+// ═══════════════════════════════════════════
+// PRICING CALCULATOR
+// ═══════════════════════════════════════════
+function updatePricing() {
+  const ci = document.getElementById('checkin').value;
+  const co = document.getElementById('checkout').value;
+  if (!ci || !co) { clearPricing(); return; }
+
+  const nights = Math.round((new Date(co) - new Date(ci)) / 86400000);
+  if (nights <= 0) { clearPricing(); return; }
+
+  const total = PROPERTY.pricePerNight * nights;
+  const saving = Math.round(total * 0.147); // ~14.7% Booking.com fee
+
+  document.getElementById('nightCalc').textContent = `£${PROPERTY.pricePerNight} × ${nights} night${nights>1?'s':''}`;
+  document.getElementById('nightTotal').textContent = `£${total.toLocaleString()}`;
+  document.getElementById('grandTotal').textContent = `£${total.toLocaleString()}`;
+  document.getElementById('saveAmt').textContent = `~£${saving}`;
+  document.getElementById('saveLabel').textContent = `You save vs Booking.com`;
+  document.getElementById('saveRow').style.display = 'flex';
+}
+
+function clearPricing() {
+  document.getElementById('nightCalc').textContent = `£${PROPERTY.pricePerNight} / night`;
+  document.getElementById('nightTotal').textContent = '—';
+  document.getElementById('grandTotal').textContent = '—';
+  document.getElementById('saveRow').style.display = 'none';
+}
+
+updatePricing();
+
+// ═══════════════════════════════════════════
+// CHARACTER COUNT
+// ═══════════════════════════════════════════
+function updateCharCount() {
+  const len = document.getElementById('message').value.length;
+  const el = document.getElementById('charCount');
+  el.textContent = len + ' / 1000';
+  el.classList.toggle('warn', len > 900);
+}
+
+// ═══════════════════════════════════════════
+// STEP PROGRESS (visual indicator)
+// ═══════════════════════════════════════════
+function progressStep() {
+  const ci = document.getElementById('checkin').value;
+  const co = document.getElementById('checkout').value;
+  const fn = document.getElementById('fname').value.trim();
+  const em = document.getElementById('email').value.trim();
+  const msg = document.getElementById('message').value.trim();
+
+  const step1Done = ci && co && new Date(co) > new Date(ci);
+  const step2Done = fn && em && em.includes('@');
+  const step3Done = msg.length >= 20;
+
+  setStep(document.getElementById('s1'), step1Done ? 'done' : 'active');
+  setStep(document.getElementById('s2'), step2Done ? 'done' : step1Done ? 'active' : '');
+  setStep(document.getElementById('s3'), step3Done ? 'done' : step2Done ? 'active' : '');
+}
+
+function setStep(el, state) {
+  el.className = 'step' + (state ? ' ' + state : '');
+}
+
+// ═══════════════════════════════════════════
+// VALIDATION
+// ═══════════════════════════════════════════
+function validate() {
+  let ok = true;
+
+  function check(fieldId, inputId, condition, msg) {
+    const field = document.getElementById(fieldId);
+    const input = document.getElementById(inputId);
+    const errEl = field?.querySelector('.err-msg');
+    const passes = condition(input?.value || '');
+    field?.classList.toggle('has-error', !passes);
+    if (errEl && msg) errEl.textContent = msg;
+    if (!passes) ok = false;
+  }
+
+  const ci = document.getElementById('checkin').value;
+  const co = document.getElementById('checkout').value;
+
+  check('f-checkin',  'checkin',  v => v.length > 0, 'Please choose a check-in date');
+  check('f-checkout', 'checkout', v => v.length > 0 && new Date(v) > new Date(ci), co && new Date(co) <= new Date(ci) ? 'Check-out must be after check-in' : 'Please choose a check-out date');
+  check('f-fname',    'fname',    v => v.trim().length > 0, 'Please enter your first name');
+  check('f-lname',    'lname',    v => v.trim().length > 0, 'Please enter your last name');
+  check('f-email',    'email',    v => v.includes('@') && v.includes('.'), 'Please enter a valid email address');
+  check('f-message',  'message',  v => v.trim().length >= 20, 'Please write a message to the host (at least 20 characters)');
+
+  // Consent checkboxes
+  const consents = [
+    { id: 'c1', wrap: 'ci-1' },
+    { id: 'c2', wrap: 'ci-2' },
+    { id: 'c3', wrap: 'ci-3' },
+  ];
+  consents.forEach(c => {
+    const el = document.getElementById(c.id);
+    const wrap = document.getElementById(c.wrap);
+    const checked = el?.checked;
+    wrap?.classList.toggle('error-consent', !checked);
+    if (!checked) ok = false;
+  });
+
+  // Scroll to first error
+  if (!ok) {
+    const first = document.querySelector('.has-error, .error-consent');
+    first?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  return ok;
+}
+
+// ═══════════════════════════════════════════
+// SUBMIT
+// ─────────────────────────────────────────
+// TO WIRE TO SUPABASE:
+// Replace the setTimeout block below with:
+//
+//   const { data, error } = await supabase
+//     .from('enquiries')
+//     .insert({
+//       property_id: PROPERTY.id,
+//       guest_id: supabase.auth.user().id,
+//       check_in: checkin,
+//       check_out: checkout,
+//       guests: guestCount,
+//       pets: pets,
+//       message: message,
+//       special_requests: special,
+//       status: 'pending'
+//     });
+//
+//   Then call: await supabase.functions.invoke('send-enquiry-email', {body: { enquiry_id: data[0].id }});
+// ═══════════════════════════════════════════
+async function submitEnquiry() {
+  if (!validate()) return;
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  document.getElementById('loadingOverlay').classList.add('show');
+
+  const checkin  = document.getElementById('checkin').value;
+  const checkout = document.getElementById('checkout').value;
+  const email    = document.getElementById('email').value.trim();
+  const fname    = document.getElementById('fname').value.trim();
+  const message  = document.getElementById('message').value.trim();
+
+  // ── DEMO: simulate network delay ──
+  // In production, replace this with the Supabase insert above.
+  await new Promise(r => setTimeout(r, 1400));
+
+  // Generate reference number (Supabase will return a real UUID)
+  const ref = 'CSA-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+
+  // Format dates for display
+  const fmt = d => new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const nights = Math.round((new Date(checkout) - new Date(checkin)) / 86400000);
+
+  // Populate success screen
+  document.getElementById('s-ref').textContent    = ref;
+  document.getElementById('s-host').textContent   = PROPERTY.host;
+  document.getElementById('s-prop').textContent   = PROPERTY.title;
+  document.getElementById('s-dates').textContent  = `${fmt(checkin)} → ${fmt(checkout)} (${nights} night${nights>1?'s':''})`;
+  document.getElementById('s-guests').textContent = guestCount + ' guest' + (guestCount > 1 ? 's' : '') + (document.getElementById('pets').checked ? ' + pets' : '');
+  document.getElementById('s-email').textContent  = email;
+  document.getElementById('s-sent').textContent   = 'Sent ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+  // Show success
+  document.getElementById('loadingOverlay').classList.remove('show');
+  document.getElementById('formWrap').style.display = 'none';
+  document.getElementById('successScreen').classList.add('show');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Clear error state on input
+document.querySelectorAll('.field input, .field select, .field textarea').forEach(el => {
+  el.addEventListener('input', () => {
+    const field = el.closest('.field');
+    if (field) field.classList.remove('has-error');
+  });
+});
+document.querySelectorAll('.consent-item input').forEach(cb => {
+  cb.addEventListener('change', () => cb.closest('.consent-item')?.classList.remove('error-consent'));
+});
+</script>
+
+<script src="casa.js"></script>
+</body>
+</html>

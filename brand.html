@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Casa — Brand</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+  .page { max-width: 1280px; margin: 0 auto; padding: 56px 48px 96px; }
+
+  .top { display:flex; align-items: flex-end; justify-content: space-between; padding-bottom: 32px; border-bottom: 1px solid var(--rule); margin-bottom: 56px; }
+  .top .title { font-family: var(--serif); font-size: 64px; line-height: 0.95; letter-spacing: -0.025em; }
+  .top .title i { font-style: italic; color: var(--brick); }
+  .top .meta { text-align: right; font-size: 13px; color: var(--ink-3); }
+
+  .sect { margin-bottom: 64px; }
+  .sect-hd { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
+  .sect-hd .num { font-family: var(--mono); font-size: 11px; color: var(--ink-4); }
+  .sect-hd .name { font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-2); }
+  .sect-hd .rule { flex: 1; height: 1px; background: var(--rule); }
+  .sect-intro { font-family: var(--serif); font-size: 28px; line-height: 1.2; letter-spacing: -0.015em; color: var(--ink); max-width: 720px; margin-bottom: 32px; }
+  .sect-intro i { font-style: italic; color: var(--brick); }
+
+  /* HERO LOGO */
+  .hero-logo {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 24px;
+    padding: 96px 64px; display:flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .hero-logo::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(circle at 20% 30%, rgba(176,85,51,0.04), transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(176,85,51,0.03), transparent 40%);
+  }
+  .hero-wordmark { font-family: var(--serif); font-style: italic; font-weight: 400; font-size: 220px; line-height: 0.85; letter-spacing: -0.03em; color: var(--brick); position: relative; }
+  .hero-wordmark .stop { color: var(--ink); }
+  .hero-foot { position: absolute; bottom: 20px; left: 28px; right: 28px; display:flex; justify-content: space-between; align-items: center; font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-4); }
+
+  /* LOGO VARIATIONS — 6 */
+  .logo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .lv {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 18px;
+    padding: 56px 32px 24px; min-height: 260px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    align-items: center; position: relative;
+  }
+  .lv.dark { background: var(--ink); }
+  .lv.paper-2 { background: var(--paper-2); }
+  .lv.brick { background: var(--brick); }
+  .lv .lv-mark { display: inline-flex; align-items: center; }
+  .lv .lv-meta { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--rule); }
+  .lv.dark .lv-meta, .lv.brick .lv-meta { border-color: rgba(255,255,255,0.15); }
+  .lv .lv-num { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; color: var(--ink-4); }
+  .lv .lv-name { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
+  .lv.dark .lv-num, .lv.dark .lv-name { color: rgba(255,255,255,0.4); }
+  .lv.brick .lv-num, .lv.brick .lv-name { color: rgba(255,255,255,0.55); }
+
+  /* Logo type styles */
+  .w-italic {
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 96px; line-height: 1; letter-spacing: -0.02em; color: var(--brick);
+  }
+  .w-italic .stop { color: var(--ink); }
+  .dark .w-italic { color: var(--brick-2); }
+  .dark .w-italic .stop { color: var(--paper); }
+  .brick .w-italic { color: var(--paper); }
+  .brick .w-italic .stop { color: rgba(255,255,255,0.6); }
+
+  .w-italic-period { /* casa with period */
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 88px; line-height: 1; letter-spacing: -0.02em; color: var(--ink);
+  }
+  .w-italic-period .dot { color: var(--brick); }
+  .dark .w-italic-period { color: var(--paper); }
+
+  .w-italic-tld { /* casa.co.uk lockup */
+    font-family: var(--serif); font-style: italic; font-weight: 400;
+    font-size: 64px; line-height: 1; letter-spacing: -0.015em; color: var(--brick);
+    display: inline-flex; align-items: baseline; gap: 2px;
+  }
+  .w-italic-tld .tld { font-size: 28px; color: var(--ink-3); }
+
+  .w-stack { /* stacked badge */
+    text-align: center;
+  }
+  .w-stack .bar { font-family: var(--mono); font-size: 10px; letter-spacing: 0.4em; color: var(--brick); padding-bottom: 4px; border-bottom: 1px solid var(--brick); margin-bottom: 8px; }
+  .w-stack .main { font-family: var(--serif); font-style: italic; font-size: 76px; line-height: 1; color: var(--ink); }
+  .w-stack .est { font-family: var(--mono); font-size: 9px; letter-spacing: 0.3em; color: var(--ink-3); margin-top: 8px; }
+
+  .w-mono { /* uppercase mono lockup */
+    font-family: var(--mono); font-size: 26px; letter-spacing: 0.4em; color: var(--ink); font-weight: 500;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .w-mono .glyph { font-family: var(--serif); font-style: italic; font-size: 92px; line-height: 0.8; color: var(--brick); }
+  .dark .w-mono { color: var(--paper); }
+
+  .w-c-mono { /* C monogram */
+    width: 140px; height: 140px; border: 2px solid var(--ink); border-radius: 30px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-style: italic; font-size: 110px; line-height: 1; color: var(--brick);
+    padding-bottom: 12px;
+  }
+  .dark .w-c-mono { border-color: var(--paper); }
+  .brick .w-c-mono { border-color: var(--paper); color: var(--paper); }
+
+  /* PALETTE */
+  .palette { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+  .sw { aspect-ratio: 3/4; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; border: 1px solid var(--rule); }
+  .sw .role { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; opacity: 0.7; }
+  .sw .nm { font-family: var(--serif); font-size: 24px; font-style: italic; line-height: 1; margin-bottom: 4px; }
+  .sw .hex { font-family: var(--mono); font-size: 12px; font-weight: 500; }
+  .sw.lt { color: var(--ink); }
+  .sw.dk { color: var(--paper); }
+
+  /* TYPE */
+  .type-show { background: var(--surface); border: 1px solid var(--rule); border-radius: 18px; padding: 56px; }
+  .type-show .display { font-family: var(--serif); font-size: 120px; line-height: 0.9; letter-spacing: -0.03em; color: var(--ink); margin-bottom: 40px; }
+  .type-show .display i { font-style: italic; color: var(--brick); }
+  .type-show .display .small { font-size: 0.45em; }
+  .type-row { display: grid; grid-template-columns: 120px 1fr; gap: 32px; padding: 18px 0; border-top: 1px solid var(--rule); }
+  .type-row .spec { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); padding-top: 6px; }
+  .type-row .sample { color: var(--ink); }
+
+  /* TAGLINE / VOICE */
+  .voice {
+    background: var(--ink); color: var(--paper); border-radius: 24px;
+    padding: 72px 64px; position: relative; overflow: hidden;
+  }
+  .voice::before {
+    content: '"'; position: absolute; top: -40px; left: 40px;
+    font-family: var(--serif); font-style: italic; font-size: 360px; line-height: 1;
+    color: rgba(176,85,51,0.18);
+  }
+  .voice .lead { font-family: var(--serif); font-size: 76px; line-height: 1; letter-spacing: -0.025em; position: relative; max-width: 880px; }
+  .voice .lead i { font-style: italic; color: var(--brick-2); }
+  .voice .alts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 56px; position: relative; }
+  .voice .alts .alt { font-family: var(--serif); font-size: 22px; line-height: 1.3; padding: 16px 0 16px 20px; border-left: 2px solid rgba(255,255,255,0.18); color: rgba(255,255,255,0.85); }
+  .voice .alts .alt i { font-style: italic; color: var(--brick-2); }
+
+  /* DO/DON'T */
+  .rules { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .rule-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 18px; padding: 32px; display: grid; grid-template-columns: 140px 1fr; gap: 24px; align-items: center; }
+  .rule-card .demo { display:flex; align-items: center; justify-content: center; }
+  .rule-card .demo .w-italic { font-size: 64px; }
+  .rule-card .demo .dont { position: relative; }
+  .rule-card .demo .dont::before {
+    content: ''; position: absolute; left: -10px; right: -10px; top: 50%; height: 2px; background: var(--brick); transform: rotate(-12deg); opacity: 0.5;
+  }
+  .rule-card h4 { font-family: var(--serif); font-style: italic; font-size: 22px; margin-bottom: 6px; color: var(--ink); }
+  .rule-card.do h4 { color: var(--moss); }
+  .rule-card.dont h4 { color: var(--brick); }
+  .rule-card p { font-size: 13.5px; color: var(--ink-3); line-height: 1.5; }
+  .rule-card .tag { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- TOP -->
+  <div class="top">
+    <div>
+      <div class="eyebrow">Casa · brand identity · v2 · 2026</div>
+      <h1 class="title" style="margin-top:10px">A <i>quieter</i> place<br>to find a home.</h1>
+    </div>
+    <div class="meta">
+      <div class="mono" style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4)">Brand book</div>
+      <div style="margin-top:6px;max-width:280px">Casa.co.uk — direct booking, zero fees,<br>UK holiday rentals.</div>
+    </div>
+  </div>
+
+  <!-- HERO LOGO -->
+  <div class="sect">
+    <div class="sect-hd"><span class="num">01</span><span class="name">The wordmark</span><span class="rule"></span></div>
+    <div class="hero-logo">
+      <div class="hero-wordmark">casa<span class="stop">.</span></div>
+      <div class="hero-foot">
+        <span>Instrument Serif · italic · 220 / 188</span>
+        <span>Set in Brick #B05533</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6 LOGO VARIATIONS -->
+  <div class="sect">
+    <div class="sect-hd"><span class="num">02</span><span class="name">Six approved variations</span><span class="rule"></span></div>
+    <p class="sect-intro">The <i>italic</i> is non-negotiable. Everything else &mdash; mark, lockup, weight, tld &mdash; flexes to the context.</p>
+
+    <div class="logo-grid">
+      <!-- 1 — primary italic wordmark on paper -->
+      <div class="lv">
+        <div class="lv-mark"><div class="w-italic">casa</div></div>
+        <div class="lv-meta">
+          <span class="lv-num">01</span>
+          <span class="lv-name">Primary · italic wordmark</span>
+        </div>
+      </div>
+
+      <!-- 2 — with period -->
+      <div class="lv">
+        <div class="lv-mark"><div class="w-italic-period">casa<span class="dot">.</span></div></div>
+        <div class="lv-meta">
+          <span class="lv-num">02</span>
+          <span class="lv-name">Wordmark + period</span>
+        </div>
+      </div>
+
+      <!-- 3 — with TLD -->
+      <div class="lv">
+        <div class="lv-mark">
+          <div class="w-italic-tld">casa<span class="tld">.co.uk</span></div>
+        </div>
+        <div class="lv-meta">
+          <span class="lv-num">03</span>
+          <span class="lv-name">Url lockup · web header</span>
+        </div>
+      </div>
+
+      <!-- 4 — stacked badge -->
+      <div class="lv paper-2">
+        <div class="lv-mark">
+          <div class="w-stack">
+            <div class="bar">— UK —</div>
+            <div class="main"><i style="font-style:italic">casa</i></div>
+            <div class="est">EST. 2025 · DIRECT BOOKING</div>
+          </div>
+        </div>
+        <div class="lv-meta">
+          <span class="lv-num">04</span>
+          <span class="lv-name">Stacked badge · stamps, packaging</span>
+        </div>
+      </div>
+
+      <!-- 5 — dark reverse with mono -->
+      <div class="lv dark">
+        <div class="lv-mark">
+          <div class="w-mono">
+            <div class="glyph">casa</div>
+            <div>·&nbsp;&nbsp;CASA.CO.UK&nbsp;&nbsp;·</div>
+          </div>
+        </div>
+        <div class="lv-meta">
+          <span class="lv-num">05</span>
+          <span class="lv-name">Reverse · mono pair · footer</span>
+        </div>
+      </div>
+
+      <!-- 6 — C monogram on brick -->
+      <div class="lv brick">
+        <div class="lv-mark">
+          <div class="w-c-mono">C</div>
+        </div>
+        <div class="lv-meta">
+          <span class="lv-num">06</span>
+          <span class="lv-name">C monogram · app icon, favicon</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PALETTE -->
+  <div class="sect">
+    <div class="sect-hd"><span class="num">03</span><span class="name">Colour — warm earth</span><span class="rule"></span></div>
+    <p class="sect-intro">Paper, ink, and a single <i>brick</i> accent. Moss appears <i>only</i> for verified status &amp; savings &mdash; never decoration.</p>
+    <div class="palette">
+      <div class="sw lt" style="background:#F4EFE5">
+        <div class="role">Canvas</div>
+        <div><div class="nm">Paper</div><div class="hex">#F4EFE5</div></div>
+      </div>
+      <div class="sw lt" style="background:#FBFAF6;border-color:var(--rule)">
+        <div class="role">Surface</div>
+        <div><div class="nm">Cream</div><div class="hex">#FBFAF6</div></div>
+      </div>
+      <div class="sw lt" style="background:#EBE4D5">
+        <div class="role">Recessed</div>
+        <div><div class="nm">Sand</div><div class="hex">#EBE4D5</div></div>
+      </div>
+      <div class="sw dk" style="background:#B05533">
+        <div class="role">Primary accent</div>
+        <div><div class="nm">Brick</div><div class="hex">#B05533</div></div>
+      </div>
+      <div class="sw lt" style="background:#EFDCD0">
+        <div class="role">Tint</div>
+        <div><div class="nm" style="color:var(--brick-text)">Brick pale</div><div class="hex" style="color:var(--brick-text)">#EFDCD0</div></div>
+      </div>
+      <div class="sw dk" style="background:#16140F">
+        <div class="role">Text · headings</div>
+        <div><div class="nm">Ink</div><div class="hex">#16140F</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TYPE -->
+  <div class="sect">
+    <div class="sect-hd"><span class="num">04</span><span class="name">Type · Instrument Serif + Sans</span><span class="rule"></span></div>
+    <div class="type-show">
+      <div class="display">Stay <i>closer</i> to the host.<br>Pay <span class="small">no</span> <i>fees.</i></div>
+      <div class="type-row">
+        <div class="spec">Display · 80–120</div>
+        <div class="sample serif" style="font-size:48px;line-height:1">Find your <i style="color:var(--brick)">next stay</i> &mdash; fee-free.</div>
+      </div>
+      <div class="type-row">
+        <div class="spec">Heading · 32</div>
+        <div class="sample serif" style="font-size:30px;line-height:1.1">Stays in the <i style="color:var(--brick)">Lake District</i></div>
+      </div>
+      <div class="type-row">
+        <div class="spec">Body · 15</div>
+        <div class="sample" style="font-size:15px;color:var(--ink-2)">Casa connects guests directly with hosts. There are no booking fees, no commission &mdash; every penny goes to the host.</div>
+      </div>
+      <div class="type-row">
+        <div class="spec">UI · 13.5</div>
+        <div class="sample" style="font-size:13.5px;font-weight:500">Enquire to book →</div>
+      </div>
+      <div class="type-row">
+        <div class="spec">Meta · 11 mono</div>
+        <div class="sample mono" style="font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)">CASA · 4,202 STAYS · UK WIDE · EST. 2025</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VOICE -->
+  <div class="sect">
+    <div class="sect-hd"><span class="num">05</span><span class="name">Voice &amp; tagline</span><span class="rule"></span></div>
+    <div class="voice">
+      <div class="lead">Stay <i>closer</i> to the host.<br>Pay <i>nothing</i> in fees.</div>
+      <div class="alts">
+        <div class="alt">A <i>quieter</i> way to book.</div>
+        <div class="alt">From <i>their door</i> to yours &mdash; direct.</div>
+        <div class="alt">Hosts &amp; guests, <i>face to face.</i></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DO / DON'T -->
+  <div class="sect" style="margin-bottom:0">
+    <div class="sect-hd"><span class="num">06</span><span class="name">Quiet rules</span><span class="rule"></span></div>
+    <div class="rules">
+      <div class="rule-card do">
+        <div class="demo"><div class="w-italic" style="font-size:56px">casa</div></div>
+        <div>
+          <div class="tag">Do</div>
+          <h4>Always italic, always serif.</h4>
+          <p>The italic carries the brand &mdash; warm, hand-set, and unmistakable.</p>
+        </div>
+      </div>
+      <div class="rule-card dont">
+        <div class="demo">
+          <span class="dont">
+            <span style="font-family:var(--sans);font-weight:600;font-size:56px;color:var(--ink)">CASA</span>
+          </span>
+        </div>
+        <div>
+          <div class="tag">Don't</div>
+          <h4>Never set in sans, never uppercase.</h4>
+          <p>It instantly reads like a tech company. We're not one.</p>
+        </div>
+      </div>
+
+      <div class="rule-card do">
+        <div class="demo"><div class="w-italic" style="font-size:48px;color:var(--brick)">casa</div></div>
+        <div>
+          <div class="tag">Do</div>
+          <h4>One accent &mdash; brick.</h4>
+          <p>Used sparingly on the wordmark, links, and the primary CTA. Nothing else.</p>
+        </div>
+      </div>
+      <div class="rule-card dont">
+        <div class="demo">
+          <span class="dont">
+            <span style="font-family:var(--serif);font-style:italic;font-size:48px;background:linear-gradient(90deg,#B05533,#8B5CF6,#0EA5E9);-webkit-background-clip:text;background-clip:text;color:transparent">casa</span>
+          </span>
+        </div>
+        <div>
+          <div class="tag">Don't</div>
+          <h4>No gradients. No effects.</h4>
+          <p>Drop shadows, outlines, multi-colour fills &mdash; not Casa.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="casa.js"></script>
+</body>
+</html>

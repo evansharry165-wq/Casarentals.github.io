@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casa — Fee-free UK accommodation, direct from hosts</title>
+<meta name="description" content="Casa.co.uk — find and book UK holiday accommodation directly with hosts. Zero booking fees. Every penny goes to the owner.">
+<link rel="stylesheet" href="css/casa.css">
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="casa-nav">
+  <a class="logo" href="index.html">Casa<em>.co.uk</em></a>
+  <ul class="nav-links" id="authLinks">
+    <li><a href="pages/how-it-works.html">How it works</a></li>
+    <li><a href="pages/list-property.html">List a property</a></li>
+    <li><a href="pages/signin.html">Sign in</a></li>
+    <li><a href="pages/signup.html" class="btn-nav-cta">Join free</a></li>
+  </ul>
+</nav>
+
+<!-- HERO SEARCH -->
+<section style="background:var(--ink);padding:2.75rem 2rem 0;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:-60px;right:-60px;width:280px;height:280px;background:var(--terracotta);border-radius:50%;opacity:.08;pointer-events:none;"></div>
+  <div style="position:absolute;bottom:40px;left:-80px;width:180px;height:180px;background:var(--tc-light);border-radius:50%;opacity:.06;pointer-events:none;"></div>
+  <div class="page-wrap" style="position:relative;z-index:1;">
+    <h1 class="serif" style="font-size:2rem;color:var(--white);margin-bottom:.3rem;letter-spacing:-.02em;line-height:1.2;">
+      Find your next stay, <em style="color:var(--tc-light);">fee-free.</em>
+    </h1>
+    <p style="font-size:.9rem;color:rgba(253,252,248,.5);margin-bottom:1.5rem;">Every penny goes to the host. Real people, real places, zero commission.</p>
+
+    <!-- SEARCH CARD -->
+    <div style="background:var(--white);border-radius:16px 16px 0 0;padding:1.25rem 1.25rem 0;">
+      <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.875rem;">
+        <!-- Location input -->
+        <div style="flex:1;position:relative;">
+          <span style="position:absolute;left:.8rem;top:50%;transform:translateY(-50%);pointer-events:none;">🔍</span>
+          <input id="searchInput" type="text"
+            placeholder="Town, city, region, or #hashtag..."
+            style="width:100%;border:1.5px solid var(--border);border-radius:10px;padding:.7rem 1rem .7rem 2.5rem;font-family:'DM Sans',sans-serif;font-size:.95rem;color:var(--ink);background:var(--sand);outline:none;"
+            onfocus="this.style.borderColor='var(--terracotta)';this.style.background='var(--white)'"
+            onblur="this.style.borderColor='var(--border)';this.style.background='var(--sand)'"
+            onkeydown="if(event.key==='Enter')runSearch()">
+        </div>
+
+        <!-- Dates pill -->
+        <div style="position:relative;">
+          <button id="datePill" onclick="toggleDrop('dateDrop',event)"
+            style="display:flex;align-items:center;gap:.35rem;border:1.5px solid var(--border);border-radius:10px;background:var(--sand);padding:.55rem .75rem;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--ink-mid);cursor:pointer;white-space:nowrap;">
+            📅 <span id="datePillLabel">Dates</span>
+          </button>
+          <div id="dateDrop" style="display:none;position:absolute;top:calc(100% + 8px);left:0;z-index:300;background:var(--white);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.25rem;box-shadow:0 8px 30px rgba(26,18,8,.1);min-width:280px;">
+            <div style="font-size:.7rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-light);margin-bottom:.75rem;">When are you going?</div>
+            <div class="form-row" style="margin-bottom:.6rem;">
+              <div class="form-field" style="margin:0;"><label>Check-in</label><input type="date" id="checkin"></div>
+              <div class="form-field" style="margin:0;"><label>Check-out</label><input type="date" id="checkout"></div>
+            </div>
+            <button class="btn btn-primary btn-full btn-sm" onclick="applyDates()">Apply</button>
+          </div>
+        </div>
+
+        <!-- Guests pill -->
+        <div style="position:relative;">
+          <button id="guestPill" onclick="toggleDrop('guestDrop',event)"
+            style="display:flex;align-items:center;gap:.35rem;border:1.5px solid var(--border);border-radius:10px;background:var(--sand);padding:.55rem .75rem;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--ink-mid);cursor:pointer;white-space:nowrap;">
+            👥 <span id="guestPillLabel">Guests</span>
+          </button>
+          <div id="guestDrop" style="display:none;position:absolute;top:calc(100% + 8px);left:0;z-index:300;background:var(--white);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.25rem;box-shadow:0 8px 30px rgba(26,18,8,.1);min-width:240px;">
+            <div style="font-size:.7rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-light);margin-bottom:.75rem;">How many guests?</div>
+            <div class="form-row" style="margin-bottom:.6rem;">
+              <div class="form-field" style="margin:0;"><label>Adults</label>
+                <select id="gAdults"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8+</option></select>
+              </div>
+              <div class="form-field" style="margin:0;"><label>Children</label>
+                <select id="gChildren"><option selected>0</option><option>1</option><option>2</option><option>3</option><option>4</option></select>
+              </div>
+            </div>
+            <div class="form-field" style="margin-bottom:.6rem;"><label>Pets</label>
+              <select id="gPets"><option selected>No pets</option><option>1 pet</option><option>2 pets</option></select>
+            </div>
+            <button class="btn btn-primary btn-full btn-sm" onclick="applyGuests()">Apply</button>
+          </div>
+        </div>
+
+        <!-- Price pill -->
+        <div style="position:relative;">
+          <button id="pricePill" onclick="toggleDrop('priceDrop',event)"
+            style="display:flex;align-items:center;gap:.35rem;border:1.5px solid var(--border);border-radius:10px;background:var(--sand);padding:.55rem .75rem;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--ink-mid);cursor:pointer;white-space:nowrap;">
+            💷 <span id="pricePillLabel">Price</span>
+          </button>
+          <div id="priceDrop" style="display:none;position:absolute;top:calc(100% + 8px);left:0;z-index:300;background:var(--white);border:1px solid var(--border);border-radius:14px;padding:1.1rem 1.25rem;box-shadow:0 8px 30px rgba(26,18,8,.1);min-width:240px;">
+            <div style="font-size:.7rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-light);margin-bottom:.75rem;">Budget per night</div>
+            <div class="form-row" style="margin-bottom:.6rem;">
+              <div class="form-field" style="margin:0;"><label>Min £</label><input type="number" id="priceMin" placeholder="0" min="0" step="10"></div>
+              <div class="form-field" style="margin:0;"><label>Max £</label><input type="number" id="priceMax" placeholder="No limit" min="0" step="10"></div>
+            </div>
+            <button class="btn btn-primary btn-full btn-sm" onclick="applyPrice()">Apply</button>
+          </div>
+        </div>
+
+        <!-- Type pill -->
+        <div style="display:flex;align-items:center;gap:.35rem;border:1.5px solid var(--border);border-radius:10px;background:var(--sand);padding:.55rem .75rem;font-size:.82rem;color:var(--ink-mid);">
+          🏠
+          <select onchange="applyType(this.value)" style="border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--ink-mid);outline:none;cursor:pointer;appearance:none;">
+            <option value="">Any type</option>
+            <option value="cottage">Cottage</option>
+            <option value="apartment">Apartment</option>
+            <option value="house">Whole house</option>
+            <option value="glamping">Glamping</option>
+            <option value="farmhouse">Farmhouse</option>
+            <option value="lodge">Lodge / cabin</option>
+            <option value="barn">Barn conversion</option>
+            <option value="houseboat">Houseboat</option>
+            <option value="treehouse">Treehouse</option>
+          </select>
+        </div>
+
+        <!-- Map link -->
+        <a href="pages/map.html" style="display:flex;align-items:center;gap:.4rem;border:1.5px solid var(--border);border-radius:10px;background:var(--sand);padding:.55rem .875rem;font-size:.82rem;color:var(--ink-mid);text-decoration:none;white-space:nowrap;transition:all .15s;"
+          onmouseover="this.style.background='var(--ink)';this.style.color='var(--white)'"
+          onmouseout="this.style.background='var(--sand)';this.style.color='var(--ink-mid)'">
+          🗺️ Map
+        </a>
+
+        <!-- Search button -->
+        <button class="btn btn-primary" onclick="runSearch()" style="padding:.7rem 1.4rem;border-radius:10px;flex-shrink:0;">Search</button>
+      </div>
+
+      <!-- VIBE CHIPS -->
+      <div style="display:flex;align-items:center;gap:.4rem;padding:.75rem 0;border-top:1px solid var(--border);overflow-x:auto;scrollbar-width:none;">
+        <span style="font-size:.7rem;color:var(--ink-light);white-space:nowrap;flex-shrink:0;">✨ Popular:</span>
+        <span class="vibe-chip" onclick="vibeClick(this,'petfriendly')">🐾 Pet friendly</span>
+        <span class="vibe-chip" onclick="vibeClick(this,'seaview')">🌊 Sea view</span>
+        <span class="vibe-chip" onclick="vibeClick(this,'familyfriendly')">👨‍👩‍👧 Family</span>
+        <span class="vibe-chip" onclick="vibeClick(this,'hotTub')">♨️ Hot tub</span>
+        <span class="vibe-chip" onclick="vibeClick(this,'lastminute')">⚡ Last minute</span>
+        <span class="vibe-chip" onclick="vibeClick(this,'glamping')">⛺ Glamping</span>
+        <span class="vibe-chip" onclick="vibeClick(this,'woodburner')">🔥 Wood burner</span>
+        <span class="vibe-chip" onclick="vibeClick(this,'offgrid')">🌿 Off-grid</span>
+        <span class="vibe-chip" onclick="vibeClick(this,'accessible')">♿ Accessible</span>
+        <span class="vibe-chip" onclick="vibeClick(this,'longstay')">📆 Long stay</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THREE-COLUMN APP -->
+<div class="page-wrap">
+  <div class="three-col" style="min-height:calc(100vh - 56px);">
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar-left" style="border-right:1px solid var(--border);padding:1.25rem 1rem;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;">
+      <div style="margin-bottom:1.5rem;">
+        <div class="section-label">Navigate</div>
+        <nav style="display:flex;flex-direction:column;gap:2px;">
+          <a href="index.html" style="display:flex;align-items:center;gap:.5rem;padding:.45rem .75rem;border-radius:8px;background:var(--tc-pale);color:var(--terracotta);font-size:.875rem;font-weight:500;text-decoration:none;">🏡 Feed</a>
+          <a href="pages/map.html"   style="display:flex;align-items:center;gap:.5rem;padding:.45rem .75rem;border-radius:8px;color:var(--ink-mid);font-size:.875rem;text-decoration:none;transition:background .12s;" onmouseover="this.style.background='var(--tc-pale)'" onmouseout="this.style.background='transparent'">🗺️ Map view</a>
+          <a href="pages/explore.html" style="display:flex;align-items:center;gap:.5rem;padding:.45rem .75rem;border-radius:8px;color:var(--ink-mid);font-size:.875rem;text-decoration:none;transition:background .12s;" onmouseover="this.style.background='var(--tc-pale)'" onmouseout="this.style.background='transparent'">🔍 Explore</a>
+          <a href="pages/saved.html" style="display:flex;align-items:center;gap:.5rem;padding:.45rem .75rem;border-radius:8px;color:var(--ink-mid);font-size:.875rem;text-decoration:none;transition:background .12s;" onmouseover="this.style.background='var(--tc-pale)'" onmouseout="this.style.background='transparent'">🔖 Saved</a>
+          <a href="pages/messages.html" style="display:flex;align-items:center;gap:.5rem;padding:.45rem .75rem;border-radius:8px;color:var(--ink-mid);font-size:.875rem;text-decoration:none;transition:background .12s;" onmouseover="this.style.background='var(--tc-pale)'" onmouseout="this.style.background='transparent'">📩 Messages</a>
+          <a href="pages/profile.html" style="display:flex;align-items:center;gap:.5rem;padding:.45rem .75rem;border-radius:8px;color:var(--ink-mid);font-size:.875rem;text-decoration:none;transition:background .12s;" onmouseover="this.style.background='var(--tc-pale)'" onmouseout="this.style.background='transparent'">👤 Profile</a>
+        </nav>
+      </div>
+
+      <div style="margin-bottom:1.5rem;">
+        <div class="section-label">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</div>
+        <div id="tagsEngland"></div>
+      </div>
+      <div style="margin-bottom:1.5rem;">
+        <div class="section-label">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland</div>
+        <div id="tagsScotland"></div>
+      </div>
+      <div style="margin-bottom:1.5rem;">
+        <div class="section-label">🏴󠁧󠁢󠁷󠁬󠁳󠁿 Wales</div>
+        <div id="tagsWales"></div>
+      </div>
+      <div style="margin-bottom:1.5rem;">
+        <div class="section-label">🇬🇧 N. Ireland</div>
+        <div id="tagsNI"></div>
+      </div>
+      <div style="margin-bottom:1.5rem;">
+        <div class="section-label">Property types</div>
+        <div id="tagsTypes"></div>
+      </div>
+    </aside>
+
+    <!-- MAIN FEED -->
+    <main style="padding:1.25rem 1.5rem;border-right:1px solid var(--border);">
+
+      <!-- HASHTAG HEADER -->
+      <div id="hashtagHeader" class="card" style="display:none;margin-bottom:1rem;border:1px solid var(--border);">
+        <button onclick="clearTag()" style="display:inline-flex;align-items:center;gap:.3rem;font-size:.78rem;color:var(--ink-light);background:none;border:none;font-family:inherit;cursor:pointer;margin-bottom:.4rem;padding:0;">← All posts</button>
+        <h2 class="serif" id="hashtagTitle" style="font-size:1.3rem;color:var(--terracotta);margin-bottom:.15rem;"></h2>
+        <p id="hashtagMeta" style="font-size:.82rem;color:var(--ink-light);"></p>
+      </div>
+
+      <!-- COMPOSE BOX -->
+      <div class="card" style="margin-bottom:1rem;" id="composeBox">
+        <div style="display:flex;gap:.75rem;align-items:flex-start;">
+          <div class="avatar avatar-guest" id="composeAvatar">?</div>
+          <textarea id="composeText"
+            style="flex:1;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:.875rem;color:var(--ink);resize:none;outline:none;min-height:52px;line-height:1.6;"
+            placeholder="Share a property, a stay, or ask about a UK location — use #tags to reach the right people..."></textarea>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-top:.6rem;border-top:1px solid var(--border);margin-top:.6rem;">
+          <div style="display:flex;gap:.2rem;">
+            <button onclick="showToast('Photo upload coming soon!')" style="padding:.28rem .5rem;border-radius:6px;color:var(--ink-light);cursor:pointer;font-size:.8rem;border:none;background:none;font-family:inherit;transition:background .12s;" onmouseover="this.style.background='var(--sand)'" onmouseout="this.style.background='none'">📷 Photo</button>
+            <button onclick="showToast('Location tagging coming soon!')" style="padding:.28rem .5rem;border-radius:6px;color:var(--ink-light);cursor:pointer;font-size:.8rem;border:none;background:none;font-family:inherit;transition:background .12s;" onmouseover="this.style.background='var(--sand)'" onmouseout="this.style.background='none'">📍 Location</button>
+            <button onclick="togglePriceInput()" style="padding:.28rem .5rem;border-radius:6px;color:var(--ink-light);cursor:pointer;font-size:.8rem;border:none;background:none;font-family:inherit;transition:background .12s;" onmouseover="this.style.background='var(--sand)'" onmouseout="this.style.background='none'">💷 Price</button>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="handleSubmitPost()">Post</button>
+        </div>
+        <div id="priceInputRow" style="display:none;margin-top:.6rem;padding-top:.6rem;border-top:1px solid var(--border);">
+          <label style="font-size:.75rem;color:var(--ink-light);display:block;margin-bottom:.3rem;">Price per night (£) — hosts only</label>
+          <input type="number" id="priceInput" min="0" placeholder="e.g. 150"
+            style="width:140px;border:1.5px solid var(--border);border-radius:8px;padding:.4rem .7rem;font-family:'DM Sans',sans-serif;font-size:.85rem;background:var(--sand);outline:none;">
+        </div>
+      </div>
+
+      <!-- SIGN IN NUDGE (shown when not logged in) -->
+      <div id="signInNudge" class="card" style="margin-bottom:1rem;text-align:center;display:none;">
+        <p style="font-size:.875rem;color:var(--ink-mid);margin-bottom:.875rem;">Sign in to post, like, save, and enquire directly with hosts.</p>
+        <div style="display:flex;gap:.5rem;justify-content:center;">
+          <a href="pages/signup.html" class="btn btn-primary btn-sm">Join free</a>
+          <a href="pages/signin.html" class="btn btn-outline btn-sm">Sign in</a>
+        </div>
+      </div>
+
+      <!-- FEED TABS -->
+      <div style="display:flex;border-bottom:1px solid var(--border);margin-bottom:1rem;">
+        <button class="feed-tab active" onclick="setFeedTab(this,'all')" style="padding:.55rem 1rem;font-size:.85rem;color:var(--ink-light);cursor:pointer;border-bottom:2px solid var(--terracotta);color:var(--terracotta);font-weight:500;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;transition:color .15s;">All posts</button>
+        <button class="feed-tab" onclick="setFeedTab(this,'hosts')" style="padding:.55rem 1rem;font-size:.85rem;color:var(--ink-light);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;transition:color .15s;">Hosts</button>
+        <button class="feed-tab" onclick="setFeedTab(this,'guests')" style="padding:.55rem 1rem;font-size:.85rem;color:var(--ink-light);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;transition:color .15s;">Guest reviews</button>
+        <button class="feed-tab" onclick="setFeedTab(this,'questions')" style="padding:.55rem 1rem;font-size:.85rem;color:var(--ink-light);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;transition:color .15s;">Questions</button>
+      </div>
+
+      <!-- FEED OUTPUT -->
+      <div id="feedOutput"></div>
+
+      <!-- EMPTY STATE -->
+      <div id="emptyState" class="empty-state" style="display:none;">
+        <div class="empty-icon">🏡</div>
+        <h3>No posts yet</h3>
+        <p>Be the first to post here — share a property, ask a question, or tell the community about a great stay.</p>
+        <a href="pages/signup.html" class="btn btn-primary">Join and post</a>
+      </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR -->
+    <aside class="sidebar-right" style="padding:1.25rem 1rem;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;">
+      <!-- Zero fee banner -->
+      <div style="background:var(--ink);border-radius:14px;padding:1.25rem;margin-bottom:1rem;position:relative;overflow:hidden;">
+        <div style="position:absolute;top:-20px;right:-20px;width:90px;height:90px;background:var(--terracotta);border-radius:50%;opacity:.2;pointer-events:none;"></div>
+        <h2 class="serif" style="font-size:1rem;color:var(--white);margin-bottom:.3rem;position:relative;">100% goes to the host.</h2>
+        <p style="font-size:.78rem;color:rgba(253,252,248,.55);margin-bottom:.75rem;position:relative;">No fees. No commission. Pay direct to the owner.</p>
+        <a href="pages/list-property.html" class="btn btn-primary btn-sm" style="position:relative;">List your property →</a>
+      </div>
+
+      <!-- Stats -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem;">
+        <div class="card" style="padding:.75rem;text-align:center;">
+          <div class="serif" style="font-size:1.3rem;font-weight:600;color:var(--terracotta);line-height:1;" id="statPosts">0</div>
+          <div style="font-size:.68rem;color:var(--ink-light);">Community posts</div>
+        </div>
+        <div class="card" style="padding:.75rem;text-align:center;">
+          <div class="serif" style="font-size:1.3rem;font-weight:600;color:var(--green);line-height:1;">£0</div>
+          <div style="font-size:.68rem;color:var(--ink-light);">Booking fees</div>
+        </div>
+      </div>
+
+      <!-- Who's who -->
+      <div class="card" style="margin-bottom:1rem;">
+        <div class="section-label" style="margin-bottom:.65rem;">Who's who</div>
+        <div style="display:flex;flex-direction:column;gap:.4rem;">
+          <div style="display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--ink-mid);"><span class="badge badge-host">Host</span> Property owner</div>
+          <div style="display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--ink-mid);"><span class="badge badge-guest">Guest</span> Traveller</div>
+          <div style="display:flex;align-items:center;gap:.5rem;font-size:.8rem;color:var(--ink-mid);"><span class="badge badge-verified">✓ Verified</span> ID-checked by Casa</div>
+        </div>
+      </div>
+
+      <!-- Trending -->
+      <div class="card">
+        <div class="section-label" style="margin-bottom:.75rem;">Trending tags</div>
+        <div id="trendingTags" style="display:flex;flex-direction:column;gap:0;"></div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<style>
+  .feed-tab { transition: color .15s, border-bottom-color .15s !important; }
+  .feed-tab.active { color: var(--terracotta) !important; border-bottom-color: var(--terracotta) !important; font-weight: 500 !important; }
+  .feed-tab:not(.active) { border-bottom-color: transparent !important; }
+  .vibe-chip { display:inline-flex;align-items:center;gap:.25rem;padding:.25rem .65rem;background:var(--sand);border:1px solid var(--border);border-radius:20px;font-size:.78rem;color:var(--ink-mid);cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0; }
+  .vibe-chip:hover,.vibe-chip.active { background:var(--tc-pale);border-color:var(--terracotta);color:var(--terracotta); }
+  #hashtagHeader.visible { display:block !important; }
+  .post-liked { color:var(--terracotta) !important; }
+</style>
+
+<script src="js/casa.js"></script>
+<script>
+/* ── Page-level tag lists ── */
+const TAG_DATA = {
+  england:  [['lakedistrict',214],['cornwall',198],['cotswolds',87],['yorkshire',98],['norfolk',112],['devon',76],['peakdistrict',64],['brighton',63]],
+  scotland: [['scottishhighlands',145],['edinburgh',98],['isleofskye',67],['cairngorms',43]],
+  wales:    [['snowdonia',54],['pembrokeshire',48],['breconbeacons',31],['anglesey',19]],
+  ni:       [['causewaycoast',29],['antrim',18],['belfast',14],['mournes',9]],
+  types:    [['cottage',341],['glamping',89],['seaview',156],['petfriendly',134],['familyfriendly',178],['lastminute',67],['barn',44],['houseboat',18]]
+};
+
+function buildTagList(container, pairs) {
+  document.getElementById(container).innerHTML = pairs.map(([tag,count]) =>
+    `<div class="tag-item" onclick="filterTag('${tag}')">
+       <span class="tag-name">#${tag}</span>
+       <span class="tag-count">${count}</span>
+     </div>`
+  ).join('');
+}
+
+/* ── Feed render ── */
+function renderFeed() {
+  const allPosts = CasaStore.posts;
+  const filtered = FeedState.filter(allPosts);
+  const out = document.getElementById('feedOutput');
+  const empty = document.getElementById('emptyState');
+  if (filtered.length === 0) {
+    out.innerHTML = '';
+    empty.style.display = 'block';
+  } else {
+    empty.style.display = 'none';
+    out.innerHTML = filtered.map(buildPostCard).join('');
+  }
+  document.getElementById('statPosts').textContent = allPosts.length;
+}
+
+/* ── Trending ── */
+function buildTrending() {
+  const tagCounts = {};
+  CasaStore.posts.forEach(p => (p.tags||[]).forEach(t => { tagCounts[t] = (tagCounts[t]||0)+1; }));
+  const sorted = Object.entries(tagCounts).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const el = document.getElementById('trendingTags');
+  if (sorted.length === 0) {
+    el.innerHTML = '<p style="font-size:.8rem;color:var(--ink-light);">No trending tags yet — be the first to post!</p>';
+  } else {
+    el.innerHTML = sorted.map(([tag,count]) => `
+      <div onclick="filterTag('${tag}')" style="display:flex;align-items:center;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid var(--border);cursor:pointer;">
+        <span style="font-size:.85rem;color:var(--terracotta);font-weight:500;">#${tag}</span>
+        <span style="font-size:.72rem;color:var(--ink-light);">${count} post${count===1?'':'s'}</span>
+      </div>`).join('');
+  }
+}
+
+/* ── Compose ── */
+function handleSubmitPost() {
+  const body  = document.getElementById('composeText').value;
+  const price = document.getElementById('priceInput').value;
+  const user  = getUser();
+  const post  = submitPost({
+    body,
+    type:  user ? user.role : 'guest',
+    price: price ? parseFloat(price) : null,
+  });
+  if (post) {
+    document.getElementById('composeText').value = '';
+    document.getElementById('priceInput').value = '';
+    document.getElementById('priceInputRow').style.display = 'none';
+    renderFeed();
+    buildTrending();
+  }
+}
+
+function togglePriceInput() {
+  const row = document.getElementById('priceInputRow');
+  row.style.display = row.style.display === 'none' ? 'block' : 'none';
+}
+
+/* ── Search ── */
+function runSearch() {
+  const val = document.getElementById('searchInput').value.trim();
+  if (!val) { clearTag(); return; }
+  if (val.startsWith('#')) { filterTag(val.slice(1)); return; }
+  FeedState.searchQuery = val.toLowerCase();
+  FeedState.activeTag = null;
+  hideHashtagHeader();
+  renderFeed();
+}
+
+/* ── Pill helpers ── */
+function toggleDrop(id, e) {
+  e.stopPropagation();
+  ['dateDrop','guestDrop','priceDrop'].forEach(d => {
+    if (d !== id) document.getElementById(d).style.display = 'none';
+  });
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+document.addEventListener('click', () => {
+  ['dateDrop','guestDrop','priceDrop'].forEach(d => {
+    const el = document.getElementById(d);
+    if (el) el.style.display = 'none';
+  });
+});
+
+function applyDates() {
+  const ci = document.getElementById('checkin').value;
+  const co = document.getElementById('checkout').value;
+  if (ci && co) {
+    const fmt = d => new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+    document.getElementById('datePillLabel').textContent = fmt(ci)+' – '+fmt(co);
+    document.getElementById('datePill').style.borderColor = 'var(--terracotta)';
+  }
+  document.getElementById('dateDrop').style.display = 'none';
+}
+
+function applyGuests() {
+  const a = document.getElementById('gAdults').value;
+  const c = document.getElementById('gChildren').value;
+  const p = document.getElementById('gPets').value;
+  let label = a+' guest'+(parseInt(a)===1?'':'s');
+  if (c!=='0') label += ', '+c+' child'+(c==='1'?'':'ren');
+  if (p!=='No pets') label += ', '+p;
+  document.getElementById('guestPillLabel').textContent = label;
+  document.getElementById('guestPill').style.borderColor = 'var(--terracotta)';
+  document.getElementById('guestDrop').style.display = 'none';
+}
+
+function applyPrice() {
+  const mn = document.getElementById('priceMin').value;
+  const mx = document.getElementById('priceMax').value;
+  let label = mn?'£'+mn:'';
+  if (mn&&mx) label += ' – £'+mx; else if (mx) label = 'Up to £'+mx;
+  if (label) {
+    document.getElementById('pricePillLabel').textContent = label;
+    document.getElementById('pricePill').style.borderColor = 'var(--terracotta)';
+  }
+  document.getElementById('priceDrop').style.display = 'none';
+}
+
+function applyType(val) {
+  if (val) { FeedState.activeTag = val; renderFeed(); }
+}
+
+/* ── Compose avatar ── */
+function updateComposeAvatar() {
+  const user = getUser();
+  const av   = document.getElementById('composeAvatar');
+  if (user) {
+    av.textContent = user.name.substring(0,2).toUpperCase();
+    av.className   = `avatar ${user.role==='host'?'avatar-host':'avatar-guest'}`;
+  }
+}
+
+/* ── Init ── */
+buildTagList('tagsEngland', TAG_DATA.england);
+buildTagList('tagsScotland', TAG_DATA.scotland);
+buildTagList('tagsWales', TAG_DATA.wales);
+buildTagList('tagsNI', TAG_DATA.ni);
+buildTagList('tagsTypes', TAG_DATA.types);
+updateComposeAvatar();
+renderFeed();
+buildTrending();
+
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') runSearch();
+});
+</script>
+</body>
+</html>

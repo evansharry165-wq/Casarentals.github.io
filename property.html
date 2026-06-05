@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Stone Cottage, Windermere — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+  /* Crumb bar */
+  .crumb { padding: 24px 0 8px; }
+  .crumb a, .crumb span { font-size: 13px; color: var(--ink-3); text-decoration: none; }
+  .crumb a:hover { color: var(--brick); }
+  .crumb .sep { color: var(--ink-4); margin: 0 6px; }
+  .crumb .now { color: var(--ink); }
+
+  /* Title row */
+  .title-row { display: flex; justify-content: space-between; align-items: end; padding: 8px 0 24px; gap: 32px; flex-wrap: wrap; }
+  .title-row h1 { font-family: var(--serif); font-size: 56px; line-height: 0.95; letter-spacing: -0.025em; }
+  .title-row h1 i { font-style: italic; color: var(--brick); }
+  .title-row .meta { display: flex; align-items: center; gap: 18px; margin-top: 12px; flex-wrap: wrap; font-size: 13.5px; color: var(--ink-2); }
+  .title-row .meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--ink-4); }
+  .title-row .meta .rating { color: var(--ink); display: inline-flex; align-items: center; gap: 4px; }
+  .title-row .meta .rating svg { width: 13px; height: 13px; fill: var(--ink); stroke: none; }
+  .title-row .actions { display: flex; gap: 8px; }
+  .title-row .actions button { background: transparent; border: 1px solid var(--rule-3); border-radius: var(--r-pill); padding: 8px 14px; font-size: 13px; color: var(--ink); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: transparent; transition: text-decoration-color .12s, background .12s; }
+  .title-row .actions button:hover { background: var(--surface); text-decoration-color: var(--ink); }
+  .title-row .actions svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+  .title-row .actions .save-btn.saved svg { fill: var(--brick); stroke: var(--brick); }
+
+  /* GALLERY */
+  .gallery { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: repeat(2, 220px); gap: 8px; border-radius: 18px; overflow: hidden; margin-bottom: 48px; position: relative; }
+  .gallery .ph { width: 100%; height: 100%; cursor: pointer; transition: filter .15s; }
+  .gallery .ph:hover { filter: brightness(0.95); }
+  .gallery .g1 { grid-row: span 2; }
+  .gallery .show-all {
+    position: absolute; right: 16px; bottom: 16px;
+    background: var(--surface); border: 1px solid var(--rule); color: var(--ink);
+    padding: 8px 14px; border-radius: var(--r-md); font-size: 12.5px; font-weight: 500;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .gallery .show-all:hover { background: white; }
+  .gallery .show-all svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+
+  /* MAIN GRID */
+  .pdetail { display: grid; grid-template-columns: 1fr 420px; gap: 64px; padding-bottom: 64px; }
+  .pd-main { min-width: 0; }
+  .pd-side { position: relative; }
+
+  /* Host strip */
+  .host-strip { display: flex; align-items: center; gap: 16px; padding: 24px 0; border-bottom: 1px solid var(--rule); margin-bottom: 32px; }
+  .host-strip .av { width: 60px; height: 60px; border-radius: 50%; background: var(--brick); color: white; display: inline-flex; align-items: center; justify-content: center; font-family: var(--serif); font-style: italic; font-size: 26px; flex-shrink: 0; }
+  .host-strip .info { flex: 1; }
+  .host-strip .info .h-name { font-family: var(--serif); font-size: 22px; line-height: 1.1; display: inline-flex; align-items: center; gap: 8px; }
+  .host-strip .info .h-meta { font-size: 13px; color: var(--ink-3); margin-top: 2px; }
+  .host-strip .actions { display: flex; gap: 8px; }
+
+  /* Quick facts */
+  .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 32px; }
+  .facts .fact { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .facts .fact svg { width: 22px; height: 22px; stroke: var(--ink); fill: none; stroke-width: 1.5; }
+  .facts .fact .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-4); margin-top: 6px; }
+  .facts .fact .val { font-family: var(--serif); font-style: italic; font-size: 24px; color: var(--ink); line-height: 1; }
+
+  /* About */
+  .about { padding: 0 0 32px; border-bottom: 1px solid var(--rule); margin-bottom: 32px; }
+  .about h2 { font-family: var(--serif); font-size: 32px; line-height: 1; letter-spacing: -0.015em; margin-bottom: 20px; }
+  .about h2 i { font-style: italic; color: var(--brick); }
+  .about p { font-size: 15px; line-height: 1.7; color: var(--ink-2); margin-bottom: 12px; max-width: 640px; }
+  .about p:last-of-type { margin-bottom: 16px; }
+  .about .more { font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--brick); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; background: none; border: none; padding: 0; }
+
+  /* Amenities */
+  .amenities { padding: 0 0 32px; border-bottom: 1px solid var(--rule); margin-bottom: 32px; }
+  .amenities h2 { font-family: var(--serif); font-size: 32px; line-height: 1; margin-bottom: 24px; }
+  .amenities h2 i { font-style: italic; color: var(--brick); }
+  .am-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 32px; }
+  .am-grid .am { display: flex; align-items: center; gap: 12px; padding: 8px 0; font-size: 14.5px; color: var(--ink); }
+  .am-grid .am svg { width: 20px; height: 20px; stroke: var(--ink-2); fill: none; stroke-width: 1.6; flex-shrink: 0; }
+  .am-grid .am.crossed { color: var(--ink-4); text-decoration: line-through; }
+  .am-grid .am.crossed svg { stroke: var(--ink-4); }
+
+  /* Calendar */
+  .cal-block { padding: 0 0 32px; border-bottom: 1px solid var(--rule); margin-bottom: 32px; }
+  .cal-block h2 { font-family: var(--serif); font-size: 32px; line-height: 1; margin-bottom: 8px; }
+  .cal-block h2 i { font-style: italic; color: var(--brick); }
+  .cal-block .sub { font-size: 14px; color: var(--ink-3); margin-bottom: 24px; }
+  .cal { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  .cal-month .mh { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .cal-month .mh .mn { font-family: var(--serif); font-style: italic; font-size: 22px; }
+  .cal-month .mh button { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; width: 28px; height: 28px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; color: var(--ink); }
+  .cal-month .mh button svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .cal-grid .dn { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); padding: 8px 0 4px; text-align: center; }
+  .cal-grid .d { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 13.5px; color: var(--ink); border-radius: 8px; cursor: pointer; transition: background .1s; position: relative; }
+  .cal-grid .d:hover { background: var(--paper-2); }
+  .cal-grid .d.muted { color: var(--ink-4); cursor: default; }
+  .cal-grid .d.muted:hover { background: transparent; }
+  .cal-grid .d.unavailable { color: var(--ink-4); text-decoration: line-through; cursor: not-allowed; }
+  .cal-grid .d.unavailable:hover { background: transparent; }
+  .cal-grid .d.sel { background: var(--ink); color: var(--paper); }
+  .cal-grid .d.in-range { background: var(--paper-2); }
+  .cal-grid .d.start { background: var(--brick); color: white; }
+  .cal-grid .d.end { background: var(--brick); color: white; }
+
+  /* Reviews */
+  .reviews { padding: 0 0 32px; }
+  .reviews h2 { font-family: var(--serif); font-size: 32px; line-height: 1; margin-bottom: 28px; display: flex; align-items: baseline; gap: 12px; }
+  .reviews h2 i { font-style: italic; color: var(--brick); }
+  .reviews h2 .total { font-family: var(--sans); font-size: 14px; color: var(--ink-3); font-style: normal; }
+  .rev-summary { display: grid; grid-template-columns: 200px 1fr; gap: 40px; margin-bottom: 32px; padding-bottom: 32px; border-bottom: 1px solid var(--rule); }
+  .rev-summary .overall { text-align: center; }
+  .rev-summary .overall .score { font-family: var(--serif); font-style: italic; font-size: 86px; line-height: 0.9; color: var(--brick); }
+  .rev-summary .overall .of { font-size: 13px; color: var(--ink-3); margin-top: 4px; }
+  .rev-summary .breakdown { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 32px; }
+  .rev-row { display: grid; grid-template-columns: 100px 1fr 40px; align-items: center; gap: 12px; font-size: 13.5px; }
+  .rev-row .nm { color: var(--ink-2); }
+  .rev-row .bar { height: 4px; background: var(--paper-2); border-radius: 2px; overflow: hidden; }
+  .rev-row .bar .fill { height: 100%; background: var(--brick); border-radius: 2px; }
+  .rev-row .val { font-family: var(--mono); font-size: 11px; color: var(--ink-3); text-align: right; }
+
+  .rev-list { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 32px; }
+  .rev { padding: 4px 0; }
+  .rev .r-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .rev .r-head .av { width: 40px; height: 40px; border-radius: 50%; background: var(--moss); color: white; display: inline-flex; align-items: center; justify-content: center; font-family: var(--serif); font-style: italic; font-size: 16px; }
+  .rev .r-head .av.brick { background: var(--brick); }
+  .rev .r-head .who { font-size: 14px; font-weight: 500; }
+  .rev .r-head .when { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-top: 1px; }
+  .rev .body { font-family: var(--serif); font-size: 16px; line-height: 1.55; color: var(--ink); }
+
+  /* Map block */
+  .map-block { padding: 0 0 32px; border-bottom: 1px solid var(--rule); margin-bottom: 32px; }
+  .map-block h2 { font-family: var(--serif); font-size: 32px; margin-bottom: 8px; line-height: 1; }
+  .map-block h2 i { font-style: italic; color: var(--brick); }
+  .map-block .sub { font-size: 14px; color: var(--ink-3); margin-bottom: 24px; }
+  .map-block .map-box { position: relative; aspect-ratio: 2/1; border-radius: 14px; overflow: hidden; background: #E8E2D4; border: 1px solid var(--rule); }
+  .map-block .map-box::before {
+    content: ''; position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(22,20,15,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(22,20,15,0.04) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+  .map-block .map-box .pin { position: absolute; left: 50%; top: 48%; transform: translate(-50%, -100%); }
+  .map-block .map-box .pin .pulse { width: 80px; height: 80px; border-radius: 50%; background: rgba(176,85,51,0.12); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); animation: pulse-soft 2s ease-in-out infinite; }
+  .map-block .map-box .pin .core { width: 24px; height: 24px; background: var(--brick); border-radius: 50%; border: 3px solid white; position: relative; box-shadow: 0 2px 8px rgba(22,20,15,0.2); }
+  .map-block .map-box .pin .lbl { position: absolute; left: 50%; top: -30px; transform: translateX(-50%); background: var(--ink); color: white; padding: 4px 10px; border-radius: 6px; font-size: 12px; white-space: nowrap; }
+
+  /* SIDE — booking card */
+  .book-card { position: sticky; top: 88px; background: var(--surface); border: 1px solid var(--rule); border-radius: 18px; padding: 28px; box-shadow: 0 8px 32px rgba(22,20,15,0.06); }
+  .book-card .price-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+  .book-card .price { font-family: var(--serif); font-size: 38px; line-height: 1; }
+  .book-card .price i { font-style: italic; color: var(--brick); }
+  .book-card .per { font-size: 14px; color: var(--ink-3); }
+  .book-card .fee-note { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--moss); margin-bottom: 24px; }
+
+  .book-form { border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; margin-bottom: 16px; }
+  .book-form .row { display: grid; grid-template-columns: 1fr 1fr; }
+  .book-form .cell { padding: 12px 14px; border-right: 1px solid var(--rule); cursor: pointer; }
+  .book-form .cell:last-child { border-right: none; }
+  .book-form .row + .row .cell { border-top: 1px solid var(--rule); }
+  .book-form .cell .l { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); display: block; margin-bottom: 2px; }
+  .book-form .cell .v { font-size: 14px; color: var(--ink); }
+
+  .book-cta { width: 100%; background: var(--brick); color: white; border: none; border-radius: 12px; padding: 14px; font-family: var(--sans); font-weight: 500; font-size: 15px; cursor: pointer; transition: background .12s; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+  .book-cta:hover { background: var(--brick-2); }
+  .book-cta svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .book-msg { width: 100%; background: transparent; color: var(--ink); border: 1px solid var(--rule-3); border-radius: 12px; padding: 12px; font-size: 14px; cursor: pointer; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; transition: background .12s; }
+  .book-msg:hover { background: var(--paper); }
+  .book-msg svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+
+  .book-foot { font-size: 12px; color: var(--ink-3); text-align: center; margin-top: 12px; line-height: 1.5; }
+
+  /* Pricing breakdown */
+  .breakdown { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--rule); display: flex; flex-direction: column; gap: 8px; }
+  .breakdown .row { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--ink-2); }
+  .breakdown .row.total { font-weight: 500; color: var(--ink); padding-top: 10px; border-top: 1px solid var(--rule); margin-top: 4px; }
+  .breakdown .row.save { color: var(--moss); font-size: 12.5px; font-style: italic; font-family: var(--serif); }
+  .breakdown .row.fee .v { color: var(--moss); font-weight: 500; }
+
+  @media (max-width: 1000px) {
+    .pdetail { grid-template-columns: 1fr; }
+    .pd-side { position: relative; }
+    .book-card { position: relative; top: auto; }
+    .facts { grid-template-columns: repeat(2, 1fr); }
+    .am-grid, .rev-list { grid-template-columns: 1fr; }
+    .gallery { grid-template-columns: 1fr; grid-template-rows: 200px; }
+    .gallery .g1 { grid-row: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="casa-nav">
+  <a class="brand-lockup" href="index.html">
+    <span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span>
+  </a>
+  <div class="nav-right">
+    <a class="nav-link" href="browse.html">Browse</a>
+    <a class="nav-link" href="map.html">Map</a>
+    <a class="nav-link" href="feed.html">Feed</a>
+    <a class="nav-link" href="list.html">Become a host</a>
+    <div style="width:1px;height:20px;background:var(--rule);margin:0 4px"></div>
+    <a class="nav-link" href="saved.html">Saved</a>
+    <a class="nav-link" href="messages.html">Messages</a>
+    <div style="width:1px;height:20px;background:var(--rule);margin:0 4px"></div>
+    <a class="nav-link" href="signup.html">Sign in</a>
+    <a class="nav-link primary" href="signup.html">Join free</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- CRUMB -->
+  <div class="crumb">
+    <a href="index.html">Casa</a><span class="sep">/</span>
+    <a href="browse.html">Browse</a><span class="sep">/</span>
+    <a href="#">Lake District</a><span class="sep">/</span>
+    <span class="now">Stone Cottage, Windermere</span>
+  </div>
+
+  <!-- TITLE ROW -->
+  <div class="title-row">
+    <div>
+      <h1>Stone Cottage, <i>Windermere</i></h1>
+      <div class="meta">
+        <span class="rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 4.9 · 23 reviews</span>
+        <span class="dot"></span>
+        <span>Windermere, Lake District</span>
+        <span class="dot"></span>
+        <span class="badge moss"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> Verified host</span>
+        <span class="badge">Top 5% in Lake District</span>
+      </div>
+    </div>
+    <div class="actions">
+      <button><svg viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg> Share</button>
+      <button class="save-btn" onclick="this.classList.toggle('saved');this.querySelector('span').textContent=this.classList.contains('saved')?'Saved':'Save';"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg> <span>Save</span></button>
+    </div>
+  </div>
+
+  <!-- GALLERY -->
+  <div class="gallery">
+    <div class="ph warm g1" data-label="EXTERIOR · DUSK"></div>
+    <div class="ph fog" data-label="LIVING ROOM · WOOD BURNER"></div>
+    <div class="ph dusk" data-label="MASTER BEDROOM"></div>
+    <div class="ph sage" data-label="KITCHEN · OAK BEAMS"></div>
+    <div class="ph cool" data-label="GARDEN · VIEW TO FELLS"></div>
+    <button class="show-all" onclick="alert('Open gallery (12 photos)')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      All 12 photos
+    </button>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="pdetail">
+
+    <div class="pd-main">
+
+      <!-- HOST STRIP -->
+      <div class="host-strip">
+        <div class="av">S</div>
+        <div class="info">
+          <div class="h-name">Hosted by <i style="font-style:italic;color:var(--brick)">Sarah</i> &amp; her family
+            <span class="badge moss"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> Verified</span>
+          </div>
+          <div class="h-meta">Host since 2024 · Speaks English, Welsh · Usually replies within 2 hours · 4.9 ★ across all stays</div>
+        </div>
+        <div class="actions">
+          <a href="messages.html" class="btn btn-outline btn-sm">
+            <svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg>
+            Message Sarah
+          </a>
+        </div>
+      </div>
+
+      <!-- FACTS -->
+      <div class="facts">
+        <div class="fact">
+          <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M21 19c0-2.2-1.8-4-4-4"/></svg>
+          <div class="lbl">Sleeps</div>
+          <div class="val">6</div>
+        </div>
+        <div class="fact">
+          <svg viewBox="0 0 24 24"><path d="M3 17v-7h13a4 4 0 0 1 4 4v3"/><path d="M3 21v-4M21 21v-4"/></svg>
+          <div class="lbl">Bedrooms</div>
+          <div class="val">3</div>
+        </div>
+        <div class="fact">
+          <svg viewBox="0 0 24 24"><path d="M3 12h18v4a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M5 12V6a2 2 0 0 1 2-2h2v3"/></svg>
+          <div class="lbl">Bathrooms</div>
+          <div class="val">2</div>
+        </div>
+        <div class="fact">
+          <svg viewBox="0 0 24 24"><path d="M5 21V8l7-5 7 5v13"/><path d="M5 21h14"/><path d="M9 21v-6h6v6"/></svg>
+          <div class="lbl">Type</div>
+          <div class="val" style="font-size:20px">Cottage</div>
+        </div>
+      </div>
+
+      <!-- ABOUT -->
+      <div class="about">
+        <h2>About <i>the cottage</i></h2>
+        <p>A 300-year-old stone cottage tucked into the fells just outside Windermere village. Three bedrooms, sleeps six, with original oak beams, a flagstone kitchen, and a wood burner that throws heat all evening. The garden steps down through wild ferns to a beck — there's a swing, a fire pit, and a view straight to Loughrigg Fell.</p>
+        <p>We bought the place in 2024 after years of holidaying in the Lakes and slowly bringing it back to itself — re-pointing the stonework, restoring the windows, and putting the heart back into the kitchen. It's been a labour of love. We hope you'll feel it.</p>
+        <p>Walk to the pub in 10 minutes. Windermere lake is 5 minutes by car. Dogs welcome (we have two of our own). Cot and high chair available on request.</p>
+        <button class="more">Show more →</button>
+      </div>
+
+      <!-- AMENITIES -->
+      <div class="amenities">
+        <h2>What's <i>included</i></h2>
+        <div class="am-grid">
+          <div class="am"><svg viewBox="0 0 24 24"><path d="M12 22c-4 0-7-3-7-7 0-3 2-5 4-7 0 3 2 4 3 2 1-3-1-5 2-8 0 4 3 5 4 9 1 4-2 11-6 11z"/></svg> Wood burner &amp; open fire</div>
+          <div class="am"><svg viewBox="0 0 24 24"><path d="M2 9a15 15 0 0 1 20 0"/><path d="M5 13a10 10 0 0 1 14 0"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg> Fibre wifi (95 Mbps)</div>
+          <div class="am"><svg viewBox="0 0 24 24"><circle cx="6" cy="9" r="2"/><circle cx="18" cy="9" r="2"/><circle cx="9" cy="5" r="2"/><circle cx="15" cy="5" r="2"/><path d="M8 18c0-3 2-5 4-5s4 2 4 5c0 2-2 3-4 3s-4-1-4-3z"/></svg> Dogs welcome (2 max)</div>
+          <div class="am"><svg viewBox="0 0 24 24"><path d="M5 17H3v-5l2-5h14l2 5v5h-2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg> Off-street parking (2 cars)</div>
+          <div class="am"><svg viewBox="0 0 24 24"><path d="M3 12h18v4a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M5 12V6a2 2 0 0 1 2-2h2v3"/></svg> Bath with roll-top</div>
+          <div class="am"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2"/></svg> Smart TV &amp; Netflix</div>
+          <div class="am"><svg viewBox="0 0 24 24"><path d="M3 11h18M7 6V4M17 6V4M7 11V6h10v5"/></svg> Aga cooker</div>
+          <div class="am"><svg viewBox="0 0 24 24"><path d="M5 9a7 7 0 0 1 14 0v3a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z"/></svg> Garden &amp; fire pit</div>
+          <div class="am crossed"><svg viewBox="0 0 24 24"><path d="M4 12V8a4 4 0 0 1 8 0v4"/><path d="M2 16h20"/><path d="M4 18h16l-1 4H5z"/></svg> Hot tub</div>
+          <div class="am crossed"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18"/></svg> Pool</div>
+        </div>
+      </div>
+
+      <!-- CALENDAR -->
+      <div class="cal-block">
+        <h2><i>July</i> &amp; August</h2>
+        <div class="sub">Click two dates to set your stay. Calendar is updated by Sarah directly &mdash; available dates are live.</div>
+        <div class="cal">
+          <div class="cal-month">
+            <div class="mh">
+              <div class="mn">July <span style="color:var(--ink-4);font-family:var(--mono);font-style:normal;font-size:11px;letter-spacing:.12em;text-transform:uppercase">2026</span></div>
+              <div style="display:flex;gap:6px"><button><svg viewBox="0 0 24 24"><path d="M19 12H5M11 5l-7 7 7 7"/></svg></button><button><svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></button></div>
+            </div>
+            <div class="cal-grid">
+              <div class="dn">M</div><div class="dn">T</div><div class="dn">W</div><div class="dn">T</div><div class="dn">F</div><div class="dn">S</div><div class="dn">S</div>
+              <div class="d muted">30</div><div class="d unavailable">1</div><div class="d unavailable">2</div><div class="d">3</div><div class="d">4</div><div class="d">5</div><div class="d">6</div>
+              <div class="d">7</div><div class="d">8</div><div class="d">9</div><div class="d">10</div><div class="d">11</div><div class="d start">12</div><div class="d in-range">13</div>
+              <div class="d in-range">14</div><div class="d in-range">15</div><div class="d in-range">16</div><div class="d in-range">17</div><div class="d in-range">18</div><div class="d end">19</div><div class="d">20</div>
+              <div class="d">21</div><div class="d">22</div><div class="d unavailable">23</div><div class="d unavailable">24</div><div class="d unavailable">25</div><div class="d unavailable">26</div><div class="d unavailable">27</div>
+              <div class="d">28</div><div class="d">29</div><div class="d">30</div><div class="d">31</div><div class="d muted">1</div><div class="d muted">2</div><div class="d muted">3</div>
+            </div>
+          </div>
+          <div class="cal-month">
+            <div class="mh">
+              <div class="mn">August <span style="color:var(--ink-4);font-family:var(--mono);font-style:normal;font-size:11px;letter-spacing:.12em;text-transform:uppercase">2026</span></div>
+              <div></div>
+            </div>
+            <div class="cal-grid">
+              <div class="dn">M</div><div class="dn">T</div><div class="dn">W</div><div class="dn">T</div><div class="dn">F</div><div class="dn">S</div><div class="dn">S</div>
+              <div class="d muted">28</div><div class="d muted">29</div><div class="d muted">30</div><div class="d muted">31</div><div class="d">1</div><div class="d">2</div><div class="d">3</div>
+              <div class="d">4</div><div class="d">5</div><div class="d">6</div><div class="d unavailable">7</div><div class="d unavailable">8</div><div class="d unavailable">9</div><div class="d unavailable">10</div>
+              <div class="d">11</div><div class="d">12</div><div class="d">13</div><div class="d">14</div><div class="d">15</div><div class="d">16</div><div class="d">17</div>
+              <div class="d">18</div><div class="d">19</div><div class="d">20</div><div class="d">21</div><div class="d">22</div><div class="d">23</div><div class="d">24</div>
+              <div class="d">25</div><div class="d">26</div><div class="d">27</div><div class="d">28</div><div class="d">29</div><div class="d">30</div><div class="d">31</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAP -->
+      <div class="map-block">
+        <h2>Where <i>you'll be</i></h2>
+        <div class="sub">Windermere, Lake District &mdash; exact location shared after enquiry.</div>
+        <div class="map-box">
+          <div class="pin">
+            <div class="pulse"></div>
+            <div class="lbl">Stone Cottage</div>
+            <div class="core"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- REVIEWS -->
+      <div class="reviews">
+        <h2><span class="serif" style="font-style:italic;color:var(--brick)">4.9</span> · 23 reviews</h2>
+        <div class="rev-summary">
+          <div class="overall">
+            <div class="score">4.9</div>
+            <div style="font-size:12px;color:var(--ink-3);margin-top:4px">
+              <span class="stars" style="display:inline-flex;align-items:center;gap:2px">
+                <svg style="width:14px;height:14px;fill:var(--brick);stroke:none" viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+                <svg style="width:14px;height:14px;fill:var(--brick);stroke:none" viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+                <svg style="width:14px;height:14px;fill:var(--brick);stroke:none" viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+                <svg style="width:14px;height:14px;fill:var(--brick);stroke:none" viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+                <svg style="width:14px;height:14px;fill:var(--brick);stroke:none" viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              </span>
+            </div>
+            <div class="of">23 reviews</div>
+          </div>
+          <div class="breakdown">
+            <div class="rev-row"><span class="nm">Cleanliness</span><span class="bar"><span class="fill" style="width:98%"></span></span><span class="val">4.9</span></div>
+            <div class="rev-row"><span class="nm">Communication</span><span class="bar"><span class="fill" style="width:100%"></span></span><span class="val">5.0</span></div>
+            <div class="rev-row"><span class="nm">Accuracy</span><span class="bar"><span class="fill" style="width:96%"></span></span><span class="val">4.8</span></div>
+            <div class="rev-row"><span class="nm">Check-in</span><span class="bar"><span class="fill" style="width:100%"></span></span><span class="val">5.0</span></div>
+            <div class="rev-row"><span class="nm">Location</span><span class="bar"><span class="fill" style="width:96%"></span></span><span class="val">4.8</span></div>
+            <div class="rev-row"><span class="nm">Value</span><span class="bar"><span class="fill" style="width:100%"></span></span><span class="val">5.0</span></div>
+          </div>
+        </div>
+
+        <div class="rev-list">
+          <div class="rev">
+            <div class="r-head">
+              <div class="av">M</div>
+              <div>
+                <div class="who">Marcus J.</div>
+                <div class="when">June 2026 · Family trip</div>
+              </div>
+            </div>
+            <div class="body">"A proper Lakes cottage &mdash; warm, lived-in, and with the kind of view you book a holiday for. Sarah was on hand without ever being in the way. We saved nearly £200 booking direct through Casa, which paid for half the food shop."</div>
+          </div>
+          <div class="rev">
+            <div class="r-head">
+              <div class="av brick">L</div>
+              <div>
+                <div class="who">Laura P.</div>
+                <div class="when">May 2026 · Couple's break</div>
+              </div>
+            </div>
+            <div class="body">"Wood burner does what wood burners are supposed to do. Walked into Windermere village both nights, dog loved the garden. The cottage smells like a real home, not a holiday rental. Will be back."</div>
+          </div>
+          <div class="rev">
+            <div class="r-head">
+              <div class="av">H</div>
+              <div>
+                <div class="who">Hannah &amp; Tom</div>
+                <div class="when">April 2026 · 4 nights</div>
+              </div>
+            </div>
+            <div class="body">"We took our two children (5 &amp; 8) and the dog. Cottage is just as photographed. Loved the fire pit in the evenings &mdash; the kids toasted marshmallows for an hour. Sarah even left a Lakeland map and a list of her favourite walks."</div>
+          </div>
+          <div class="rev">
+            <div class="r-head">
+              <div class="av brick">D</div>
+              <div>
+                <div class="who">Daniel R.</div>
+                <div class="when">March 2026 · Long weekend</div>
+              </div>
+            </div>
+            <div class="body">"Booked it on a Tuesday for the following weekend &mdash; Sarah replied within an hour and we paid her direct. Easy. The cottage is genuinely beautiful, and the location couldn't be more central for the southern Lakes."</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 28px"><button class="btn btn-outline">Show all 23 reviews</button></div>
+      </div>
+
+    </div>
+
+    <!-- SIDE -->
+    <aside class="pd-side">
+      <div class="book-card">
+        <div class="price-row">
+          <div class="price"><i>£175</i></div><div class="per"> / night</div>
+        </div>
+        <div class="fee-note">£0 booking fee · pay host direct</div>
+
+        <div class="book-form">
+          <div class="row">
+            <div class="cell" onclick="document.getElementById('checkin').showPicker?.() || document.getElementById('checkin').focus()" style="cursor:pointer">
+              <span class="l">Check in</span>
+              <span class="v" id="checkinDisplay">Select date</span>
+              <input type="date" id="checkin" style="position:absolute;opacity:0;width:0;height:0" onchange="updateBooking()">
+            </div>
+            <div class="cell" onclick="document.getElementById('checkout').showPicker?.() || document.getElementById('checkout').focus()" style="cursor:pointer">
+              <span class="l">Check out</span>
+              <span class="v" id="checkoutDisplay">Select date</span>
+              <input type="date" id="checkout" style="position:absolute;opacity:0;width:0;height:0" onchange="updateBooking()">
+            </div>
+          </div>
+          <div class="row">
+            <div class="cell">
+              <span class="l">Guests</span>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
+                <button onclick="changeGuests(-1)" style="width:22px;height:22px;border-radius:50%;border:1px solid var(--rule-3);background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:14px;line-height:1;color:var(--ink)">−</button>
+                <span class="v" id="guestDisplay" style="min-width:20px;text-align:center">2</span>
+                <button onclick="changeGuests(1)" style="width:22px;height:22px;border-radius:50%;border:1px solid var(--rule-3);background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:14px;line-height:1;color:var(--ink)">+</button>
+              </div>
+            </div>
+            <div class="cell">
+              <span class="l">Pets</span>
+              <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+                <label style="position:relative;width:36px;height:20px;display:inline-block">
+                  <input type="checkbox" id="petsToggle" onchange="updateBooking()" style="opacity:0;width:0;height:0">
+                  <span id="toggleTrack" style="position:absolute;inset:0;border-radius:10px;background:var(--rule);cursor:pointer;transition:background .2s"></span>
+                  <span id="toggleThumb" style="position:absolute;width:14px;height:14px;border-radius:50%;background:white;top:3px;left:3px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,0.2)"></span>
+                </label>
+                <span class="v" id="petsDisplay" style="font-size:13px;color:var(--ink-3)">No</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <a class="book-cta" href="booking.html" id="enquireBtn" onclick="return goEnquire()">
+          Enquire to book
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+        <a class="book-msg" href="messages.html">
+          <svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg>
+          Message Sarah first
+        </a>
+
+        <div class="book-foot">You won't be charged yet. Sarah will reply with availability and a way to pay directly.</div>
+
+        <div class="breakdown" id="breakdown">
+          <div class="row"><span id="nightsLabel">£175 / night</span><span id="nightsTotal">—</span></div>
+          <div class="row"><span>Cleaning (set by Sarah)</span><span>£60</span></div>
+          <div class="row fee"><span>Casa booking fee</span><span class="v">£0</span></div>
+          <div class="row save" id="saveRow" style="display:none"><span>You save vs Booking.com</span><span id="saveAmt">—</span></div>
+          <div class="row total"><span>Total to Sarah</span><span id="grandTotal">—</span></div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="casa-foot">
+  <div class="inner">
+    <div class="top">
+      <div>
+        <div class="casa-mark-lg">casa</div>
+        <div class="pitch">A quieter place to find a holiday stay &mdash; <em>fee-free</em>, and direct with the host.</div>
+      </div>
+      <div><h5>Find a stay</h5><a href="browse.html">Browse all stays</a><a href="map.html">Map view</a><a href="feed.html">Community feed</a><a href="how-it-works.html">How it works</a></div>
+      <div><h5>For hosts</h5><a href="list.html">List a property</a><a href="host.html">Host dashboard</a><a href="how-it-works.html#hosts">How it works</a></div>
+      <div><h5>Account</h5><a href="signup.html">Sign in</a><a href="signup.html">Join free</a><a href="saved.html">Saved stays</a><a href="messages.html">Messages</a><a href="profile.html">Profile</a></div>
+      <div><h5>Casa</h5><a href="#">Our story</a><a href="how-it-works.html">How it works</a><a href="#">Help centre</a><a href="#">Privacy policy</a></div>
+    </div>
+    <div class="bot"><div>&copy; 2026 Casa.co.uk &mdash; <em style="font-family:var(--serif);font-style:italic">fee-free, always.</em></div><div><a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Cookies</a></div></div>
+  </div>
+</footer>
+
+<script src="casa.js"></script>
+<script>
+// ── Property data (replace with Supabase fetch in production) ──
+const PROP = { title: 'Stone Cottage, Windermere', price: 175, cleaning: 60, maxGuests: 6 };
+let guests = 2;
+
+// ── Format date for display ──
+function fmtDate(val) {
+  if (!val) return 'Select date';
+  const d = new Date(val + 'T12:00:00');
+  return d.toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
+}
+
+// ── Format date for URL ──
+function fmtISO(val) { return val || ''; }
+
+// ── Guest stepper ──
+function changeGuests(delta) {
+  guests = Math.max(1, Math.min(PROP.maxGuests, guests + delta));
+  document.getElementById('guestDisplay').textContent = guests + (guests === 1 ? ' adult' : ' adults');
+  updateBooking();
+}
+
+// ── Pets toggle ──
+document.getElementById('petsToggle').addEventListener('change', function() {
+  document.getElementById('toggleTrack').style.background = this.checked ? 'var(--moss)' : 'var(--rule)';
+  document.getElementById('toggleThumb').style.transform = this.checked ? 'translateX(16px)' : 'translateX(0)';
+  document.getElementById('petsDisplay').textContent = this.checked ? 'Yes' : 'No';
+});
+
+// ── Update sidebar when dates/guests change ──
+function updateBooking() {
+  const ci = document.getElementById('checkin').value;
+  const co = document.getElementById('checkout').value;
+
+  document.getElementById('checkinDisplay').textContent = fmtDate(ci);
+  document.getElementById('checkoutDisplay').textContent = fmtDate(co);
+  document.getElementById('checkinDisplay').style.color = ci ? 'var(--ink)' : 'var(--ink-4)';
+  document.getElementById('checkoutDisplay').style.color = co ? 'var(--ink)' : 'var(--ink-4)';
+
+  if (ci && co) {
+    const nights = Math.round((new Date(co) - new Date(ci)) / 86400000);
+    if (nights > 0) {
+      const stay = PROP.price * nights;
+      const total = stay + PROP.cleaning;
+      const saving = Math.round(total * 0.147);
+      document.getElementById('nightsLabel').textContent = '£' + PROP.price + ' × ' + nights + ' night' + (nights > 1 ? 's' : '');
+      document.getElementById('nightsTotal').textContent = '£' + stay.toLocaleString();
+      document.getElementById('grandTotal').textContent = '£' + total.toLocaleString();
+      document.getElementById('saveAmt').textContent = '~£' + saving;
+      document.getElementById('saveRow').style.display = 'flex';
+      return;
+    }
+  }
+  document.getElementById('nightsLabel').textContent = '£' + PROP.price + ' / night';
+  document.getElementById('nightsTotal').textContent = '—';
+  document.getElementById('grandTotal').textContent = '—';
+  document.getElementById('saveRow').style.display = 'none';
+}
+
+// ── Build URL and navigate to booking page ──
+function goEnquire() {
+  const ci = document.getElementById('checkin').value;
+  const co = document.getElementById('checkout').value;
+  const pets = document.getElementById('petsToggle').checked;
+  const params = new URLSearchParams({
+    prop: PROP.title,
+    price: PROP.price,
+    guests: guests,
+    pets: pets ? '1' : '0',
+    ...(ci && { checkin: ci }),
+    ...(co && { checkout: co }),
+  });
+  window.location.href = 'booking.html?' + params.toString();
+  return false;
+}
+
+// ── Wire calendar clicks to check-in/out ──
+let pickingCheckin = true;
+document.querySelectorAll('.cal .d:not(.unavailable):not(.muted)').forEach(cell => {
+  cell.style.cursor = 'pointer';
+  cell.addEventListener('click', function() {
+    const day = parseInt(this.textContent);
+    if (isNaN(day)) return;
+    const month = this.closest('.cal-month').querySelector('.mn').textContent.trim().split(' ')[0];
+    const year = 2026;
+    const monthNum = ['January','February','March','April','May','June','July','August','September','October','November','December'].indexOf(month) + 1;
+    const iso = year + '-' + String(monthNum).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+
+    if (pickingCheckin) {
+      document.getElementById('checkin').value = iso;
+      document.getElementById('checkout').value = '';
+      pickingCheckin = false;
+    } else {
+      if (iso > document.getElementById('checkin').value) {
+        document.getElementById('checkout').value = iso;
+        pickingCheckin = true;
+      } else {
+        document.getElementById('checkin').value = iso;
+      }
+    }
+    updateBooking();
+    highlightRange();
+  });
+});
+
+function highlightRange() {
+  const ci = document.getElementById('checkin').value;
+  const co = document.getElementById('checkout').value;
+  document.querySelectorAll('.cal .d').forEach(cell => {
+    cell.classList.remove('start','end','in-range');
+  });
+  if (!ci) return;
+  document.querySelectorAll('.cal .d:not(.unavailable):not(.muted)').forEach(cell => {
+    const day = parseInt(cell.textContent);
+    if (isNaN(day)) return;
+    const month = cell.closest('.cal-month').querySelector('.mn').textContent.trim().split(' ')[0];
+    const monthNum = ['January','February','March','April','May','June','July','August','September','October','November','December'].indexOf(month) + 1;
+    const iso = '2026-' + String(monthNum).padStart(2,'0') + '-' + String(day).padStart(2,'0');
+    if (iso === ci) cell.classList.add('start');
+    else if (co && iso === co) cell.classList.add('end');
+    else if (co && iso > ci && iso < co) cell.classList.add('in-range');
+  });
+}
+
+// Init with the pre-selected July 12–19 dates
+document.getElementById('checkin').value = '2026-07-12';
+document.getElementById('checkout').value = '2026-07-19';
+updateBooking();
+highlightRange();
+</script>
+</body>
+</html>

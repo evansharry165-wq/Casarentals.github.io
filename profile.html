@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Profile — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+  /* ── Banner ── */
+  .profile-banner {
+    background: var(--ink); color: var(--paper);
+    padding: 48px 0 36px;
+    position: relative; overflow: hidden;
+  }
+  .profile-banner::before {
+    content: ''; position: absolute; right: -100px; top: -100px;
+    width: 380px; height: 380px; border-radius: 50%;
+    background: radial-gradient(circle at center, rgba(176,85,51,0.22), transparent 65%);
+  }
+  .profile-banner .inner { display: flex; align-items: center; gap: 36px; position: relative; flex-wrap: wrap; }
+
+  /* Avatar with edit overlay */
+  .av-wrap { position: relative; flex-shrink: 0; }
+  .av-lg {
+    width: 140px; height: 140px; border-radius: 50%;
+    background: var(--brick); color: white;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-style: italic; font-size: 64px;
+    border: 4px solid rgba(255,255,255,0.1);
+  }
+  .av-edit {
+    position: absolute; right: 4px; bottom: 4px;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--paper); color: var(--ink);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; border: 3px solid var(--ink);
+  }
+  .av-edit svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+  .info { flex: 1; min-width: 0; }
+  .name-edit { display: flex; align-items: baseline; gap: 8px; }
+  .name-edit input {
+    font-family: var(--serif); font-size: 56px; line-height: 1; letter-spacing: -0.025em;
+    color: var(--paper); background: transparent; border: none; outline: none;
+    border-bottom: 1px dashed rgba(255,255,255,0.0);
+    padding: 0 4px; width: auto; max-width: 380px;
+    transition: border-color .15s;
+  }
+  .name-edit input:hover, .name-edit input:focus { border-bottom-color: rgba(255,255,255,0.25); }
+  .name-edit input.italic { font-style: italic; color: var(--brick-2); }
+  .name-edit .edit-tag {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(255,255,255,0.4); opacity: 0; transition: opacity .15s;
+    margin-left: 6px;
+  }
+  .name-edit:hover .edit-tag { opacity: 1; }
+
+  .badges { display: flex; gap: 6px; align-items: center; margin: 10px 0 14px; flex-wrap: wrap; }
+  .badges .badge.dark { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.7); }
+  .quick { display: flex; gap: 24px; font-size: 13.5px; color: rgba(255,255,255,0.7); flex-wrap: wrap; }
+  .quick .n { font-family: var(--serif); font-style: italic; color: var(--brick-2); font-size: 22px; margin-right: 4px; }
+  .actions { display: flex; gap: 8px; }
+  .actions .btn { background: var(--paper); color: var(--ink); }
+  .actions .btn:hover { background: white; }
+  .actions .btn.ghost { background: transparent; color: var(--paper); border: 1px solid rgba(255,255,255,0.2); }
+  .actions .btn.ghost:hover { background: rgba(255,255,255,0.05); }
+
+  /* Role toggle */
+  .role-toggle {
+    display: inline-flex; gap: 0; padding: 5px;
+    background: rgba(255,255,255,0.06); border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .role-toggle button {
+    padding: 8px 18px; border-radius: 999px;
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    color: rgba(255,255,255,0.55); background: transparent; border: none; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: background .15s, color .15s;
+  }
+  .role-toggle button.active { background: var(--paper); color: var(--ink); }
+  .role-toggle button:hover:not(.active) { color: var(--paper); }
+  .role-toggle button svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+
+  /* Sub nav */
+  .profile-subnav {
+    border-bottom: 1px solid var(--rule); background: var(--paper);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .profile-subnav .inner { display: flex; gap: 0; align-items: center; }
+  .stab { padding: 18px 20px; font-size: 13.5px; color: var(--ink-3); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .12s, border-color .12s; text-decoration: none; }
+  .stab:hover { color: var(--ink); }
+  .stab.active { color: var(--brick); border-bottom-color: var(--brick); font-weight: 500; }
+  .stab .ct { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; margin-left: 4px; opacity: 0.6; }
+
+  /* ── Main ── */
+  .profile-main { padding: 36px 0 80px; display: grid; grid-template-columns: 1fr 340px; gap: 40px; }
+
+  .pf-block { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 28px 32px; margin-bottom: 16px; }
+  .b-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; gap: 16px; flex-wrap: wrap; }
+  .b-head h2 { font-family: var(--serif); font-size: 26px; line-height: 1; letter-spacing: -0.015em; }
+  .b-head h2 i { font-style: italic; color: var(--brick); }
+  .b-head .edit-cta { font-size: 12.5px; color: var(--ink-3); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; background: none; border: none; font-family: var(--sans); }
+  .b-head .edit-cta:hover { color: var(--brick); }
+
+  /* Editable field — looks finished but is editable */
+  .ef { display: flex; flex-direction: column; gap: 6px; }
+  .ef label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
+  .ef input, .ef textarea, .ef select {
+    width: 100%; background: transparent;
+    border: 1px solid transparent; border-radius: 8px;
+    padding: 8px 10px; font-family: var(--sans); font-size: 14.5px;
+    color: var(--ink); outline: none; resize: vertical;
+    transition: border-color .12s, background .12s, box-shadow .12s;
+    margin-left: -10px;
+  }
+  .ef input:hover, .ef textarea:hover, .ef select:hover { border-color: var(--rule); background: var(--paper); }
+  .ef input:focus, .ef textarea:focus, .ef select:focus { border-color: var(--ink); background: var(--paper); }
+  .ef textarea { min-height: 100px; line-height: 1.55; font-family: var(--serif); font-size: 17px; }
+  .ef textarea i { font-style: italic; color: var(--brick); }
+  .ef .hint { font-size: 11.5px; color: var(--ink-4); padding-left: 0; }
+
+  .ef-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; }
+  .ef-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .ef-grid .full { grid-column: 1 / -1; }
+
+  /* Verifications */
+  .verif-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .verif { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 12px; background: var(--paper); }
+  .verif.done { background: var(--moss-pale); border-color: rgba(77,92,64,0.25); }
+  .verif .v-ic { width: 32px; height: 32px; border-radius: 8px; background: var(--paper-2); color: var(--ink-3); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .verif.done .v-ic { background: var(--moss); color: white; }
+  .verif .v-ic svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .verif .v-info .v-lbl { font-size: 13.5px; font-weight: 500; color: var(--ink); }
+  .verif .v-info .v-sub { font-size: 11px; color: var(--ink-3); font-family: var(--mono); letter-spacing: 0.06em; margin-top: 1px; }
+  .verif.todo .v-add { margin-left: auto; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--brick); text-decoration: underline; text-underline-offset: 2px; cursor: pointer; background: none; border: none; }
+
+  /* Stays grid */
+  .stays-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .stay-card { background: var(--paper); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; text-decoration: none; color: inherit; transition: transform .15s, border-color .15s; }
+  .stay-card:hover { transform: translateY(-2px); border-color: var(--ink); }
+  .stay-card .si { aspect-ratio: 4/3; }
+  .stay-card .si .ph { width: 100%; height: 100%; }
+  .stay-card .sb { padding: 12px 14px 14px; }
+  .stay-card .nm { font-family: var(--serif); font-size: 17px; line-height: 1.05; margin-bottom: 4px; }
+  .stay-card .nm i { font-style: italic; color: var(--brick); }
+  .stay-card .when { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .stay-card .when .stars { color: var(--brick); }
+  .stay-card .review { font-family: var(--serif); font-style: italic; font-size: 13.5px; color: var(--ink-2); line-height: 1.45; }
+
+  /* Listing card (host mode) */
+  .listing-list { display: flex; flex-direction: column; gap: 12px; }
+  .listing {
+    display: flex; gap: 16px; padding: 14px;
+    background: var(--paper); border: 1px solid var(--rule); border-radius: 12px;
+    transition: border-color .15s;
+  }
+  .listing:hover { border-color: var(--ink); }
+  .listing .li { width: 100px; height: 80px; border-radius: 10px; overflow: hidden; flex-shrink: 0; }
+  .listing .li .ph { width: 100%; height: 100%; }
+  .listing .lb { flex: 1; min-width: 0; }
+  .listing .ln { font-family: var(--serif); font-size: 20px; line-height: 1.05; margin-bottom: 2px; }
+  .listing .ln i { font-style: italic; color: var(--brick); }
+  .listing .lloc { font-size: 12.5px; color: var(--ink-3); margin-bottom: 8px; }
+  .listing .lstats { display: flex; gap: 16px; font-size: 12.5px; color: var(--ink-2); flex-wrap: wrap; }
+  .listing .lstats .stat strong { font-family: var(--serif); font-style: italic; color: var(--brick); font-weight: 400; }
+  .listing .la { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .listing .price { font-family: var(--serif); font-size: 18px; }
+  .listing .price i { font-style: italic; color: var(--brick); }
+
+  /* Reviews */
+  .review-list { display: flex; flex-direction: column; gap: 16px; }
+  .review-item { padding: 16px 18px; border: 1px solid var(--rule); background: var(--paper); border-radius: 14px; }
+  .review-item .rh { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+  .review-item .rh .av { width: 36px; height: 36px; border-radius: 50%; background: var(--brick); color: white; display: inline-flex; align-items: center; justify-content: center; font-family: var(--serif); font-style: italic; font-size: 14px; flex-shrink: 0; }
+  .review-item .rh .av.guest { background: var(--moss); }
+  .review-item .rh .ri { flex: 1; }
+  .review-item .rh .ri .nm { font-size: 13.5px; font-weight: 500; }
+  .review-item .rh .ri .nm i { font-style: italic; color: var(--brick); font-weight: 400; }
+  .review-item .rh .ri .m { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-top: 2px; }
+  .review-item .rh .stars { display: inline-flex; gap: 2px; }
+  .review-item .rh .stars svg { width: 13px; height: 13px; fill: var(--brick); stroke: none; }
+  .review-item .body { font-family: var(--serif); font-size: 15.5px; line-height: 1.5; color: var(--ink); }
+  .review-item .body i { font-style: italic; color: var(--brick); }
+  .review-item .prop-ref { font-size: 11.5px; color: var(--ink-3); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--rule-2); display: flex; gap: 6px; align-items: center; }
+  .review-item .prop-ref i { font-style: italic; color: var(--brick); }
+
+  /* ── SIDE ── */
+  .side-block { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 22px 24px; margin-bottom: 14px; }
+  .side-block h3 { font-family: var(--serif); font-size: 22px; line-height: 1; margin-bottom: 4px; }
+  .side-block h3 i { font-style: italic; color: var(--brick); }
+  .side-block .meta { font-size: 12.5px; color: var(--ink-3); margin-bottom: 16px; }
+  .side-block .meta a { color: var(--brick); text-decoration: none; }
+  .full-btn { width: 100%; }
+
+  /* ── FEED WIDGET ── */
+  .feed-widget { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 20px 22px 16px; margin-bottom: 14px; }
+  .feed-widget .fw-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+  .feed-widget h3 { font-family: var(--serif); font-size: 22px; line-height: 1; }
+  .feed-widget h3 i { font-style: italic; color: var(--brick); }
+  .feed-widget .view-all { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--brick); text-decoration: none; }
+  .feed-widget .fw-tabs { display: flex; gap: 4px; padding: 3px; background: var(--paper); border-radius: 8px; margin-bottom: 12px; }
+  .feed-widget .fw-tabs button { flex: 1; padding: 6px 8px; border-radius: 6px; font-family: var(--sans); font-size: 11.5px; font-weight: 500; background: transparent; border: none; cursor: pointer; color: var(--ink-3); }
+  .feed-widget .fw-tabs button.active { background: var(--ink); color: var(--paper); }
+
+  .mini-post {
+    padding: 10px 12px; border-radius: 10px; border: 1px solid var(--rule-2);
+    margin-bottom: 6px; cursor: pointer; transition: border-color .12s, background .12s;
+    background: var(--paper);
+  }
+  .mini-post:hover { border-color: var(--ink); }
+  .mini-post .mp-head { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .mini-post .mp-head .av { width: 24px; height: 24px; border-radius: 50%; background: var(--brick); color: white; display: inline-flex; align-items: center; justify-content: center; font-family: var(--serif); font-style: italic; font-size: 11px; flex-shrink: 0; }
+  .mini-post .mp-head .av.guest { background: var(--moss); }
+  .mini-post .mp-head .nm { font-size: 12px; font-weight: 500; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .mini-post .mp-head .nm i { font-style: italic; color: var(--brick); font-weight: 400; }
+  .mini-post .mp-head .when { font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; color: var(--ink-4); flex-shrink: 0; }
+  .mini-post .type-pill {
+    display: inline-block;
+    font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 1.5px 6px; border-radius: 3px; margin-bottom: 4px;
+  }
+  .mini-post .type-pill.avail { background: var(--brick-pale); color: var(--brick-text); }
+  .mini-post .type-pill.looking { background: var(--moss-pale); color: var(--moss); }
+  .mini-post .type-pill.review { background: rgba(184,150,86,0.18); color: #7C6432; }
+  .mini-post .type-pill.tip { background: rgba(22,20,15,0.08); color: var(--ink-2); }
+  .mini-post .body { font-size: 12px; color: var(--ink-2); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .mini-post .body i { font-style: italic; color: var(--brick); }
+  .mini-post .mp-foot { font-family: var(--mono); font-size: 9px; letter-spacing: 0.06em; color: var(--ink-4); margin-top: 6px; display: flex; gap: 8px; }
+
+  /* Side link */
+  .side-link { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--rule-2); font-size: 13.5px; color: var(--ink); text-decoration: none; align-items: center; cursor: pointer; }
+  .side-link:last-of-type { border-bottom: none; }
+  .side-link:hover { color: var(--brick); }
+  .side-link svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+  .side-link.danger { color: var(--brick); }
+
+  /* Mode-specific show/hide */
+  .mode-guest .host-only { display: none; }
+  .mode-host .guest-only { display: none; }
+
+  /* Stats inline */
+  .quick-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding-top: 14px; border-top: 1px solid var(--rule-2); margin-top: 8px; }
+  .qs-row { display: flex; align-items: baseline; justify-content: space-between; padding: 4px 0; }
+  .qs-row .v { font-family: var(--serif); font-style: italic; color: var(--brick); font-size: 18px; }
+  .qs-row .l { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); }
+
+  /* Save bar (sticky when editing) */
+  .save-bar {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: var(--paper);
+    padding: 12px 16px 12px 22px; border-radius: 999px;
+    display: none; align-items: center; gap: 16px;
+    box-shadow: 0 12px 36px rgba(22,20,15,0.2);
+    z-index: 50; font-size: 13.5px;
+  }
+  .save-bar.show { display: inline-flex; }
+  .save-bar .lbl { font-family: var(--serif); font-style: italic; color: var(--brick-2); }
+  .save-bar button { padding: 6px 14px; border-radius: 999px; border: none; cursor: pointer; font-family: var(--sans); font-size: 12.5px; font-weight: 500; }
+  .save-bar button.cancel { background: transparent; color: rgba(255,255,255,0.7); }
+  .save-bar button.cancel:hover { color: white; }
+  .save-bar button.save { background: var(--brick); color: white; }
+  .save-bar button.save:hover { background: var(--brick-2); }
+
+  @media (max-width: 1000px) {
+    .profile-main { grid-template-columns: 1fr; }
+    .ef-grid, .ef-grid.cols-3 { grid-template-columns: 1fr; }
+    .verif-grid { grid-template-columns: 1fr; }
+    .stays-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body class="mode-guest">
+
+<nav class="casa-nav solid">
+  <a class="brand-lockup" href="index.html">
+    <span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span>
+  </a>
+  <div class="nav-right">
+    <a class="nav-link" href="browse.html">Browse</a>
+    <a class="nav-link" href="map.html">Map</a>
+    <a class="nav-link" href="feed.html">Feed</a>
+    <a class="nav-link" href="list.html">Become a host</a>
+    <div style="width:1px;height:20px;background:var(--rule);margin:0 4px"></div>
+    <a class="nav-link" href="saved.html">Saved</a>
+    <a class="nav-link" href="messages.html">Messages</a>
+    <div style="width:1px;height:20px;background:var(--rule);margin:0 4px"></div>
+    <a class="nav-link" href="signup.html">Sign in</a>
+    <a class="nav-link" href="profile.html" style="color:var(--brick);font-weight:500"><span class="nav-avatar">J</span></a>
+  </div>
+</nav>
+
+<!-- BANNER -->
+<section class="profile-banner">
+  <div class="wrap inner">
+    <div class="av-wrap">
+      <div class="av-lg" id="avLetter">J</div>
+      <button class="av-edit" title="Change photo"><svg viewBox="0 0 24 24"><path d="M16 4l4 4-12 12H4v-4z"/></svg></button>
+    </div>
+    <div class="info">
+      <div class="name-edit">
+        <input type="text" id="firstNm" class="italic" value="James" style="width:160px">
+        <input type="text" id="lastNm" value="Harrison" style="width:240px">
+        <span class="edit-tag">Click to edit</span>
+      </div>
+      <div class="badges">
+        <span class="badge moss"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> Verified</span>
+        <span class="badge dark">Member since Apr 2025</span>
+        <span class="badge dark"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/></svg> London, UK</span>
+        <span class="badge dark guest-only" style="background:rgba(77,92,64,0.25);color:var(--moss-pale)">Guest · 4.9★ from hosts</span>
+        <span class="badge dark host-only" style="background:rgba(176,85,51,0.22);color:var(--brick-2)">Host · 4.9★ from guests</span>
+      </div>
+      <div class="quick">
+        <span class="guest-only"><span class="n">8</span> stays</span>
+        <span class="guest-only"><span class="n">12</span> saved</span>
+        <span class="host-only"><span class="n">2</span> listings</span>
+        <span class="host-only"><span class="n">17</span> bookings</span>
+        <span><span class="n">23</span> following</span>
+        <span><span class="n">14</span> feed posts</span>
+      </div>
+    </div>
+    <div class="actions" style="display:flex;flex-direction:column;align-items:flex-end;gap:14px">
+      <!-- Role toggle -->
+      <div class="role-toggle">
+        <button class="active" onclick="setMode('guest', this)">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="3.5"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>
+          Guest
+        </button>
+        <button onclick="setMode('host', this)">
+          <svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/></svg>
+          Host
+        </button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <a href="#" class="btn ghost"><svg class="i" viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg> Share</a>
+        <button class="btn" onclick="toggleEdit()" id="editBtn"><svg class="i" viewBox="0 0 24 24"><path d="M16 4l4 4-12 12H4v-4z"/></svg> Edit profile</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SUB NAV -->
+<div class="profile-subnav">
+  <div class="wrap inner">
+    <a href="#about" class="stab active">About</a>
+    <a href="#stays" class="stab guest-only">Stayed <span class="ct">8</span></a>
+    <a href="#listings" class="stab host-only">Listings <span class="ct">2</span></a>
+    <a href="#reviews" class="stab">Reviews <span class="ct guest-only">12</span><span class="ct host-only">23</span></a>
+    <a href="#feed" class="stab">My feed</a>
+    <a href="saved.html" class="stab guest-only">Saved <span class="ct">12</span></a>
+    <a href="#preferences" class="stab">Preferences</a>
+    <div style="flex:1"></div>
+    <a href="host.html" class="stab" style="color: var(--brick); font-weight: 500">→ Open host dashboard</a>
+  </div>
+</div>
+
+<div class="wrap profile-main">
+
+  <!-- LEFT — content -->
+  <div>
+
+    <!-- About (editable, role-aware) -->
+    <div class="pf-block" id="about">
+      <div class="b-head">
+        <h2>About <i id="aboutName">James</i></h2>
+        <button class="edit-cta">Save changes</button>
+      </div>
+
+      <div class="ef-grid">
+        <div class="ef full">
+          <label class="guest-only">Your bio · for hosts to read when you enquire</label>
+          <label class="host-only">Your bio · for guests to read on your listings</label>
+          <textarea id="bio" class="guest-only">Lives in London with my partner Hannah, two kids (5 &amp; 8), and our black Labrador Bruno. Visits the Lakes once a year, the Cotswolds for half-terms, and Cornwall whenever the surf forecast lines up. Prefers cottages with a wood burner over hotels with a concierge.</textarea>
+          <textarea id="bioHost" class="host-only">Born and raised in the Lakes, I returned in 2024 with my family to restore a 300-year-old stone cottage just outside Windermere. I run it now as Stone Cottage &mdash; a place I'd want to stay in myself, and the people I'd want to meet. Two well-behaved Labradors live next door.</textarea>
+          <span class="hint">Tip: a short bio makes hosts and guests <i style="font-family:var(--serif);font-style:italic;color:var(--brick)">twice</i> as likely to engage.</span>
+        </div>
+      </div>
+
+      <div class="ef-grid cols-3" style="margin-top: 16px;">
+        <div class="ef">
+          <label>Based in</label>
+          <input type="text" id="location" value="London, UK">
+        </div>
+        <div class="ef">
+          <label>Languages</label>
+          <input type="text" id="languages" value="English, French (basic)">
+        </div>
+        <div class="ef">
+          <label>Pronouns</label>
+          <input type="text" id="pronouns" value="he / him">
+        </div>
+      </div>
+
+      <div class="ef-grid cols-3" style="margin-top: 16px;">
+        <div class="ef">
+          <label>Travel style</label>
+          <select>
+            <option>Quiet · off the beaten track</option>
+            <option>Family · with kids</option>
+            <option>Group · friends</option>
+            <option>Solo · slow travel</option>
+            <option>Couples · romantic</option>
+          </select>
+        </div>
+        <div class="ef">
+          <label>Usual party size</label>
+          <select>
+            <option>1 (solo)</option>
+            <option>2 (couple)</option>
+            <option selected>4 (family of four)</option>
+            <option>6+</option>
+            <option>8+ (group)</option>
+          </select>
+        </div>
+        <div class="ef">
+          <label>Travels with</label>
+          <input type="text" value="1 dog · Bruno (Labrador)">
+        </div>
+      </div>
+
+      <!-- HOST-only fields -->
+      <div class="ef-grid host-only" style="margin-top: 16px;">
+        <div class="ef">
+          <label>Hosting since</label>
+          <input type="text" value="April 2024">
+        </div>
+        <div class="ef">
+          <label>Typical response time</label>
+          <select><option selected>Within 2 hours</option><option>Within 6 hours</option><option>Within 24 hours</option></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Verifications -->
+    <div class="pf-block">
+      <div class="b-head">
+        <h2><i>Verifications</i> &amp; trust</h2>
+        <button class="edit-cta">Manage</button>
+      </div>
+      <div class="verif-grid">
+        <div class="verif done">
+          <div class="v-ic"><svg viewBox="0 0 24 24"><path d="M4 8h16v12H4z"/><path d="M4 8 12 3l8 5"/></svg></div>
+          <div class="v-info">
+            <div class="v-lbl">Email verified</div>
+            <div class="v-sub"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="e08a818d8593a08881929289938f8ece838fce958b">[email&#160;protected]</a> · Apr '25</div>
+          </div>
+        </div>
+        <div class="verif done">
+          <div class="v-ic"><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></div>
+          <div class="v-info">
+            <div class="v-lbl">Phone verified</div>
+            <div class="v-sub">+44 7700 ••• 412</div>
+          </div>
+        </div>
+        <div class="verif done">
+          <div class="v-ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="11" r="3"/><path d="M14 10h5M14 14h5"/></svg></div>
+          <div class="v-info">
+            <div class="v-lbl">Government ID</div>
+            <div class="v-sub">UK driving licence</div>
+          </div>
+        </div>
+        <div class="verif todo">
+          <div class="v-ic"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V6l-8-3z"/></svg></div>
+          <div class="v-info">
+            <div class="v-lbl" style="color:var(--ink-3)">Background check</div>
+            <div class="v-sub">Optional · gets Verified+ badge</div>
+          </div>
+          <button class="v-add">Add →</button>
+        </div>
+
+        <!-- Host-only: ownership / banking -->
+        <div class="verif done host-only">
+          <div class="v-ic"><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/></svg></div>
+          <div class="v-info">
+            <div class="v-lbl">Property ownership</div>
+            <div class="v-sub">Stone Cottage · confirmed</div>
+          </div>
+        </div>
+        <div class="verif done host-only">
+          <div class="v-ic"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg></div>
+          <div class="v-info">
+            <div class="v-lbl">Payout account</div>
+            <div class="v-sub">Lloyds · ••••2491</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAYS (GUEST) -->
+    <div class="pf-block guest-only" id="stays">
+      <div class="b-head">
+        <h2>Recently <i>stayed</i></h2>
+        <a href="#" style="font-size:13px;color:var(--brick);text-decoration:underline;text-underline-offset:3px">All 8 stays →</a>
+      </div>
+      <div class="stays-grid">
+        <a class="stay-card" href="property.html">
+          <div class="si"><div class="ph brick" data-label="THE GRANARY · HAWKSHEAD"></div></div>
+          <div class="sb">
+            <div class="nm">The Granary, <i>Hawkshead</i></div>
+            <div class="when"><span class="stars">★★★★★</span> 5.0 &middot; Sept '25 &middot; 4 nights</div>
+            <div class="review">"<i>Sarah was on hand without ever being in the way.</i> Saved nearly £200."</div>
+          </div>
+        </a>
+        <a class="stay-card" href="property.html">
+          <div class="si"><div class="ph cool" data-label="COASTAL BARN · HOLKHAM"></div></div>
+          <div class="sb">
+            <div class="nm">Coastal Barn, <i>Holkham</i></div>
+            <div class="when"><span class="stars">★★★★★</span> 4.8 &middot; Jun '25 &middot; 3 nights</div>
+            <div class="review">"Bird hide was the highlight &mdash; the kids spotted a marsh harrier."</div>
+          </div>
+        </a>
+        <a class="stay-card" href="property.html">
+          <div class="si"><div class="ph dusk" data-label="SHEPHERDS HUT · BUTTERMERE"></div></div>
+          <div class="sb">
+            <div class="nm">Shepherd's Hut, <i>Buttermere</i></div>
+            <div class="when"><span class="stars">★★★★★</span> 4.9 &middot; Sept '24 &middot; 2 nights</div>
+            <div class="review">"<i>Off-grid done properly.</i> Will be back when the kids are older."</div>
+          </div>
+        </a>
+        <a class="stay-card" href="property.html">
+          <div class="si"><div class="ph sage" data-label="CLIFFTOP COTTAGE · ST IVES"></div></div>
+          <div class="sb">
+            <div class="nm">Clifftop Cottage, <i>St Ives</i></div>
+            <div class="when"><span class="stars">★★★★★</span> 4.8 &middot; Jul '24 &middot; 7 nights</div>
+            <div class="review">"Cornish summer holiday with the kids &mdash; couldn't have been better."</div>
+          </div>
+        </a>
+        <a class="stay-card" href="property.html">
+          <div class="si"><div class="ph fog" data-label="STONE BARN · BIBURY"></div></div>
+          <div class="sb">
+            <div class="nm">Stone Barn, <i>Bibury</i></div>
+            <div class="when"><span class="stars">★★★★★</span> 4.7 &middot; Feb '24 &middot; 3 nights</div>
+            <div class="review">"Cotswolds in winter &mdash; warm, generous, and completely ours for the weekend."</div>
+          </div>
+        </a>
+        <a class="stay-card" href="property.html">
+          <div class="si"><div class="ph warm" data-label="MILLER'S COTTAGE · GRASMERE"></div></div>
+          <div class="sb">
+            <div class="nm">Miller's Cottage, <i>Grasmere</i></div>
+            <div class="when"><span class="stars">★★★★☆</span> 4.5 &middot; Apr '23 &middot; 5 nights</div>
+            <div class="review">"Riverside cottage with a wood burner that took us right back to Wordsworth."</div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- LISTINGS (HOST) -->
+    <div class="pf-block host-only" id="listings">
+      <div class="b-head">
+        <h2>Your <i>listings</i></h2>
+        <a href="list.html" style="font-size:13px;color:var(--brick);text-decoration:underline;text-underline-offset:3px">+ Add a listing</a>
+      </div>
+      <div class="listing-list">
+        <div class="listing">
+          <div class="li"><div class="ph warm" data-label="STONE COTTAGE"></div></div>
+          <div class="lb">
+            <div class="ln">Stone Cottage, <i>Windermere</i></div>
+            <div class="lloc">Cumbria &middot; Lake District &middot; Cottage &middot; Sleeps 6</div>
+            <div class="lstats">
+              <span class="stat"><strong>4.9 ★</strong> 23 reviews</span>
+              <span class="stat"><strong>78%</strong> occupancy</span>
+              <span class="stat"><strong>17</strong> bookings YTD</span>
+              <span class="stat"><strong>£14,225</strong> earned YTD</span>
+            </div>
+          </div>
+          <div class="la">
+            <div class="price"><i>£175</i> /night</div>
+            <a class="btn btn-outline btn-sm" href="property.html">View</a>
+          </div>
+        </div>
+        <div class="listing">
+          <div class="li"><div class="ph sage" data-label="SLATE BARN"></div></div>
+          <div class="lb">
+            <div class="ln">Slate Barn, <i>Ambleside</i></div>
+            <div class="lloc">Cumbria &middot; Lake District &middot; Barn conversion &middot; Sleeps 4</div>
+            <div class="lstats">
+              <span class="stat"><strong>4.8 ★</strong> 11 reviews</span>
+              <span class="stat"><strong>54%</strong> occupancy</span>
+              <span class="stat"><strong>5</strong> bookings YTD</span>
+              <span class="stat"><strong>£4,260</strong> earned YTD</span>
+            </div>
+          </div>
+          <div class="la">
+            <div class="price"><i>£215</i> /night</div>
+            <a class="btn btn-outline btn-sm" href="property.html">View</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="pf-block" id="reviews">
+      <div class="b-head">
+        <h2 class="guest-only"><i>Reviews</i> from hosts</h2>
+        <h2 class="host-only"><i>Reviews</i> from guests</h2>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--serif);font-style:italic;color:var(--brick);font-size:32px">4.9</span>
+          <span style="font-size:12.5px;color:var(--ink-3)">
+            <span class="guest-only">12 reviews · across 8 stays</span>
+            <span class="host-only">23 reviews · across 2 listings</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="review-list">
+        <!-- GUEST mode: reviews FROM hosts about James -->
+        <div class="review-item guest-only">
+          <div class="rh">
+            <div class="av">S</div>
+            <div class="ri">
+              <div class="nm"><i>Sarah</i> R. <span style="font-style:normal;font-weight:400;color:var(--ink-3);font-size:11.5px;margin-left:4px">host</span></div>
+              <div class="m">After James stayed at Stone Cottage · Jul '24</div>
+            </div>
+            <div class="stars">
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+            </div>
+          </div>
+          <div class="body">"James and the family were <i>impeccable</i> guests &mdash; the cottage was as we left it, Bruno didn't shed a hair (apparently), and they even brought us a tin of biscuits. Welcome any time."</div>
+          <div class="prop-ref">Re: <i>Stone Cottage, Windermere</i> &middot; 7 nights, 4 adults + 1 dog</div>
+        </div>
+        <div class="review-item guest-only">
+          <div class="rh">
+            <div class="av">T</div>
+            <div class="ri">
+              <div class="nm"><i>Tom &amp; Anna</i> <span style="font-style:normal;font-weight:400;color:var(--ink-3);font-size:11.5px;margin-left:4px">hosts</span></div>
+              <div class="m">After James stayed at Shepherd's Hut · Sept '24</div>
+            </div>
+            <div class="stars">
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+            </div>
+          </div>
+          <div class="body">"Couple in proper love with the place &mdash; appreciated the off-grid bit, took a real interest in the land. Would have them back tomorrow."</div>
+          <div class="prop-ref">Re: <i>Shepherd's Hut, Buttermere</i> &middot; 2 nights, 2 adults</div>
+        </div>
+
+        <!-- HOST mode: reviews FROM guests about James-as-host -->
+        <div class="review-item host-only">
+          <div class="rh">
+            <div class="av guest">M</div>
+            <div class="ri">
+              <div class="nm"><i>Marcus</i> J. <span style="font-style:normal;font-weight:400;color:var(--ink-3);font-size:11.5px;margin-left:4px">guest</span></div>
+              <div class="m">Stayed at Stone Cottage · Jun '26</div>
+            </div>
+            <div class="stars">
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+            </div>
+          </div>
+          <div class="body">"A proper Lakes cottage &mdash; warm, lived-in, and with the view you book a holiday for. James was on hand without ever being in the way. We saved <i>nearly £200</i> booking direct."</div>
+          <div class="prop-ref">Re: <i>Stone Cottage, Windermere</i></div>
+        </div>
+        <div class="review-item host-only">
+          <div class="rh">
+            <div class="av guest">L</div>
+            <div class="ri">
+              <div class="nm"><i>Laura</i> P. <span style="font-style:normal;font-weight:400;color:var(--ink-3);font-size:11.5px;margin-left:4px">guest</span></div>
+              <div class="m">Stayed at Stone Cottage · May '26</div>
+            </div>
+            <div class="stars">
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+            </div>
+          </div>
+          <div class="body">"Wood burner does what wood burners are supposed to do. Walked into the village both nights, dog loved the garden. The cottage <i>smells like a real home</i>, not a holiday rental. Will be back."</div>
+          <div class="prop-ref">Re: <i>Stone Cottage, Windermere</i></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MY FEED -->
+    <div class="pf-block" id="feed">
+      <div class="b-head">
+        <h2>My <i>feed posts</i></h2>
+        <a href="feed.html" style="font-size:13px;color:var(--brick);text-decoration:underline;text-underline-offset:3px">All 14 posts →</a>
+      </div>
+      <div class="review-list">
+        <div class="review-item">
+          <div class="rh">
+            <div class="av guest" style="background:var(--ink)">J</div>
+            <div class="ri">
+              <div class="nm">Posted in <i>Cumbria</i> &middot; <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--brick)">Looking</span></div>
+              <div class="m">5 hrs ago &middot; 8 replies &middot; 12 likes</div>
+            </div>
+          </div>
+          <div class="body">"Group of 8 looking for a place in the Lakes for the <i>August bank holiday</i> (27&ndash;31 Aug). Dog-friendly, parking for 3 cars, walking distance to a pub. Budget ~£250/night. Hosts &mdash; drop your links."</div>
+        </div>
+        <div class="review-item">
+          <div class="rh">
+            <div class="av guest" style="background:var(--ink)">J</div>
+            <div class="ri">
+              <div class="nm">Posted in <i>Cornwall</i> &middot; <span style="font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#7C6432">Review</span></div>
+              <div class="m">Yesterday &middot; 32 likes</div>
+            </div>
+          </div>
+          <div class="body">"Just back from a week at <i>Clifftop Cottage</i> in St Ives. The kids didn't want to leave. Surfed every day, ate at the harbour every night. <i>Highly recommend.</i>"</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREFERENCES (account) -->
+    <div class="pf-block" id="preferences">
+      <div class="b-head"><h2><i>Preferences</i> &amp; notifications</h2></div>
+      <div class="ef-grid">
+        <div class="ef">
+          <label>Email notifications</label>
+          <select>
+            <option>All updates</option>
+            <option>Bookings &amp; messages only</option>
+            <option>Weekly digest</option>
+            <option>Off</option>
+          </select>
+        </div>
+        <div class="ef">
+          <label>Currency</label>
+          <select><option>GBP (£)</option><option>EUR (€)</option><option>USD ($)</option></select>
+        </div>
+        <div class="ef">
+          <label>Feed counties (follow)</label>
+          <input type="text" value="Cumbria, Cornwall, Gloucestershire, Antrim">
+        </div>
+        <div class="ef">
+          <label>Profile visibility</label>
+          <select>
+            <option>Public — anyone on Casa</option>
+            <option selected>Members only</option>
+            <option>Hosts only (when I enquire)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT — feed widget + sidebar -->
+  <aside>
+
+    <!-- COMMUNITY FEED WIDGET -->
+    <div class="feed-widget">
+      <div class="fw-head">
+        <h3>My <i>feed</i></h3>
+        <a href="feed.html" class="view-all">Open feed →</a>
+      </div>
+      <div class="fw-tabs">
+        <button class="active">Following</button>
+        <button>My counties</button>
+        <button>Hosts</button>
+      </div>
+
+      <div class="mini-post">
+        <div class="mp-head">
+          <div class="av">S</div>
+          <div class="nm"><i>Sarah</i> R. · Stone Cottage</div>
+          <div class="when">2h</div>
+        </div>
+        <span class="type-pill avail">Availability</span>
+        <div class="body">Got a cancellation &mdash; <i>12–19 July</i> just opened up. Sleeps 6, wood burner, dogs welcome…</div>
+        <div class="mp-foot"><span>34 likes</span><span>·</span><span>12 replies</span></div>
+      </div>
+
+      <div class="mini-post">
+        <div class="mp-head">
+          <div class="av guest">L</div>
+          <div class="nm"><i>Laura</i> P. · guest</div>
+          <div class="when">5h</div>
+        </div>
+        <span class="type-pill looking">Looking</span>
+        <div class="body">Group of 8 looking for Lakes <i>August bank holiday</i> &mdash; dog-friendly, parking, ~£250…</div>
+        <div class="mp-foot"><span>8 likes</span><span>·</span><span>17 replies</span></div>
+      </div>
+
+      <div class="mini-post">
+        <div class="mp-head">
+          <div class="av ink">T</div>
+          <div class="nm"><i>Tom &amp; Anna</i></div>
+          <div class="when">1d</div>
+        </div>
+        <span class="type-pill tip">Local pick</span>
+        <div class="body">Buttermere this morning &mdash; <i>June</i> here is the secret time. Hut opens 15 July.</div>
+        <div class="mp-foot"><span>87 likes</span><span>·</span><span>14 replies</span></div>
+      </div>
+
+      <a href="feed.html" class="btn btn-outline btn-sm" style="width:100%;margin-top:6px">
+        See all in feed
+        <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <!-- Trust score -->
+    <div class="side-block" style="background: var(--brick); color: var(--paper); border: none;">
+      <h3 style="color:white">Trust <i style="color:rgba(255,255,255,0.7)">score</i></h3>
+      <p class="meta" style="color:rgba(255,255,255,0.6);margin-bottom:10px">How hosts &amp; guests see you</p>
+      <div style="font-family:var(--serif);font-style:italic;font-size:56px;line-height:1;margin-bottom:8px">9.8<span style="font-size:18px;font-style:normal;color:rgba(255,255,255,0.5);margin-left:6px;font-family:var(--sans)">/ 10</span></div>
+      <div class="quick-stats" style="border-color:rgba(255,255,255,0.15)">
+        <div class="qs-row"><span class="l" style="color:rgba(255,255,255,0.55)">Verified</span><span class="v" style="color:white">4 of 5</span></div>
+        <div class="qs-row"><span class="l" style="color:rgba(255,255,255,0.55)">Reviews</span><span class="v" style="color:white">12</span></div>
+        <div class="qs-row"><span class="l" style="color:rgba(255,255,255,0.55)">Response</span><span class="v" style="color:white">98%</span></div>
+        <div class="qs-row"><span class="l" style="color:rgba(255,255,255,0.55)">Member</span><span class="v" style="color:white">1y 2mo</span></div>
+      </div>
+    </div>
+
+    <!-- Become a host (guest only) -->
+    <div class="side-block guest-only" style="background: var(--ink); color: var(--paper); border: none;">
+      <h3 style="color:white">Have a place? <i style="color:var(--brick-2)">List it.</i></h3>
+      <p class="meta" style="color:rgba(255,255,255,0.6);margin-bottom:14px">Switch on Host mode and Casa will guide you through setting up your first listing in 2 minutes. Keep <strong style="font-family:var(--serif);font-style:italic;font-weight:400;color:var(--brick-2)">100%</strong> of every booking.</p>
+      <a href="list.html" class="btn full-btn" style="background: var(--paper); color: var(--ink);">
+        Become a host
+        <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <!-- Host stats panel (host only) -->
+    <div class="side-block host-only" style="background: var(--ink); color: var(--paper); border: none;">
+      <h3 style="color:white">This <i style="color:var(--brick-2)">month</i></h3>
+      <p class="meta" style="color:rgba(255,255,255,0.6);margin-bottom:14px">Across 2 listings</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:rgba(255,255,255,0.65)">Earned</span><span style="font-family:var(--serif);font-style:italic;color:var(--brick-2);font-size:22px">£4,225</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:rgba(255,255,255,0.65)">Bookings</span><span style="font-weight:500">4</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:rgba(255,255,255,0.65)">Occupancy</span><span style="font-weight:500">74%</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:rgba(255,255,255,0.65)">Casa fees</span><span style="color:var(--brick-2);font-family:var(--serif);font-style:italic">£0</span></div>
+      </div>
+      <a href="host.html" class="btn full-btn" style="background: var(--paper); color: var(--ink); margin-top: 14px;">
+        Open host dashboard
+        <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <div class="side-block">
+      <h3><i>Account</i></h3>
+      <a href="#" class="side-link"><span>Personal info</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
+      <a href="#" class="side-link"><span>Login &amp; security</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
+      <a href="#" class="side-link"><span>Notifications</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
+      <a href="#" class="side-link"><span>Payment methods</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
+      <a href="#" class="side-link"><span>Privacy</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
+      <a href="#" class="side-link danger"><span>Sign out</span><svg viewBox="0 0 24 24"><path d="M9 12h12l-3-3M21 12l-3 3"/></svg></a>
+    </div>
+
+  </aside>
+</div>
+
+<!-- Save bar (appears when editing) -->
+<div class="save-bar" id="saveBar">
+  <span><span class="lbl">Unsaved changes</span> &mdash; on your profile</span>
+  <button class="cancel" onclick="cancelEdit()">Discard</button>
+  <button class="save" onclick="saveEdit()">Save changes</button>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+function setMode(mode, btn) {
+  document.body.className = 'mode-' + mode;
+  document.querySelectorAll('.role-toggle button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// Watch for input changes → show save bar
+let isDirty = false;
+function markDirty() {
+  if (isDirty) return;
+  isDirty = true;
+  document.getElementById('saveBar').classList.add('show');
+}
+function cancelEdit() {
+  isDirty = false;
+  document.getElementById('saveBar').classList.remove('show');
+}
+function saveEdit() {
+  isDirty = false;
+  document.getElementById('saveBar').classList.remove('show');
+  // Toast feedback
+  const sb = document.getElementById('saveBar');
+  sb.innerHTML = '<span style="color:var(--brick-2);font-family:var(--serif);font-style:italic">Saved.</span>';
+  sb.classList.add('show');
+  setTimeout(() => {
+    sb.classList.remove('show');
+    setTimeout(() => location.reload(), 200);
+  }, 1200);
+}
+
+document.querySelectorAll('input, textarea, select').forEach(el => {
+  el.addEventListener('input', markDirty);
+  el.addEventListener('change', markDirty);
+});
+
+// Update displayed name when first name changes
+document.getElementById('firstNm').addEventListener('input', e => {
+  document.getElementById('avLetter').textContent = (e.target.value[0] || 'J').toUpperCase();
+  document.getElementById('aboutName').textContent = e.target.value || 'you';
+});
+
+function toggleEdit() {
+  // Visual: scroll to about
+  document.getElementById('about').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.getElementById('bio').focus();
+}
+</script>
+
+<footer class="casa-foot">
+  <div class="inner">
+    <div class="top">
+      <div>
+        <div class="casa-mark-lg">casa</div>
+        <div class="pitch">A quieter place to find a holiday stay &mdash; <em>fee-free</em>, and direct with the host.</div>
+      </div>
+      <div><h5>Find a stay</h5><a href="browse.html">Browse all stays</a><a href="map.html">Map view</a><a href="feed.html">Community feed</a><a href="how-it-works.html">How it works</a></div>
+      <div><h5>For hosts</h5><a href="list.html">List a property</a><a href="host.html">Host dashboard</a><a href="how-it-works.html#hosts">How it works</a></div>
+      <div><h5>Account</h5><a href="signup.html">Sign in</a><a href="signup.html">Join free</a><a href="saved.html">Saved stays</a><a href="messages.html">Messages</a><a href="profile.html">Profile</a></div>
+      <div><h5>Casa</h5><a href="#">Our story</a><a href="how-it-works.html">How it works</a><a href="#">Help centre</a><a href="#">Privacy policy</a></div>
+    </div>
+    <div class="bot"><div>&copy; 2026 Casa.co.uk &mdash; <em style="font-family:var(--serif);font-style:italic">fee-free, always.</em></div><div><a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Cookies</a></div></div>
+  </div>
+</footer>
+
+<script src="casa.js"></script>
+</body>
+</html>

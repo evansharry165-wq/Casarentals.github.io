@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feed — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+  /* ── LAYOUT ── */
+  .feed-head{padding:32px 0 20px;border-bottom:1px solid var(--rule)}
+  .feed-head .top{display:flex;align-items:end;justify-content:space-between;gap:32px;margin-bottom:20px;flex-wrap:wrap}
+  .feed-head h1{font-family:var(--serif);font-size:56px;line-height:.95;letter-spacing:-.025em}
+  .feed-head h1 i{font-style:italic;color:var(--brick)}
+  .feed-head .h-meta{text-align:right}
+  .feed-head .h-meta .stats-row{display:flex;gap:16px;justify-content:flex-end;align-items:center;flex-wrap:wrap}
+  .feed-head .h-meta .stat-pill{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2)}
+  .feed-head .h-meta .stat-pill svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6;color:var(--brick)}
+  .feed-head .h-meta .stat-pill strong{font-family:var(--serif);font-style:italic;color:var(--brick);font-weight:400;font-size:17px}
+  .feed-head .search-bar{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--rule);border-radius:999px;padding:8px 16px;transition:border-color .12s;width:260px}
+  .feed-head .search-bar:focus-within{border-color:var(--brick)}
+  .feed-head .search-bar svg{width:14px;height:14px;stroke:var(--ink-3);fill:none;stroke-width:1.8;flex-shrink:0}
+  .feed-head .search-bar input{flex:1;border:none;background:transparent;outline:none;font-family:var(--sans);font-size:13px;color:var(--ink)}
+  .feed-head .search-bar input::placeholder{color:var(--ink-4)}
+  .county-bar{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:2px 0;margin-top:16px}
+  .county-bar::-webkit-scrollbar{display:none}
+  .county-pill{flex-shrink:0;padding:8px 16px;border-radius:999px;background:var(--surface);border:1px solid var(--rule);font-size:13px;color:var(--ink-2);cursor:pointer;white-space:nowrap;transition:all .12s;font-family:var(--sans)}
+  .county-pill:hover{border-color:var(--ink);color:var(--ink)}
+  .county-pill.active{background:var(--ink);color:var(--paper);font-weight:500;border-color:var(--ink)}
+  .county-pill .ct{font-family:var(--mono);font-size:10px;letter-spacing:.1em;opacity:.55;margin-left:3px}
+  .feed-layout{display:grid;grid-template-columns:220px 1fr 300px;gap:28px;padding:24px 0 80px}
+  .feed-side{position:sticky;top:80px;height:fit-content}
+  .side-sect{margin-bottom:24px}
+  .side-sect h5{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px;padding-left:10px}
+  .side-link{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:9px;font-size:13px;color:var(--ink-2);text-decoration:none;transition:background .1s;cursor:pointer;border:none;background:none;width:100%;text-align:left;font-family:var(--sans)}
+  .side-link:hover{background:var(--surface);color:var(--ink)}
+  .side-link.active{background:var(--brick-pale);color:var(--brick-text);font-weight:500}
+  .side-link svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.6;flex-shrink:0}
+  .side-link .ct{margin-left:auto;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--ink-4)}
+  .side-link.active .ct{color:var(--brick)}
+  .feed-col{min-width:0}
+
+  /* ── COMPOSE ── */
+  .compose-card{background:var(--surface);border:1px solid var(--rule);border-radius:16px;padding:16px 18px;margin-bottom:18px;transition:border-color .15s}
+  .compose-card:focus-within{border-color:var(--rule-3)}
+  .compose-top{display:flex;gap:11px;align-items:flex-start}
+  .compose-av{width:38px;height:38px;border-radius:50%;background:var(--brick);color:white;display:inline-flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-size:16px;flex-shrink:0}
+  .compose-ta{flex:1;border:none;background:transparent;outline:none;resize:none;font-family:var(--sans);font-size:14px;color:var(--ink);padding:8px 0 4px;min-height:44px;max-height:160px;line-height:1.5}
+  .compose-ta::placeholder{color:var(--ink-4)}
+  .compose-bottom{display:flex;align-items:center;gap:6px;padding-top:10px;margin-top:10px;border-top:1px solid var(--rule);flex-wrap:wrap}
+  .type-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;cursor:pointer;border:1px solid var(--rule);background:transparent;font-family:var(--sans);font-size:12px;color:var(--ink-3);transition:all .12s}
+  .type-pill:hover{border-color:var(--ink);color:var(--ink)}
+  .type-pill.on{background:var(--brick-pale);color:var(--brick-text);border-color:var(--brick)}
+  .type-pill svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.6}
+  .compose-meta{display:flex;align-items:center;gap:8px;margin-left:auto}
+  .char-count{font-family:var(--mono);font-size:10px;color:var(--ink-4)}
+  .char-count.warn{color:var(--brick)}
+  .post-btn{background:var(--brick);color:white;border:none;border-radius:999px;padding:8px 20px;font-family:var(--sans);font-size:13px;font-weight:500;cursor:pointer;transition:background .12s}
+  .post-btn:hover{background:var(--brick-2)}
+  .post-btn:disabled{opacity:.4;cursor:default}
+  .hashtag-suggest{display:none;flex-wrap:wrap;gap:5px;padding:8px 0 2px}
+  .hashtag-suggest.show{display:flex}
+  .hs-pill{padding:3px 9px;border-radius:999px;background:var(--surface);border:1px solid var(--rule-3);font-size:12px;color:var(--brick);cursor:pointer;font-family:var(--serif);font-style:italic}
+  .hs-pill:hover{background:var(--brick-pale)}
+
+  /* ── FEED TABS ── */
+  .feed-toolbar{display:flex;align-items:center;gap:0;margin-bottom:16px;border-bottom:1px solid var(--rule)}
+  .feed-tab{padding:10px 16px;font-size:13px;color:var(--ink-3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .12s,border-color .12s;background:none;border-left:none;border-right:none;border-top:none;font-family:var(--sans)}
+  .feed-tab:hover{color:var(--ink)}
+  .feed-tab.active{color:var(--brick);border-bottom-color:var(--brick);font-weight:500}
+  .feed-tab .ct{font-family:var(--mono);font-size:10px;opacity:.5;margin-left:3px}
+  .feed-sort{display:flex;align-items:center;gap:6px;margin-left:auto;font-size:12.5px;color:var(--ink-3);padding-right:4px}
+  .feed-sort select{border:none;background:transparent;font-family:var(--sans);font-size:12.5px;color:var(--ink);font-weight:500;outline:none;cursor:pointer}
+
+  /* ── TAG FILTER BANNER ── */
+  .tag-banner{display:none;align-items:center;gap:10px;background:var(--brick-pale);border:1px solid rgba(176,85,51,.2);border-radius:10px;padding:9px 14px;margin-bottom:14px;font-size:13px;color:var(--brick-text)}
+  .tag-banner.show{display:flex}
+  .tag-banner strong{font-family:var(--serif);font-style:italic}
+  .tag-banner button{margin-left:auto;border:none;background:transparent;color:var(--brick);cursor:pointer;font-size:14px;padding:2px 6px}
+
+  /* ── POSTS ── */
+  .post{background:var(--surface);border:1px solid var(--rule);border-radius:16px;margin-bottom:12px;overflow:visible;transition:border-color .15s;animation:rise .3s ease both}
+  .post:hover{border-color:var(--rule-3)}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .post-head{display:flex;align-items:flex-start;gap:11px;padding:15px 18px 4px}
+  .av{width:38px;height:38px;border-radius:50%;background:var(--brick);color:white;display:inline-flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-size:15px;flex-shrink:0}
+  .av.guest{background:var(--moss)}
+  .av.ink{background:var(--ink)}
+  .av.sm{width:30px;height:30px;font-size:13px}
+  .post-who{flex:1;min-width:0}
+  .post-name{display:flex;align-items:center;gap:6px;font-size:13.5px;flex-wrap:wrap;margin-bottom:2px}
+  .post-name .nm{font-weight:500;color:var(--ink)}
+  .post-name .nm i{font-style:italic;color:var(--brick);font-weight:400}
+  .post-meta{font-size:11px;color:var(--ink-3);display:flex;gap:4px;align-items:center;flex-wrap:wrap}
+  .post-meta .when{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+  .post-meta .sep{color:var(--rule-3)}
+  .post-more{background:none;border:none;color:var(--ink-4);cursor:pointer;padding:5px;border-radius:6px;flex-shrink:0;transition:background .1s;position:relative}
+  .post-more:hover{background:var(--paper-2);color:var(--ink)}
+  .post-more svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
+  .more-menu{display:none;position:absolute;right:0;top:100%;background:var(--paper);border:1px solid var(--rule);border-radius:12px;box-shadow:0 8px 24px rgba(22,20,15,.1);z-index:50;min-width:180px;padding:6px;animation:rise .15s ease}
+  .more-menu.open{display:block}
+  .mm-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:8px;font-size:13px;color:var(--ink-2);cursor:pointer;border:none;background:none;width:100%;font-family:var(--sans);text-align:left}
+  .mm-item:hover{background:var(--surface);color:var(--ink)}
+  .mm-item svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6}
+  .mm-item.danger{color:#C0392B}
+  .post-type-badge{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;padding:2px 7px;border-radius:4px}
+  .ptb-avail{background:var(--brick-pale);color:var(--brick-text)}
+  .ptb-looking{background:var(--moss-pale);color:var(--moss)}
+  .ptb-review{background:rgba(184,150,86,.18);color:#7C6432}
+  .ptb-tip{background:rgba(22,20,15,.07);color:var(--ink-2)}
+  .ptb-photo{background:rgba(176,85,51,.12);color:var(--brick)}
+  .post-body{padding:5px 18px 12px;font-size:14px;line-height:1.6;color:var(--ink)}
+  .post-body .tag{font-style:italic;color:var(--brick);cursor:pointer}
+  .post-body .tag:hover{text-decoration:underline;text-underline-offset:2px}
+  .post-prop{margin:0 18px 12px;display:flex;gap:11px;background:var(--paper);border:1px solid var(--rule);border-radius:12px;padding:10px;text-decoration:none;color:inherit;cursor:pointer;transition:border-color .12s;align-items:center}
+  .post-prop:hover{border-color:var(--ink)}
+  .post-prop .pi{width:76px;height:60px;border-radius:8px;overflow:hidden;flex-shrink:0}
+  .post-prop .pi .ph{width:100%;height:100%}
+  .post-prop .pinfo{flex:1;min-width:0}
+  .post-prop .pname{font-family:var(--serif);font-size:15px;line-height:1.1;margin-bottom:3px}
+  .post-prop .pname i{font-style:italic;color:var(--brick)}
+  .post-prop .pdets{font-size:11px;color:var(--ink-3);display:flex;gap:6px;flex-wrap:wrap}
+  .post-prop .price{font-family:var(--serif);font-style:italic;font-size:17px;color:var(--brick);white-space:nowrap;flex-shrink:0}
+  .post-prop .price span{font-family:var(--sans);font-style:normal;font-size:10px;color:var(--ink-3)}
+  .post-images{display:grid;gap:3px;margin:0 18px 12px;border-radius:12px;overflow:hidden}
+  .post-images.one .ph{aspect-ratio:16/9}
+  .post-images.two{grid-template-columns:1fr 1fr}
+  .post-images.two .ph{aspect-ratio:4/3}
+  .post-images.three{grid-template-columns:2fr 1fr}
+  .post-images.three .ph:first-child{aspect-ratio:4/3;grid-row:span 2}
+  .post-images.three .ph:not(:first-child){aspect-ratio:1}
+  .post-review-card{margin:0 18px 12px;padding:13px 16px;background:var(--paper);border-left:3px solid var(--brick);border-radius:0 12px 12px 0}
+  .review-stars{display:flex;gap:2px;margin-bottom:6px}
+  .review-stars svg{width:13px;height:13px;fill:var(--brick);stroke:none}
+  .review-text{font-family:var(--serif);font-size:15px;line-height:1.5;color:var(--ink);margin-bottom:6px}
+  .review-text i{font-style:italic;color:var(--brick)}
+  .review-meta{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)}
+
+  /* ── POST ACTIONS ── */
+  .post-actions{display:flex;align-items:center;padding:4px 10px 10px;gap:2px;border-top:1px solid var(--rule-2);margin-top:4px}
+  .pa{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:8px;cursor:pointer;background:none;border:none;font-family:var(--sans);font-size:12px;color:var(--ink-3);transition:all .1s;text-decoration:none}
+  .pa:hover{background:var(--paper);color:var(--ink)}
+  .pa.liked{color:var(--brick)}
+  .pa.liked svg{fill:var(--brick);stroke:var(--brick)}
+  .pa.saved{color:var(--brick)}
+  .pa svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6}
+  .pa-count{font-family:var(--mono);font-size:10px;letter-spacing:.04em}
+  .pa-enquire{margin-left:auto;font-weight:500;color:var(--brick);font-size:12.5px}
+
+  /* ── REPLY THREADS ── */
+  .replies-section{background:var(--paper-2);border-top:1px solid var(--rule-2);padding:12px 18px;display:none}
+  .replies-section.open{display:block}
+  .reply{display:flex;gap:9px;margin-bottom:12px;align-items:flex-start}
+  .reply:last-child{margin-bottom:0}
+  .reply-bubble{flex:1;background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:10px 13px}
+  .reply-bubble .rh{display:flex;align-items:baseline;gap:7px;margin-bottom:5px}
+  .reply-bubble .rn{font-size:12.5px;font-weight:500;color:var(--ink)}
+  .reply-bubble .rn i{font-style:italic;color:var(--brick);font-weight:400}
+  .reply-bubble .rt{font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-4)}
+  .reply-bubble .rb{font-size:13px;line-height:1.55;color:var(--ink)}
+  .reply-bubble .tag{font-style:italic;color:var(--brick);cursor:pointer}
+  .reply-like{display:flex;align-items:center;gap:4px;margin-top:6px;font-size:11px;color:var(--ink-4);cursor:pointer;background:none;border:none;font-family:var(--sans)}
+  .reply-like:hover{color:var(--brick)}
+  .reply-like svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.6}
+  .reply-like.liked{color:var(--brick)}
+  .reply-compose{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--rule-2);align-items:flex-start}
+  .rc-input{flex:1;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:8px 12px;font-family:var(--sans);font-size:13px;color:var(--ink);outline:none;resize:none;min-height:36px;max-height:100px;transition:border-color .12s;line-height:1.5}
+  .rc-input:focus{border-color:var(--brick)}
+  .rc-input::placeholder{color:var(--ink-4)}
+  .rc-send{background:var(--brick);color:white;border:none;border-radius:8px;padding:8px 14px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:var(--sans);flex-shrink:0;transition:background .12s;align-self:flex-end}
+  .rc-send:hover{background:var(--brick-2)}
+  .show-replies-btn{font-size:12.5px;color:var(--brick);background:none;border:none;cursor:pointer;font-family:var(--sans);padding:4px 0;margin-left:10px;display:inline-flex;align-items:center;gap:4px}
+  .show-replies-btn svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;transition:transform .2s}
+  .show-replies-btn.open svg{transform:rotate(180deg)}
+
+  /* ── LOOKING CTA ── */
+  .looking-cta{margin:0 18px 12px;background:var(--ink);border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:12px}
+  .looking-cta p{font-family:var(--serif);font-size:14px;color:rgba(250,248,244,.8);line-height:1.4;flex:1}
+  .looking-cta p i{font-style:italic;color:var(--brick-2)}
+  .looking-cta a{background:var(--brick);color:white;padding:7px 14px;border-radius:8px;font-size:12.5px;font-weight:500;text-decoration:none;white-space:nowrap;font-family:var(--sans);flex-shrink:0}
+  .looking-cta a:hover{background:var(--brick-2)}
+
+  /* ── LIVE NOTICE ── */
+  .live-banner{display:none;align-items:center;gap:10px;background:var(--moss);color:white;border-radius:12px;padding:11px 16px;margin-bottom:14px;cursor:pointer;font-size:13px;font-family:var(--sans)}
+  .live-banner.show{display:flex;animation:rise .2s ease}
+  .live-banner svg{width:14px;height:14px;stroke:white;fill:none;stroke-width:1.8;flex-shrink:0}
+  .live-banner strong{font-family:var(--serif);font-style:italic;font-weight:400}
+  .live-banner .dismiss{margin-left:auto;opacity:.7;font-size:12px}
+
+  /* ── EMPTY ── */
+  .empty-feed{text-align:center;padding:48px 24px}
+  .empty-feed h3{font-family:var(--serif);font-style:italic;font-size:26px;margin-bottom:8px}
+  .empty-feed p{font-size:13.5px;color:var(--ink-3)}
+
+  /* ── RIGHT SIDEBAR ── */
+  .feed-aside{position:sticky;top:80px;height:fit-content}
+  .county-card{background:var(--ink);color:var(--paper);border-radius:16px;padding:20px 22px;margin-bottom:12px}
+  .county-card .eye{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(250,248,244,.45);margin-bottom:8px}
+  .county-card h3{font-family:var(--serif);font-size:24px;line-height:1;letter-spacing:-.015em;margin-bottom:7px}
+  .county-card h3 i{font-style:italic;color:var(--brick-2)}
+  .county-card .desc{font-size:12.5px;color:rgba(250,248,244,.65);line-height:1.55;margin-bottom:14px}
+  .county-card .c-stats{display:flex;gap:16px}
+  .county-card .cs .n{font-family:var(--serif);font-style:italic;font-size:22px;color:var(--brick-2);line-height:1}
+  .county-card .cs .l{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(250,248,244,.35);margin-top:2px}
+  .aside-block{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:16px;margin-bottom:10px}
+  .aside-block h4{font-family:var(--serif);font-size:17px;line-height:1;margin-bottom:11px}
+  .aside-block h4 i{font-style:italic;color:var(--brick)}
+  .trend-tag{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--rule-2);cursor:pointer}
+  .trend-tag:last-child{border-bottom:none}
+  .trend-tag:hover .tt{text-decoration:underline;text-underline-offset:2px}
+  .trend-tag .tt{font-family:var(--serif);font-style:italic;font-size:14px;color:var(--brick)}
+  .trend-tag .tc{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--ink-4)}
+  .trend-tag .bar{width:50px;height:3px;background:var(--rule);border-radius:2px;overflow:hidden}
+  .trend-tag .bar .fill{height:100%;background:var(--brick);border-radius:2px}
+  .host-row{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--rule-2)}
+  .host-row:last-child{border-bottom:none}
+  .host-row .av{width:34px;height:34px;font-size:13px}
+  .host-row .hi{flex:1;min-width:0}
+  .host-row .hn{font-family:var(--serif);font-size:13.5px;line-height:1.1}
+  .host-row .hn i{font-style:italic;color:var(--brick)}
+  .host-row .hm{font-size:11px;color:var(--ink-3);margin-top:1px;display:flex;align-items:center;gap:4px}
+  .host-row .online-dot{width:6px;height:6px;border-radius:50%;background:var(--moss);flex-shrink:0}
+  .follow-btn{font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid var(--rule-3);background:transparent;cursor:pointer;color:var(--ink-2);font-family:var(--sans);transition:all .12s}
+  .follow-btn:hover{background:var(--ink);color:white;border-color:var(--ink)}
+  .follow-btn.following{background:var(--moss-pale);color:var(--moss);border-color:transparent}
+  .ask-card{background:var(--brick-pale);border:1px solid rgba(176,85,51,.2);border-radius:14px;padding:16px;margin-bottom:10px}
+  .ask-card h4{font-family:var(--serif);font-style:italic;font-size:17px;color:var(--brick-text);margin-bottom:6px}
+  .ask-card p{font-size:12.5px;color:var(--brick-text);opacity:.8;line-height:1.5;margin-bottom:12px}
+  .ask-card .ask-btn{background:var(--brick);color:white;border:none;border-radius:999px;padding:8px 16px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:var(--sans);transition:background .12s;width:100%}
+  .ask-card .ask-btn:hover{background:var(--brick-2)}
+
+  /* ── TOAST ── */
+  #feedToast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:var(--r-pill);font-size:13.5px;font-family:var(--sans);opacity:0;transition:all .2s;z-index:999;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+  #feedToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:1100px){.feed-layout{grid-template-columns:1fr}.feed-side,.feed-aside{position:relative;top:auto}}
+  @media(max-width:720px){.feed-layout{grid-template-columns:1fr}.feed-side{display:none}}
+</style>
+</head>
+<body>
+
+<div id="feedToast"></div>
+
+<nav class="casa-nav">
+  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
+  <div class="nav-right">
+    <a class="nav-link" href="browse.html">Browse</a>
+    <a class="nav-link" href="map.html">Map</a>
+    <a class="nav-link" href="feed.html" style="color:var(--brick);font-weight:500">Feed</a>
+    <a class="nav-link" href="list.html">Become a host</a>
+    <div style="width:1px;height:20px;background:var(--rule);margin:0 4px"></div>
+    <a class="nav-link" href="saved.html">Saved</a>
+    <a class="nav-link" href="messages.html">Messages</a>
+    <a class="nav-link" href="signup.html">Sign in</a>
+    <a class="nav-link primary" href="signup.html">Join free</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="feed-head">
+    <div class="top">
+      <div>
+        <div class="eyebrow" id="feedEyebrow">Community feed — All UK</div>
+        <h1 style="margin-top:6px">The <i id="feedTitle">UK</i> feed.</h1>
+      </div>
+      <div class="h-meta">
+        <div class="stats-row" id="statsRow">
+          <div class="stat-pill"><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/></svg><strong id="st-stays">4,202</strong> stays</div>
+          <div class="stat-pill"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><strong id="st-members">14.2k</strong> members</div>
+          <div class="stat-pill"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><strong id="st-active">1,847</strong> active this week</div>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end;align-items:center">
+          <div class="search-bar">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input type="text" id="searchInput" placeholder="Search posts…" oninput="onSearch(this.value)">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="county-bar" id="countyBar">
+      <button class="county-pill active" data-county="all" onclick="setCounty(this)">All UK <span class="ct">4,202</span></button>
+      <button class="county-pill" data-county="cumbria" onclick="setCounty(this)">Cumbria <span class="ct">214</span></button>
+      <button class="county-pill" data-county="cornwall" onclick="setCounty(this)">Cornwall <span class="ct">198</span></button>
+      <button class="county-pill" data-county="yorkshire" onclick="setCounty(this)">Yorkshire <span class="ct">98</span></button>
+      <button class="county-pill" data-county="norfolk" onclick="setCounty(this)">Norfolk <span class="ct">112</span></button>
+      <button class="county-pill" data-county="highlands" onclick="setCounty(this)">Highlands <span class="ct">145</span></button>
+      <button class="county-pill" data-county="devon" onclick="setCounty(this)">Devon <span class="ct">76</span></button>
+      <button class="county-pill" data-county="cotswolds" onclick="setCounty(this)">Cotswolds <span class="ct">87</span></button>
+      <button class="county-pill" data-county="snowdonia" onclick="setCounty(this)">Snowdonia <span class="ct">54</span></button>
+      <button class="county-pill" data-county="pembrokeshire" onclick="setCounty(this)">Pembrokeshire <span class="ct">48</span></button>
+      <button class="county-pill" data-county="kent" onclick="setCounty(this)">Kent <span class="ct">41</span></button>
+      <button class="county-pill" data-county="causeway" onclick="setCounty(this)">Causeway Coast <span class="ct">29</span></button>
+    </div>
+  </div>
+
+  <div class="feed-layout">
+
+    <!-- LEFT -->
+    <aside class="feed-side">
+      <div class="side-sect">
+        <h5>Filter by type</h5>
+        <button class="side-link active" data-type="all" onclick="setType(this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>All posts<span class="ct" id="ct-all">0</span></button>
+        <button class="side-link" data-type="avail" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/></svg>Availability<span class="ct" id="ct-avail">0</span></button>
+        <button class="side-link" data-type="looking" onclick="setType(this)"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Looking for<span class="ct" id="ct-looking">0</span></button>
+        <button class="side-link" data-type="review" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>Reviews<span class="ct" id="ct-review">0</span></button>
+        <button class="side-link" data-type="tip" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="M3 20 9 10l4 6 2-3 6 7z"/></svg>Local picks<span class="ct" id="ct-tip">0</span></button>
+        <button class="side-link" data-type="photo" onclick="setType(this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 16-6-6-9 11"/></svg>Photos<span class="ct" id="ct-photo">0</span></button>
+      </div>
+      <div class="side-sect">
+        <h5>Popular hashtags</h5>
+        <button class="side-link" onclick="filterByTag('#cottage')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">#cottage</span><span class="ct">341</span></button>
+        <button class="side-link" onclick="filterByTag('#lastminute')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">#lastminute</span><span class="ct">89</span></button>
+        <button class="side-link" onclick="filterByTag('#petfriendly')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">#petfriendly</span><span class="ct">134</span></button>
+        <button class="side-link" onclick="filterByTag('#seaview')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">#seaview</span><span class="ct">156</span></button>
+        <button class="side-link" onclick="filterByTag('#woodburner')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">#woodburner</span><span class="ct">71</span></button>
+        <button class="side-link" onclick="filterByTag('#offgrid')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">#offgrid</span><span class="ct">62</span></button>
+        <button class="side-link" onclick="filterByTag('#walks')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">#walks</span><span class="ct">48</span></button>
+      </div>
+    </aside>
+
+    <!-- MIDDLE -->
+    <main class="feed-col">
+
+      <!-- COMPOSE -->
+      <div class="compose-card">
+        <div class="compose-top">
+          <div class="compose-av">J</div>
+          <textarea class="compose-ta" id="composeTA" placeholder="Share with the community — availability, a tip, a recent stay, or a local gem…" oninput="onCompose(this)" rows="2"></textarea>
+        </div>
+        <div class="hashtag-suggest" id="hashtagSuggest"></div>
+        <div class="compose-bottom">
+          <button class="type-pill on" id="activePill" data-ptype="avail" onclick="pickType(this,'avail')"><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/></svg> Availability</button>
+          <button class="type-pill" onclick="pickType(this,'looking')"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg> Looking</button>
+          <button class="type-pill" onclick="pickType(this,'review')"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> Review</button>
+          <button class="type-pill" onclick="pickType(this,'tip')"><svg viewBox="0 0 24 24"><path d="M3 20 9 10l4 6 2-3 6 7z"/></svg> Local tip</button>
+          <button class="type-pill" onclick="pickType(this,'photo')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 16-6-6-9 11"/></svg> Photo</button>
+          <div class="compose-meta">
+            <span class="char-count" id="charCount"></span>
+            <button class="post-btn" id="postBtn" disabled onclick="submitPost()">Post</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIVE BANNER -->
+      <div class="live-banner" id="liveBanner" onclick="loadLive()">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span id="liveBannerText"><strong>New posts</strong> — click to refresh</span>
+        <span class="dismiss">tap to load</span>
+      </div>
+
+      <!-- TAG FILTER BANNER -->
+      <div class="tag-banner" id="tagBanner">
+        <span>Showing posts tagged <strong id="tagBannerLabel">#cottage</strong></span>
+        <button onclick="clearTag()">✕ Clear</button>
+      </div>
+
+      <!-- FEED TABS -->
+      <div class="feed-toolbar">
+        <button class="feed-tab active" data-filter="all" onclick="setFilter(this)">All <span class="ct" id="tab-all">0</span></button>
+        <button class="feed-tab" data-filter="hosts" onclick="setFilter(this)">From hosts <span class="ct" id="tab-hosts">0</span></button>
+        <button class="feed-tab" data-filter="guests" onclick="setFilter(this)">From guests <span class="ct" id="tab-guests">0</span></button>
+        <div class="feed-sort">
+          Sort: <select id="sortSel" onchange="renderFeed()">
+            <option value="recent">Recent</option>
+            <option value="liked">Top</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="feedPosts"></div>
+      <div id="loadMoreWrap" style="text-align:center;margin-top:20px;display:none">
+        <button class="btn btn-outline" onclick="loadMore()">Load more posts</button>
+      </div>
+
+    </main>
+
+    <!-- RIGHT -->
+    <aside class="feed-aside">
+
+      <div class="county-card" id="countyCard">
+        <div class="eye">About this area</div>
+        <h3 id="ccTitle">All of <i>the UK</i>.</h3>
+        <p class="desc" id="ccDesc">Every county, every region. The most active community for direct holiday rentals in Britain.</p>
+        <div class="c-stats">
+          <div class="cs"><div class="n" id="ccStays">4,202</div><div class="l">Stays</div></div>
+          <div class="cs"><div class="n" id="ccMembers">14.2k</div><div class="l">Members</div></div>
+          <div class="cs"><div class="n" id="ccFrom">£85+</div><div class="l">/ night</div></div>
+        </div>
+      </div>
+
+      <div class="ask-card">
+        <h4>Looking for <i>somewhere?</i></h4>
+        <p>Post a "Looking for" — hosts across the UK will reply with availability that fits your exact needs.</p>
+        <button class="ask-btn" onclick="startLooking()">Post a request →</button>
+      </div>
+
+      <div class="aside-block">
+        <h4>Trending <i>now</i></h4>
+        <div id="trendingTags"></div>
+      </div>
+
+      <div class="aside-block">
+        <h4>Active <i>hosts</i></h4>
+        <div id="activeHosts"></div>
+      </div>
+
+      <div class="aside-block" style="border-style:dashed">
+        <h4 style="font-size:14px;color:var(--ink-3)">Community guidelines</h4>
+        <p style="font-size:12px;color:var(--ink-3);line-height:1.55">For hosts and guests — not agencies or bots. Keep it useful, kind, and direct. No spam or off-platform booking links.</p>
+        <a href="#" style="font-size:12px;color:var(--brick);text-decoration:underline;text-underline-offset:2px;display:inline-block;margin-top:8px" onclick="toast('Community guidelines — coming soon');return false">Read in full →</a>
+      </div>
+
+    </aside>
+  </div>
+</div>
+
+<footer class="casa-foot">
+  <div class="inner">
+    <div class="top">
+      <div><div class="casa-mark-lg">casa</div><div class="pitch">A quieter place to find a holiday stay &mdash; <em>fee-free</em>, and direct with the host.</div></div>
+      <div><h5>Find a stay</h5><a href="browse.html">Browse all stays</a><a href="map.html">Map view</a><a href="feed.html">Community feed</a><a href="how-it-works.html">How it works</a></div>
+      <div><h5>For hosts</h5><a href="list.html">List a property</a><a href="host.html">Host dashboard</a></div>
+      <div><h5>Account</h5><a href="signup.html">Sign in</a><a href="signup.html">Join free</a><a href="saved.html">Saved stays</a><a href="messages.html">Messages</a></div>
+      <div><h5>Casa</h5><a href="#">Our story</a><a href="how-it-works.html">How it works</a><a href="#">Help centre</a></div>
+    </div>
+    <div class="bot"><div>&copy; 2026 Casa.co.uk &mdash; <em style="font-family:var(--serif);font-style:italic">fee-free, always.</em></div><div><a href="#">Privacy</a> · <a href="#">Terms</a></div></div>
+  </div>
+</footer>
+
+<script>
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+const REPLIES = {
+  1: [
+    {av:'L', avC:'guest', name:'Laura P.', role:'Guest', time:'1 hr ago', body:"Is there any chance of 19–26 July instead? Would love to bring the whole family.", likes:3},
+    {av:'S', avC:'', name:'Sarah R.', role:'Host · Stone Cottage', time:'45 min ago', body:"Hi Laura — yes, 19–26 is available too. Drop me a message and I'll send the details over directly 🏡", likes:7},
+    {av:'J', avC:'guest', name:'James M.', role:'Guest', time:'30 min ago', body:"Do you allow under 5s? We have a 2-year-old and wondering about the stairs.", likes:1},
+  ],
+  2: [
+    {av:'S', avC:'', name:'Sarah R.', role:'Host · Stone Cottage', time:'4 hrs ago', body:"Hi Laura! Stone Cottage could work — sleeps 6 so a bit under your 8, but we have a self-contained studio next door that I could open too. Happy to discuss. DM me 🙌", likes:11},
+    {av:'F', avC:'', name:'Fiona C.', role:'Host · Keswick Cottage', time:'3 hrs ago', body:"Keswick cottage sleeps 8 exactly — August bank holiday is free, dogs welcome, parking for 3 cars, pub is literally 200m. DM me and I'll send the full details.", likes:18},
+    {av:'T', avC:'ink', name:'Tom & Anna', role:"Host · Shepherd's Hut", time:'2 hrs ago', body:"We only sleep 2 so not quite right for your group, but follow us — sometimes we have a weekend where two nearby places are free at the same time 👋", likes:5},
+    {av:'H', avC:'guest', name:'Hannah F.', role:'Guest', time:'1 hr ago', body:"Laura — we stayed at Fiona's Keswick cottage last August bank holiday. 10/10 would recommend.", likes:14},
+  ],
+  3: [
+    {av:'H', avC:'', name:'Hannah R.', role:'Host · The Granary', time:'23 hrs ago', body:"Thank you so much Marcus — really made our morning reading this 😊 You're welcome back any time.", likes:21},
+    {av:'O', avC:'guest', name:'Olivia K.', role:'Guest', time:'20 hrs ago', body:"This is exactly what made us join Casa. Real reviews from real people, not a star rating from an algorithm.", likes:9},
+  ],
+  5: [
+    {av:'R', avC:'guest', name:'Rob T.', role:'Guest', time:'2 days ago', body:"Done this walk twice — agree completely. The views from the summit at 7am are completely otherworldly.", likes:12},
+    {av:'S', avC:'', name:'Sarah R.', role:'Host · Stone Cottage', time:'2 days ago', body:"We always tell our guests about this walk. Takes about 3.5 hours at a comfortable pace — bring waterproofs even in July up on the top.", likes:8},
+    {av:'M', avC:'guest', name:'Marcus J.', role:'Guest', time:'1 day ago', body:"Did this last week based on this post. Thank you!! The sunrise from the ridge was genuinely one of the best things we've ever done.", likes:19},
+  ],
+  12: [
+    {av:'N', avC:'guest', name:'Neil F.', role:'Guest', time:'3 hrs ago', body:"This photo is extraordinary. Where exactly was this taken from? The angle on The Storr is unlike anything I've seen.", likes:14},
+    {av:'F', avC:'ink', name:'Fiona M.', role:"Host · Blackhouse", time:'2 hrs ago', body:"About 400m north of the main viewpoint — there's an unmarked path on the left side going up. The crowds don't usually make it that far.", likes:23},
+  ],
+  14: [
+    {av:'C', avC:'', name:'Callum D.', role:'Host · Glen Coe Bothy', time:'22 hrs ago', body:"Neil — we have guests who wild camp on this route and come back to the bothy for the second night. If you fancy that combo, the bothy is 2 miles from the southern end of the Lairig.", likes:11},
+    {av:'A', avC:'guest', name:'Alice M.', role:'Guest', time:'20 hrs ago', body:"Doing this in September. Any advice on the wild camping spots? Looking for something with a bit of shelter.", likes:6},
+    {av:'N', avC:'guest', name:'Neil F.', role:'Guest', time:'18 hrs ago', body:"Alice — there's a bealach about 12 miles in that has a natural windbreak on the east side. Perfect for a tarp. Avoid the exposed sections near Pools of Dee.", likes:17},
+  ],
+};
+
+const POSTS = [
+  {id:1,county:'cumbria',type:'avail',role:'host',av:'S',avC:'',name:'Sarah R.',ni:'Stone Cottage',badge:'Host',when:'2 hrs ago',where:'Windermere, Cumbria',likes:34,replyCount:3,body:`Just got a cancellation — <span class="tag">#12–19July</span> is now open at Stone Cottage. Sleeps 6, wood burner, dogs welcome. <span class="tag">#lastminute</span> <span class="tag">#lakedistrict</span> <span class="tag">#cottage</span>`,prop:{name:'Stone Cottage',loc:'Windermere',rating:'4.9',sleeps:6,beds:3,tags:'Pets ok',price:175,col:'warm'}},
+  {id:2,county:'cumbria',type:'looking',role:'guest',av:'L',avC:'guest',name:'Laura P.',ni:'seeking August',badge:'Guest',when:'5 hrs ago',where:'Looking in Cumbria',likes:8,replyCount:4,body:`Group of 8 looking for the <span class="tag">#LakeDistrict</span> for the <strong style="font-family:var(--serif);font-style:italic;color:var(--brick);font-weight:400">August bank holiday</strong> (27–31 Aug). Dog-friendly, parking for 3 cars, walking distance to a pub. Budget ~<strong style="font-family:var(--serif);font-style:italic;color:var(--brick);font-weight:400">£250/night</strong>. Hosts — drop your details below 👇 <span class="tag">#groups</span>`,cta:true},
+  {id:3,county:'cumbria',type:'review',role:'guest',av:'M',avC:'guest',name:'Marcus J.',badge:'Guest',when:'Yesterday',where:'Hawkshead, Cumbria',likes:52,replyCount:2,review:{stars:5,text:`"Just back from a week at <em>The Granary</em>. Hannah was the easiest host we've ever booked with — quick to reply, generous with local tips. The walk down to Tarn Hows is 20 minutes from the front door. <em>Cannot recommend this enough.</em>"`,meta:'Stayed 22–29 Jun · 4 adults, 1 dog · £1,365 total'},prop:{name:'The Granary',loc:'Hawkshead',rating:'4.9 · 56',sleeps:5,beds:3,price:195,col:'brick'}},
+  {id:4,county:'cumbria',type:'photo',role:'host',av:'T',avC:'ink',name:'Tom & Anna',ni:"Shepherd's Hut",badge:'Host',when:'Yesterday',where:'Buttermere, Cumbria',likes:87,replyCount:14,body:`Buttermere this morning — the fells in the cloud and not a soul on the lake. <span class="tag">#June</span> here is the secret time. Hut open from <span class="tag">#15July</span>. <span class="tag">#buttermere</span> <span class="tag">#offgrid</span>`,images:['cool','sage','dusk']},
+  {id:5,county:'cumbria',type:'tip',role:'guest',av:'H',avC:'guest',name:'Hannah F.',badge:'Guest',when:'2 days ago',where:'Coniston, Cumbria',likes:128,replyCount:3,body:`For anyone going to <span class="tag">#Coniston</span> — if you can get there before 8am, the climb up the <strong>Old Man</strong> from Walna Scar is magic. Park at the top of Walna Scar Road (free), not the village (£10). <span class="tag">#walks</span> <span class="tag">#oldmanofconiston</span>`},
+  {id:6,county:'cumbria',type:'avail',role:'host',av:'F',avC:'',name:'Fiona C.',ni:'Keswick Cottage',badge:'Host',when:'3 days ago',where:'Keswick, Cumbria',likes:18,replyCount:5,body:`Mid-week deals all of <span class="tag">#September</span> at the Keswick cottage — 3 nights for the price of 2. Sleeps 4, family-friendly, walking distance to town. DM for dates. <span class="tag">#keswick</span> <span class="tag">#midweek</span>`},
+  {id:7,county:'cornwall',type:'review',role:'guest',av:'J',avC:'guest',name:'James T.',badge:'Guest',when:'1 hr ago',where:'Porthcurno, Cornwall',likes:41,replyCount:7,review:{stars:5,text:`"Cliffside Cottage is everything the photos promised and more — the sea view from the bedroom is extraordinary. Booked direct via Casa and saved over £200 vs Airbnb. <em>Will be back every year.</em>"`,meta:'Stayed 5–12 Jun · 2 adults · £1,470 total'},prop:{name:'Cliffside Cottage',loc:'Porthcurno',rating:'4.9 · 41',sleeps:4,beds:2,price:210,col:'dusk'}},
+  {id:8,county:'cornwall',type:'avail',role:'host',av:'R',avC:'',name:'Rachel B.',ni:'Harbour Cottage',badge:'Host',when:'4 hrs ago',where:'Mousehole, Cornwall',likes:22,replyCount:8,body:`Late cancellation — <span class="tag">#20–27July</span> free at Harbour Cottage. Sea views, two minutes from the harbour wall. Sleeps 3. <strong style="font-family:var(--serif);font-style:italic;color:var(--brick);font-weight:400">£155/night</strong> direct. <span class="tag">#cornwall</span> <span class="tag">#seaview</span> <span class="tag">#lastminute</span>`,prop:{name:'Harbour Cottage',loc:'Mousehole',rating:'4.9 · 63',sleeps:3,beds:2,price:155,col:'cool'}},
+  {id:9,county:'cornwall',type:'tip',role:'guest',av:'A',avC:'guest',name:'Alice M.',badge:'Guest',when:'Yesterday',where:'Zennor, Cornwall',likes:67,replyCount:19,body:`Zennor is one of those Cornish places that still hasn't been discovered. The walk along the coast path to St Ives is 3 hours each way — utterly empty in the mornings. Start early, finish at Heron Inn. <span class="tag">#cornwall</span> <span class="tag">#coastpath</span>`},
+  {id:10,county:'cornwall',type:'photo',role:'host',av:'M',avC:'ink',name:'Martin & Sue',ni:'Tregothnan Lodge',badge:'Host',when:'2 days ago',where:'Truro, Cornwall',likes:94,replyCount:11,body:`The lodge garden this morning — roses in full bloom and the estuary still. August still has availability. <span class="tag">#cornwall</span> <span class="tag">#garden</span>`,images:['sage','warm']},
+  {id:11,county:'cornwall',type:'looking',role:'guest',av:'P',avC:'guest',name:'Pete H.',badge:'Guest',when:'3 days ago',where:'Looking in Cornwall',likes:5,replyCount:9,body:`Couple looking for a romantic coastal cottage for 5 nights in <span class="tag">#lateSeptember</span>. Sea views essential. Budget £150–200/night. Dog-friendly a bonus. <span class="tag">#cornwall</span> <span class="tag">#couples</span>`,cta:true},
+  {id:12,county:'highlands',type:'photo',role:'host',av:'F',avC:'ink',name:'Fiona M.',ni:'Blackhouse, Trotternish',badge:'Host',when:'Just now',where:'Isle of Skye',likes:112,replyCount:2,body:`The Old Man of Storr at 6am — we had the whole ridge to ourselves. Blackhouse still has July availability. <span class="tag">#isleofskye</span> <span class="tag">#storr</span> <span class="tag">#offgrid</span>`,images:['cool','fog','dusk']},
+  {id:13,county:'highlands',type:'avail',role:'host',av:'C',avC:'',name:'Callum D.',ni:'Glen Coe Bothy',badge:'Host',when:'3 hrs ago',where:'Glencoe, Highlands',likes:19,replyCount:6,body:`Two weeks free in August at Glen Coe Bothy — the best walking in Scotland, arguably. Wood burner, off-grid, sleeps 3. <strong style="font-family:var(--serif);font-style:italic;color:var(--brick);font-weight:400">£130/night</strong>. <span class="tag">#glencoe</span> <span class="tag">#highlands</span> <span class="tag">#offgrid</span>`,prop:{name:'Glen Coe Bothy',loc:'Glencoe',rating:'4.7 · 15',sleeps:3,beds:2,price:130,col:'fog'}},
+  {id:14,county:'highlands',type:'tip',role:'guest',av:'N',avC:'guest',name:'Neil F.',badge:'Guest',when:'Yesterday',where:'Cairngorms',likes:88,replyCount:3,body:`The Lairig Ghru is Scotland's most dramatic mountain pass and 90% of tourists have never heard of it. 27 miles Aviemore to Braemar, camp wild overnight. Do it before it gets discovered. <span class="tag">#cairngorms</span> <span class="tag">#wildcamping</span>`},
+  {id:15,county:'highlands',type:'review',role:'guest',av:'S',avC:'guest',name:'Sophie W.',badge:'Guest',when:'2 days ago',where:'Torridon, Highlands',likes:44,replyCount:8,review:{stars:5,text:`"Croft House is the most remote and most beautiful place we've ever stayed. Callum was exceptional — left us a hamper, pointed us to the best walks, checked in once. <em>This is what hospitality is supposed to feel like.</em>"`,meta:'Stayed 8–15 May · 4 adults · £1,155 total'},prop:{name:'Croft House',loc:'Torridon',rating:'4.9 · 27',sleeps:4,beds:2,price:165,col:'warm'}},
+  {id:16,county:'norfolk',type:'avail',role:'host',av:'B',avC:'',name:'Bridget H.',ni:'Burnham Overy Barn',badge:'Host',when:'6 hrs ago',where:'Burnham Overy, Norfolk',likes:28,replyCount:9,body:`September is wide open at Burnham Overy — the marshes in autumn are extraordinary. Barn sleeps 6, sea view, bring the dog. <strong style="font-family:var(--serif);font-style:italic;color:var(--brick);font-weight:400">£195/night</strong>. <span class="tag">#norfolk</span> <span class="tag">#petfriendly</span>`,prop:{name:'Burnham Overy Barn',loc:'Burnham Overy',rating:'4.8 · 33',sleeps:6,beds:3,price:195,col:'warm'}},
+  {id:17,county:'norfolk',type:'tip',role:'guest',av:'C',avC:'guest',name:'Charlie R.',badge:'Guest',when:'Yesterday',where:'Wells-next-the-Sea',likes:73,replyCount:27,body:`Wells at 7am in October — the beach is completely empty, the boats are coming in, and the bacon rolls at the Quayside Cafe are £3.50. This is why you come to Norfolk in autumn. <span class="tag">#norfolk</span> <span class="tag">#wells</span>`},
+  {id:18,county:'norfolk',type:'review',role:'guest',av:'D',avC:'guest',name:'Diana K.',badge:'Guest',when:'3 days ago',where:'Brancaster, Norfolk',likes:39,replyCount:5,review:{stars:5,text:`"Brancaster Hall is everything you dream a Norfolk manor should be. 12 of us for a long weekend — exactly as large and as beautiful as the photos. <em>Effortless.</em>"`,meta:'Stayed 14–17 Apr · 12 adults · £4,050 total'},prop:{name:'Brancaster Hall',loc:'Brancaster',rating:'4.9 · 17',sleeps:12,beds:6,price:450,col:'ink'}},
+  {id:19,county:'yorkshire',type:'photo',role:'host',av:'G',avC:'ink',name:'Graham & Kate',ni:'Dales Farmhouse',badge:'Host',when:'2 hrs ago',where:'Wharfedale, Yorkshire',likes:56,replyCount:12,body:`The Dales at their finest this morning — buttercups and the sound of nothing. Late June availability just opened. <span class="tag">#yorkshire</span> <span class="tag">#yorkshiredales</span>`,images:['warm','sage']},
+  {id:20,county:'yorkshire',type:'avail',role:'host',av:'Y',avC:'',name:'Yvonne S.',ni:'Moorland Cottage',badge:'Host',when:'5 hrs ago',where:'Goathland, N. Yorkshire',likes:15,replyCount:4,body:`Two weeks free in August at the cottage — right on the edge of the moors, walking from the door. Wood burner, pets welcome. <strong style="font-family:var(--serif);font-style:italic;color:var(--brick);font-weight:400">£160/night</strong>. <span class="tag">#northyorkmoors</span>`,prop:{name:'Moorland Cottage',loc:'Goathland',rating:'4.8 · 28',sleeps:4,beds:2,price:160,col:'warm'}},
+  {id:21,county:'all',type:'tip',role:'guest',av:'O',avC:'guest',name:'Oliver B.',badge:'Guest',when:'1 hr ago',where:'UK-wide',likes:201,replyCount:67,body:`Hot take: the best UK coastal walks are in north Devon, not Cornwall. Hartland Quay to Clovelly — nobody talks about it, completely empty, and the cliffs are genuinely terrifying. <span class="tag">#devon</span> <span class="tag">#coastpath</span>`},
+];
+
+const COUNTY_META = {
+  all:{title:'UK',eyebrow:'Community feed — All of the UK',stays:'4,202',members:'14.2k',active:'1,847',ccTitle:'All of <i>the UK</i>.',ccDesc:'Every county, every region. The most active community in direct holiday rentals.',stays2:'4,202',members2:'14.2k',from:'£85+',tags:['#cottage 341 88','#seaview 156 75','#petfriendly 134 62','#lastminute 89 54','#woodburner 71 40','#offgrid 62 35'],hosts:[{av:'S',avC:'',name:'Sarah',prop:'Stone Cottage',stars:'4.9',online:true},{av:'F',avC:'ink',name:'Fiona M.',prop:'Blackhouse, Skye',stars:'4.9',online:true},{av:'B',avC:'',name:'Bridget',prop:'Burnham Barn',stars:'4.8',online:false},{av:'G',avC:'ink',name:'Graham & Kate',prop:'Dales Farmhouse',stars:'4.9',online:false}]},
+  cumbria:{title:'Cumbria',eyebrow:'Community feed — Cumbria & the Lake District',stays:'214',members:'1,438',active:'312',ccTitle:'Welcome to <i>Cumbria</i>.',ccDesc:'The Lake District — highest fells in England, 16 lakes, and the deepest concentration of direct-booking stays on Casa.',stays2:'214',members2:'1.4k',from:'£85+',tags:['#lakedistrict 214 100','#windermere 78 55','#cottage 61 45','#oldmanofconiston 48 38','#woodburner 42 30'],hosts:[{av:'S',avC:'',name:'Sarah',prop:'Stone Cottage',stars:'4.9',online:true},{av:'T',avC:'ink',name:'Tom & Anna',prop:"Shepherd's Hut",stars:'4.7',online:false},{av:'F',avC:'',name:'Fiona',prop:'Keswick Cottage',stars:'4.8',online:true},{av:'H',avC:'',name:'Hannah',prop:'The Granary',stars:'4.9',online:false}]},
+  cornwall:{title:'Cornwall',eyebrow:'Community feed — Cornwall',stays:'198',members:'1,204',active:'287',ccTitle:'Welcome to <i>Cornwall</i>.',ccDesc:"England's most southwesterly county — 300 miles of coastline, wild moorland, and some of Casa's most-loved properties.",stays2:'198',members2:'1.2k',from:'£90+',tags:['#cornwall 198 100','#seaview 148 72','#coastpath 89 50','#mousehole 34 28','#porthcurno 56 42'],hosts:[{av:'R',avC:'',name:'Rachel',prop:'Harbour Cottage',stars:'4.9',online:true},{av:'M',avC:'ink',name:'Martin & Sue',prop:'Tregothnan Lodge',stars:'4.8',online:false}]},
+  yorkshire:{title:'Yorkshire',eyebrow:'Community feed — Yorkshire',stays:'98',members:'612',active:'143',ccTitle:'Welcome to <i>Yorkshire</i>.',ccDesc:'The largest county in England — moorland, dales, coast, and the friendliest hosts on Casa.',stays2:'98',members2:'612',from:'£100+',tags:['#yorkshire 98 100','#yorkshiredales 74 74','#northyorkmoors 52 52','#whitby 38 38','#wharfedale 33 33'],hosts:[{av:'G',avC:'ink',name:'Graham & Kate',prop:'Dales Farmhouse',stars:'4.9',online:true},{av:'Y',avC:'',name:'Yvonne',prop:'Moorland Cottage',stars:'4.8',online:false}]},
+  norfolk:{title:'Norfolk',eyebrow:'Community feed — Norfolk',stays:'112',members:'743',active:'167',ccTitle:'Welcome to <i>Norfolk</i>.',ccDesc:'The big skies coast — salt marshes, seal colonies, and the most underrated countryside in England.',stays2:'112',members2:'743',from:'£95+',tags:['#norfolk 112 100','#wells 67 60','#burnham 45 40','#marshes 38 34','#seals 29 26'],hosts:[{av:'B',avC:'',name:'Bridget',prop:'Burnham Barn',stars:'4.8',online:true},{av:'E',avC:'',name:'Edward',prop:'Brancaster Hall',stars:'4.9',online:false}]},
+  highlands:{title:'Highlands',eyebrow:'Community feed — Scottish Highlands',stays:'145',members:'876',active:'198',ccTitle:'The Scottish <i>Highlands</i>.',ccDesc:'Remote glens, sea lochs, and starlit skies. 145 stays from bothies to lodges — all direct, all fee-free.',stays2:'145',members2:'876',from:'£110+',tags:['#highlands 145 100','#isleofskye 67 46','#glencoe 41 28','#offgrid 62 43','#wildcamping 38 26'],hosts:[{av:'F',avC:'ink',name:'Fiona M.',prop:'Blackhouse, Skye',stars:'4.9',online:true},{av:'C',avC:'',name:'Callum',prop:'Glen Coe Bothy',stars:'4.7',online:false}]},
+  devon:{title:'Devon',eyebrow:'Community feed — Devon',stays:'76',members:'451',active:'97',ccTitle:'Welcome to <i>Devon</i>.',ccDesc:'Two coastlines, Dartmoor, and Exmoor — Devon packs more landscape into one county than almost anywhere else.',stays2:'76',members2:'451',from:'£95+',tags:['#devon 76 100','#dartmoor 54 71','#northdevon 41 54','#hartland 19 25','#exmoor 38 50'],hosts:[]},
+  cotswolds:{title:'Cotswolds',eyebrow:'Community feed — Cotswolds',stays:'87',members:'534',active:'121',ccTitle:'The <i>Cotswolds</i>.',ccDesc:'Honey-stone villages, rolling wolds, and the most photographed countryside in England.',stays2:'87',members2:'534',from:'£140+',tags:['#cotswolds 87 100','#chippingcampden 41 47','#bourton 38 44','#manor 22 25','#woodburner 29 33'],hosts:[]},
+  snowdonia:{title:'Snowdonia',eyebrow:'Community feed — Snowdonia',stays:'54',members:'367',active:'89',ccTitle:'<i>Snowdonia</i>.',ccDesc:"Y Wyddfa and the highest mountains in Wales. 54 direct-booking stays from lakeshore cabins to farmhouses.",stays2:'54',members2:'367',from:'£95+',tags:['#snowdonia 54 100','#llanberis 34 63','#ywyddfa 41 76','#betws 22 41','#llyn 29 54'],hosts:[]},
+  pembrokeshire:{title:'Pembrokeshire',eyebrow:'Community feed — Pembrokeshire',stays:'48',members:'312',active:'78',ccTitle:'<i>Pembrokeshire</i>.',ccDesc:"Wales's only coastal national park. 186 miles of coast path, Skomer Island, and some of the most dramatic sea cliffs in Britain.",stays2:'48',members2:'312',from:'£85+',tags:['#pembrokeshire 48 100','#stdavids 34 71','#coastpath 67 100','#skomer 19 40','#seaview 41 85'],hosts:[]},
+  kent:{title:'Kent',eyebrow:'Community feed — Kent',stays:'41',members:'287',active:'62',ccTitle:'<i>Kent</i>.',ccDesc:'The Garden of England — oast houses, chalk downs, and a surprisingly undiscovered coastline.',stays2:'41',members2:'287',from:'£120+',tags:['#kent 41 100','#whitstable 28 68','#dungeness 19 46','#weald 22 54','#oasthouse 16 39'],hosts:[]},
+  causeway:{title:'Causeway Coast',eyebrow:'Community feed — Causeway Coast',stays:'29',members:'198',active:'44',ccTitle:'Causeway <i>Coast</i>.',ccDesc:"Northern Ireland's most dramatic 120 miles — Giant's Causeway, Dark Hedges, Carrick-a-Rede.",stays2:'29',members2:'198',from:'£110+',tags:["#causewaycoast 29 100","#giantscauseway 22 76","#darkhedges 18 62","#antrim 14 48","#bushmills 11 38"],hosts:[]},
+};
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+let state = {county:'all', type:'all', filter:'all', sort:'recent', tag:null, search:'', page:8};
+const openReplies = new Set();
+const likedPosts = new Set();
+const savedPosts = new Set();
+
+// ═══════════════════════════════════════
+// GETFILTERED
+// ═══════════════════════════════════════
+function getFiltered() {
+  let ps = POSTS.filter(p => state.county === 'all' || p.county === state.county || p.county === 'all');
+  if (state.type !== 'all') ps = ps.filter(p => p.type === state.type);
+  if (state.filter === 'hosts') ps = ps.filter(p => p.role === 'host');
+  if (state.filter === 'guests') ps = ps.filter(p => p.role === 'guest');
+  if (state.tag) ps = ps.filter(p => (p.body||'').toLowerCase().includes(state.tag.toLowerCase().replace('#','')));
+  if (state.search) { const q = state.search.toLowerCase(); ps = ps.filter(p => (p.body||'').toLowerCase().includes(q) || p.name.toLowerCase().includes(q) || (p.where||'').toLowerCase().includes(q)); }
+  if (state.sort === 'liked') ps = [...ps].sort((a,b) => b.likes - a.likes);
+  return ps;
+}
+
+// ═══════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════
+const TYPE_BADGE = {avail:`<span class="post-type-badge ptb-avail"><svg viewBox="0 0 24 24" style="width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2"><path d="M3 11 12 3l9 8"/></svg> Availability</span>`,looking:`<span class="post-type-badge ptb-looking"><svg viewBox="0 0 24 24" style="width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg> Looking</span>`,review:`<span class="post-type-badge ptb-review"><svg viewBox="0 0 24 24" style="width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> Review</span>`,tip:`<span class="post-type-badge ptb-tip"><svg viewBox="0 0 24 24" style="width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2"><path d="M3 20 9 10l4 6 2-3 6 7z"/></svg> Local pick</span>`,photo:`<span class="post-type-badge ptb-photo"><svg viewBox="0 0 24 24" style="width:9px;height:9px;stroke:currentColor;fill:none;stroke-width:2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg> Photo</span>`};
+const ROLE_BADGE = {Host:`<span class="badge moss"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> Host</span>`,Guest:`<span class="badge">Guest</span>`};
+
+function renderStars(n){ return Array(n).fill('<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:#B05533;stroke:none"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>').join(''); }
+
+function renderPost(p, i) {
+  const liked = likedPosts.has(p.id);
+  const saved = savedPosts.has(p.id);
+  const repliesOpen = openReplies.has(p.id);
+  const rs = REPLIES[p.id] || [];
+
+  const propH = p.prop ? `<a class="post-prop" href="property.html"><div class="pi"><div class="ph ${p.prop.col}"></div></div><div class="pinfo"><div class="pname">${p.prop.name}, <i>${p.prop.loc}</i></div><div class="pdets"><span>★ ${p.prop.rating}</span><span>·</span><span>Sleeps ${p.prop.sleeps} · ${p.prop.beds} bed</span>${p.prop.tags?`<span>·</span><span>${p.prop.tags}</span>`:''}</div></div><div class="price">£${p.prop.price}<span>/night</span></div></a>` : '';
+  const imgH = p.images ? `<div class="post-images ${p.images.length===1?'one':p.images.length===2?'two':'three'}">${p.images.map(c=>`<div class="ph ${c}"></div>`).join('')}</div>` : '';
+  const revH = p.review ? `<div class="post-review-card"><div class="review-stars">${renderStars(p.review.stars)}</div><div class="review-text">${p.review.text}</div><div class="review-meta">${p.review.meta}</div></div>` : '';
+  const ctaH = p.cta ? `<div class="looking-cta"><p>Are you a host? <i>Reply with your availability below</i> — guests are waiting.</p><a href="messages.html">Message directly</a></div>` : '';
+  const enquireH = p.prop ? `<a class="pa pa-enquire" href="booking.html">Enquire →</a>` : '';
+
+  // Replies HTML
+  const repliesH = rs.length ? `
+    <div class="replies-section${repliesOpen?' open':''}" id="replies-${p.id}">
+      ${rs.map((r,ri) => `
+        <div class="reply">
+          <div class="av sm ${r.avC}">${r.av}</div>
+          <div class="reply-bubble">
+            <div class="rh"><span class="rn">${r.name.includes('<i>') ? r.name : `<i>${r.name.split(' ')[0]}</i> ${r.name.split(' ').slice(1).join(' ')}`}</span><span style="font-size:11px;color:var(--ink-4);margin-left:4px">${r.role}</span><span class="rt" style="margin-left:auto">${r.time}</span></div>
+            <div class="rb">${r.body}</div>
+            <button class="reply-like" onclick="likeReply(this)"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg> ${r.likes}</button>
+          </div>
+        </div>`).join('')}
+      <div class="reply-compose">
+        <div class="av sm">J</div>
+        <textarea class="rc-input" placeholder="Reply to this thread…" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+        <button class="rc-send" onclick="sendReply(this,${p.id})">Reply</button>
+      </div>
+    </div>` : `
+    <div class="replies-section${repliesOpen?' open':''}" id="replies-${p.id}">
+      <div class="reply-compose">
+        <div class="av sm">J</div>
+        <textarea class="rc-input" placeholder="Be the first to reply…" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+        <button class="rc-send" onclick="sendReply(this,${p.id})">Reply</button>
+      </div>
+    </div>`;
+
+  return `<article class="post" style="animation-delay:${i*.04}s" id="post-${p.id}">
+    <div class="post-head">
+      <div class="av ${p.avC}">${p.av}</div>
+      <div class="post-who">
+        <div class="post-name">
+          <span class="nm">${p.name}${p.ni?` <i>${p.ni}</i>`:''}</span>
+          ${ROLE_BADGE[p.badge]||''}
+          ${TYPE_BADGE[p.type]||''}
+        </div>
+        <div class="post-meta">
+          <span class="when">${p.when}</span><span class="sep">·</span><span>${p.where}</span>
+        </div>
+      </div>
+      <div style="position:relative">
+        <button class="post-more" onclick="toggleMore(this)">
+          <svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+        </button>
+        <div class="more-menu">
+          <button class="mm-item" onclick="sharePost(${p.id})"><svg viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>Share this post</button>
+          <button class="mm-item" onclick="savePostMenu(${p.id},this)"><svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg>Save post</button>
+          <button class="mm-item" onclick="toast('Thanks — we\\'ll look into this');closeMenus()"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>Report</button>
+          <button class="mm-item danger" onclick="toast('User muted — you won\\'t see their posts');closeMenus()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>Mute user</button>
+        </div>
+      </div>
+    </div>
+    ${p.body ? `<div class="post-body"><p>${p.body}</p></div>` : ''}
+    ${revH}${imgH}${propH}${ctaH}
+    <div class="post-actions">
+      <button class="pa${liked?' liked':''}" onclick="likePost(this,${p.id})">
+        <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg>
+        <span class="pa-count" id="likes-${p.id}">${p.likes}</span>
+      </button>
+      <button class="pa${repliesOpen?' active':''}" onclick="toggleReplies(${p.id},this)">
+        <svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.4 7.3L4 21l1.7-5.6A8 8 0 1 1 21 12z"/></svg>
+        <span class="pa-count">${p.replyCount}</span>
+        ${rs.length ? `<svg viewBox="0 0 24 24" style="width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;margin-left:2px;transition:transform .2s" id="replyChevron-${p.id}"><path d="M6 9l6 6 6-6"/></svg>` : ''}
+      </button>
+      <button class="pa" onclick="sharePost(${p.id})">
+        <svg viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>
+        Share
+      </button>
+      <button class="pa${saved?' saved':''}" onclick="toggleSave(this,${p.id})">
+        <svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg>
+        ${saved ? 'Saved' : 'Save'}
+      </button>
+      ${enquireH}
+    </div>
+    ${repliesH}
+  </article>`;
+}
+
+function renderFeed() {
+  state.sort = document.getElementById('sortSel').value;
+  const ps = getFiltered();
+  const visible = ps.slice(0, state.page);
+  const container = document.getElementById('feedPosts');
+
+  if (!ps.length) {
+    container.innerHTML = `<div class="empty-feed"><h3>Nothing here yet.</h3><p>Be the first to post — share availability, a tip, or a local gem.</p></div>`;
+    document.getElementById('loadMoreWrap').style.display = 'none';
+    return;
+  }
+
+  container.innerHTML = visible.map((p,i) => renderPost(p,i)).join('');
+  document.getElementById('loadMoreWrap').style.display = visible.length < ps.length ? 'block' : 'none';
+
+  // Counts
+  const all = POSTS.filter(p => state.county==='all' || p.county===state.county || p.county==='all');
+  document.getElementById('ct-all').textContent    = all.length;
+  document.getElementById('ct-avail').textContent  = all.filter(p=>p.type==='avail').length;
+  document.getElementById('ct-looking').textContent= all.filter(p=>p.type==='looking').length;
+  document.getElementById('ct-review').textContent = all.filter(p=>p.type==='review').length;
+  document.getElementById('ct-tip').textContent    = all.filter(p=>p.type==='tip').length;
+  document.getElementById('ct-photo').textContent  = all.filter(p=>p.type==='photo').length;
+  document.getElementById('tab-all').textContent   = all.length;
+  document.getElementById('tab-hosts').textContent = all.filter(p=>p.role==='host').length;
+  document.getElementById('tab-guests').textContent= all.filter(p=>p.role==='guest').length;
+}
+
+function updateSidebar() {
+  const m = COUNTY_META[state.county] || COUNTY_META.all;
+  document.getElementById('feedEyebrow').textContent = m.eyebrow;
+  document.getElementById('feedTitle').textContent   = m.title;
+  document.getElementById('st-stays').textContent    = m.stays;
+  document.getElementById('st-members').textContent  = m.members;
+  document.getElementById('st-active').textContent   = m.active;
+  document.getElementById('ccTitle').innerHTML       = m.ccTitle;
+  document.getElementById('ccDesc').textContent      = m.ccDesc;
+  document.getElementById('ccStays').textContent     = m.stays2;
+  document.getElementById('ccMembers').textContent   = m.members2;
+  document.getElementById('ccFrom').textContent      = m.from;
+
+  // Trending tags with bar chart
+  document.getElementById('trendingTags').innerHTML = m.tags.map(t => {
+    const parts = t.split(' ');
+    const tag = parts[0], count = parts[1], pct = parts[2] || '50';
+    return `<div class="trend-tag" onclick="filterByTag('${tag}')">
+      <span class="tt">${tag}</span>
+      <span class="tc"><span class="bar"><span class="fill" style="width:${pct}%"></span></span>${count}</span>
+    </div>`;
+  }).join('');
+
+  // Active hosts with online indicator
+  document.getElementById('activeHosts').innerHTML = m.hosts.length
+    ? m.hosts.map(h => `<div class="host-row">
+        <div class="av ${h.avC}">${h.av}</div>
+        <div class="hi">
+          <div class="hn"><i>${h.name}</i></div>
+          <div class="hm">${h.online?'<span class="online-dot"></span>Active now':'Last seen recently'} · ${h.stars}★</div>
+        </div>
+        <button class="follow-btn" onclick="toggleFollow(this)">${Math.random()>.5?'Following':'Follow'}</button>
+      </div>`).join('')
+    : `<p style="font-size:12.5px;color:var(--ink-3)">No active hosts yet — be first to join!</p>`;
+}
+
+// ═══════════════════════════════════════
+// INTERACTIONS
+// ═══════════════════════════════════════
+function setCounty(btn) {
+  document.querySelectorAll('.county-pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  state.county = btn.dataset.county;
+  state.type = 'all'; state.filter = 'all'; state.tag = null; state.page = 8;
+  document.querySelectorAll('.side-link[data-type]').forEach(l=>l.classList.remove('active'));
+  document.querySelector('.side-link[data-type="all"]').classList.add('active');
+  document.querySelectorAll('.feed-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector('.feed-tab[data-filter="all"]').classList.add('active');
+  clearTagBanner();
+  updateSidebar();
+  renderFeed();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function setType(btn) {
+  document.querySelectorAll('.side-link[data-type]').forEach(l=>l.classList.remove('active'));
+  btn.classList.add('active');
+  state.type = btn.dataset.type;
+  state.tag = null; clearTagBanner();
+  renderFeed();
+}
+
+function setFilter(btn) {
+  document.querySelectorAll('.feed-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  state.filter = btn.dataset.filter;
+  renderFeed();
+}
+
+function filterByTag(tag) {
+  state.tag = tag;
+  document.getElementById('tagBannerLabel').textContent = tag;
+  document.getElementById('tagBanner').classList.add('show');
+  renderFeed();
+}
+
+function clearTag() { state.tag = null; clearTagBanner(); renderFeed(); }
+function clearTagBanner() { document.getElementById('tagBanner').classList.remove('show'); }
+
+function onSearch(val) { state.search = val; renderFeed(); }
+function loadMore() { state.page += 6; renderFeed(); }
+
+function likePost(btn, id) {
+  const ct = document.getElementById('likes-'+id);
+  const post = POSTS.find(p=>p.id===id);
+  if (!post) return;
+  if (likedPosts.has(id)) { likedPosts.delete(id); btn.classList.remove('liked'); post.likes--; }
+  else { likedPosts.add(id); btn.classList.add('liked'); post.likes++; }
+  if (ct) ct.textContent = post.likes;
+}
+
+function toggleSave(btn, id) {
+  if (savedPosts.has(id)) { savedPosts.delete(id); btn.classList.remove('saved'); btn.lastChild.textContent = ' Save'; toast('Removed from saved'); }
+  else { savedPosts.add(id); btn.classList.add('saved'); btn.lastChild.textContent = ' Saved'; toast('Post saved ✓'); }
+}
+
+function savePostMenu(id, btn) {
+  if (!savedPosts.has(id)) { savedPosts.add(id); toast('Post saved ✓'); }
+  closeMenus();
+}
+
+function toggleReplies(id, btn) {
+  const section = document.getElementById('replies-'+id);
+  const chevron = document.getElementById('replyChevron-'+id);
+  if (!section) return;
+  if (openReplies.has(id)) { openReplies.delete(id); section.classList.remove('open'); btn.classList.remove('active'); if(chevron) chevron.style.transform=''; }
+  else { openReplies.add(id); section.classList.add('open'); btn.classList.add('active'); if(chevron) chevron.style.transform='rotate(180deg)'; }
+}
+
+function sendReply(btn, postId) {
+  const ta = btn.previousElementSibling;
+  const text = ta.value.trim();
+  if (!text) { ta.focus(); return; }
+  const section = document.getElementById('replies-'+postId);
+  const replyEl = document.createElement('div');
+  replyEl.className = 'reply';
+  replyEl.style.animation = 'rise .25s ease both';
+  replyEl.innerHTML = `<div class="av sm">J</div><div class="reply-bubble"><div class="rh"><span class="rn"><i>You</i></span><span style="font-size:11px;color:var(--ink-4);margin-left:4px">Just now</span></div><div class="rb">${text.replace(/</g,'&lt;')}</div><button class="reply-like" onclick="likeReply(this)"><svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.6"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg> 0</button></div>`;
+  section.insertBefore(replyEl, section.querySelector('.reply-compose'));
+  ta.value = ''; ta.style.height = 'auto';
+  const post = POSTS.find(p=>p.id===postId);
+  if (post) post.replyCount++;
+}
+
+function likeReply(btn) {
+  btn.classList.toggle('liked');
+  const n = parseInt(btn.textContent.trim())||0;
+  btn.innerHTML = btn.innerHTML.replace(/\d+/, btn.classList.contains('liked') ? n+1 : n-1);
+}
+
+function sharePost(id) {
+  const url = location.origin + location.pathname + '?post=' + id;
+  navigator.clipboard?.writeText(url).then(() => toast('Link copied ✓')).catch(() => toast('Link: ' + url));
+  closeMenus();
+}
+
+function toggleMore(btn) {
+  const menu = btn.nextElementSibling;
+  const wasOpen = menu.classList.contains('open');
+  closeMenus();
+  if (!wasOpen) menu.classList.add('open');
+}
+
+function closeMenus() { document.querySelectorAll('.more-menu.open').forEach(m=>m.classList.remove('open')); }
+document.addEventListener('click', e => { if (!e.target.closest('.post-more')) closeMenus(); });
+
+function toggleFollow(btn) {
+  btn.classList.toggle('following');
+  btn.textContent = btn.classList.contains('following') ? 'Following' : 'Follow';
+}
+
+function startLooking() {
+  const ta = document.getElementById('composeTA');
+  pickType(document.querySelector('.type-pill:nth-child(2)'), 'looking');
+  ta.focus();
+  ta.placeholder = "What are you looking for? Dates, location, group size, budget…";
+  document.querySelector('.compose-card').scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+// ═══════════════════════════════════════
+// COMPOSE
+// ═══════════════════════════════════════
+const HASHTAGS = ['#cottage','#lastminute','#petfriendly','#seaview','#woodburner','#offgrid','#walks','#lakedistrict','#cornwall','#highlands','#yorkshire','#groups','#couples','#familyfriendly'];
+
+function onCompose(ta) {
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(ta.scrollHeight, 160) + 'px';
+  const len = ta.value.length;
+  const btn = document.getElementById('postBtn');
+  btn.disabled = len < 10;
+  const cc = document.getElementById('charCount');
+  cc.textContent = len > 800 ? `${len}/1000` : '';
+  cc.classList.toggle('warn', len > 900);
+
+  // Hashtag suggestions
+  const words = ta.value.split(/\s/);
+  const last = words[words.length - 1];
+  const sug = document.getElementById('hashtagSuggest');
+  if (last.startsWith('#') && last.length > 1) {
+    const matches = HASHTAGS.filter(h => h.toLowerCase().startsWith(last.toLowerCase()) && h !== last);
+    if (matches.length) {
+      sug.innerHTML = matches.slice(0,5).map(m=>`<button class="hs-pill" onclick="insertHashtag('${m}')">${m}</button>`).join('');
+      sug.classList.add('show');
+    } else { sug.classList.remove('show'); }
+  } else { sug.classList.remove('show'); }
+}
+
+function insertHashtag(tag) {
+  const ta = document.getElementById('composeTA');
+  const words = ta.value.split(/\s/);
+  words[words.length - 1] = tag + ' ';
+  ta.value = words.join(' ');
+  ta.focus();
+  document.getElementById('hashtagSuggest').classList.remove('show');
+  onCompose(ta);
+}
+
+function pickType(btn, type) {
+  document.querySelectorAll('.type-pill').forEach(p=>p.classList.remove('on'));
+  if (btn) btn.classList.add('on');
+  document.getElementById('activePill').dataset.ptype = type;
+}
+
+function submitPost() {
+  const ta = document.getElementById('composeTA');
+  const text = ta.value.trim();
+  if (text.length < 10) return;
+  const type = document.getElementById('activePill').dataset.ptype || 'tip';
+
+  const newPost = {
+    id: Date.now(),
+    county: state.county === 'all' ? 'all' : state.county,
+    type, role: type==='avail'?'host':'guest',
+    av:'J', avC:'guest',
+    name:'You', badge: type==='avail'?'Host':'Guest',
+    when:'Just now',
+    where: COUNTY_META[state.county]?.title || 'UK',
+    likes:0, replyCount:0,
+    body: text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+              .replace(/(#\w+)/g,'<span class="tag">$1</span>'),
+  };
+
+  POSTS.unshift(newPost);
+  ta.value = '';
+  ta.style.height = 'auto';
+  document.getElementById('postBtn').disabled = true;
+  document.getElementById('hashtagSuggest').classList.remove('show');
+  renderFeed();
+  toast('Posted to the ' + (COUNTY_META[state.county]?.title || 'UK') + ' feed ✓');
+  window.scrollTo({top: document.getElementById('feedPosts').offsetTop - 80, behavior:'smooth'});
+}
+
+// ═══════════════════════════════════════
+// LIVE BANNER — demo after 15s
+// ═══════════════════════════════════════
+function loadLive() {
+  document.getElementById('liveBanner').classList.remove('show');
+  toast('Feed refreshed');
+}
+
+setTimeout(() => {
+  document.getElementById('liveBanner').classList.add('show');
+}, 15000);
+
+// ═══════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════
+function toast(msg) {
+  const el = document.getElementById('feedToast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+// URL param: ?county=cumbria or ?post=3
+const qp = new URLSearchParams(location.search);
+if (qp.get('county')) {
+  const btn = document.querySelector(`.county-pill[data-county="${qp.get('county')}"]`);
+  if (btn) { document.querySelectorAll('.county-pill').forEach(p=>p.classList.remove('active')); btn.classList.add('active'); state.county = qp.get('county'); }
+}
+updateSidebar();
+renderFeed();
+
+// Deep-link to specific post
+if (qp.get('post')) {
+  setTimeout(() => {
+    const el = document.getElementById('post-' + qp.get('post'));
+    if (el) { el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.outline='2px solid var(--brick)'; el.style.outlineOffset='2px'; setTimeout(()=>el.style.outline='',2500); }
+  }, 400);
+}
+</script>
+<script src="casa.js"></script>
+</body>
+</html>

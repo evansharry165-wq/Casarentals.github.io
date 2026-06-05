@@ -1,0 +1,28 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in — Casa</title><link rel="stylesheet" href="../css/casa.css">
+</head><body style="display:flex;flex-direction:column;min-height:100vh;">
+<nav class="casa-nav"><a class="logo" href="../index.html">Casa<em>.co.uk</em></a></nav>
+<div style="flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;">
+  <div class="card" style="width:100%;max-width:400px;padding:2.5rem;">
+    <div class="serif" style="font-size:1.75rem;font-weight:600;color:var(--terracotta);text-align:center;margin-bottom:.25rem;">Casa<em style="font-style:italic;font-weight:400;">.co.uk</em></div>
+    <h1 class="serif" style="font-size:1.3rem;text-align:center;margin-bottom:.3rem;">Welcome back</h1>
+    <p style="font-size:.82rem;color:var(--ink-light);text-align:center;margin-bottom:1.75rem;">The community missed you.</p>
+    <div class="form-field"><label>Email</label><input type="email" id="siEmail" placeholder="you@example.com"></div>
+    <div class="form-field"><label>Password</label><input type="password" id="siPass" placeholder="Your password"></div>
+    <button onclick="handleSignin()" style="width:100%;background:var(--terracotta);color:#fff;border:none;border-radius:10px;padding:.75rem;font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;cursor:pointer;margin-bottom:.875rem;">Sign in →</button>
+    <p style="text-align:center;font-size:.82rem;color:var(--ink-light);">No account? <a href="signup.html">Join Casa free →</a></p>
+  </div>
+</div>
+<script src="../js/casa.js"></script>
+<script>
+function handleSignin(){
+  const email=document.getElementById('siEmail').value.trim();
+  const pass=document.getElementById('siPass').value;
+  if(!email||!pass){showToast('Please enter your email and password.');return;}
+  const name=email.split('@')[0];
+  signIn(name.charAt(0).toUpperCase()+name.slice(1),email,'guest');
+  setTimeout(()=>window.location.href='../index.html',800);
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter')handleSignin();});
+</script></body></html>

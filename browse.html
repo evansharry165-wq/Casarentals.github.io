@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browse stays — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+  .nav-search { display:flex;align-items:stretch;background:var(--surface);border:1px solid var(--rule);border-radius:999px;padding:4px;gap:0;min-width:460px;transition:box-shadow .12s,border-color .12s;cursor:pointer; }
+  .nav-search:hover { box-shadow:0 4px 18px rgba(22,20,15,0.07);border-color:var(--rule-3); }
+  .nav-search .seg { padding:6px 16px;border-right:1px solid var(--rule);display:flex;flex-direction:column;justify-content:center; }
+  .nav-search .seg:last-of-type { border-right:none; }
+  .nav-search .seg .l { font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4); }
+  .nav-search .seg .v { font-size:13px;color:var(--ink);margin-top:1px;white-space:nowrap; }
+  .nav-search .go { width:36px;height:36px;border:none;background:var(--brick);color:white;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;margin:auto 2px auto auto;flex-shrink:0; }
+  .nav-search .go:hover { background:var(--brick-2); }
+  .nav-search .go svg { width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2; }
+  .nav-divider { width:1px;height:20px;background:var(--rule);margin:0 4px; }
+  .wrap { max-width:1280px;margin:0 auto;padding:0 32px; }
+  .head-strip { padding:32px 0 20px;border-bottom:1px solid var(--rule); }
+  .head-strip .top { display:flex;justify-content:space-between;align-items:end;margin-bottom:20px;flex-wrap:wrap;gap:16px; }
+  .eyebrow { font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px; }
+  .eyebrow a { color:inherit;text-decoration:none; }
+  .eyebrow a:hover { color:var(--brick); }
+  .head-strip h1 { font-family:var(--serif);font-size:52px;line-height:.95;letter-spacing:-.025em; }
+  .head-strip h1 i { font-style:italic;color:var(--brick); }
+  .h-meta { text-align:right;font-size:13px;color:var(--ink-3); }
+  .h-meta .n { font-family:var(--serif);font-style:italic;color:var(--brick);font-size:20px; }
+  .region-bar { display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:14px 0 4px;flex-wrap:nowrap; }
+  .region-bar::-webkit-scrollbar { display:none; }
+  .region-pill { flex-shrink:0;padding:8px 16px;border-radius:999px;background:var(--surface);border:1px solid var(--rule);font-size:13px;color:var(--ink-2);cursor:pointer;transition:all .12s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-family:var(--sans); }
+  .region-pill:hover { border-color:var(--ink);color:var(--ink); }
+  .region-pill.active { background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:500; }
+  .region-pill .ct { font-family:var(--mono);font-size:10px;opacity:.5; }
+  .cat-bar { display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:2px 0; }
+  .cat-bar::-webkit-scrollbar { display:none; }
+  .cat-tile { flex-shrink:0;padding:10px 16px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;color:var(--ink-3);border-bottom:2px solid transparent;margin-bottom:-1px;text-decoration:none;transition:color .12s; }
+  .cat-tile:hover { color:var(--ink); }
+  .cat-tile.active { color:var(--brick);border-bottom-color:var(--brick); }
+  .cat-tile svg { width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round; }
+  .cat-tile span { font-size:11px;white-space:nowrap; }
+  .filter-bar { display:flex;align-items:center;gap:8px;padding:12px 0;flex-wrap:wrap; }
+  .fb-pill { display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:var(--surface);border:1px solid var(--rule);border-radius:var(--r-pill);font-size:13px;color:var(--ink-2);cursor:pointer;transition:all .12s;font-family:var(--sans); }
+  .fb-pill:hover { border-color:var(--ink);color:var(--ink); }
+  .fb-pill.active { background:var(--ink);color:var(--paper);border-color:var(--ink); }
+  .fb-pill svg { width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.7; }
+  .fb-sep { width:1px;height:20px;background:var(--rule); }
+  .fb-right { margin-left:auto;display:flex;gap:8px;align-items:center; }
+  .fb-count { font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3); }
+  .fb-sort { border:1px solid var(--rule);background:var(--surface);font-family:var(--sans);font-size:13px;color:var(--ink);outline:none;cursor:pointer;padding:7px 12px;border-radius:var(--r-md); }
+  .layout { display:grid;grid-template-columns:1fr 440px;gap:36px;padding:28px 0 80px; }
+  .results { display:grid;grid-template-columns:repeat(2,1fr);gap:28px 20px;align-content:start; }
+  .pc { background:transparent;border-radius:14px;cursor:pointer;text-decoration:none;color:inherit;display:block;transition:transform .2s; }
+  .pc:hover { transform:translateY(-2px); }
+  .pc-image { position:relative;aspect-ratio:4/3;border-radius:14px;overflow:hidden; }
+  .pc-image .save-heart { position:absolute;top:10px;right:10px;z-index:3; }
+  .pc-image .badge-row { position:absolute;top:10px;left:10px;display:flex;gap:5px;z-index:3; }
+  .pc-image .img-nav { position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:4px;z-index:3; }
+  .pc-image .img-nav .dt { width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.5); }
+  .pc-image .img-nav .dt.on { background:white; }
+  .pc-body { padding:12px 2px 0; }
+  .pc-row1 { display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:3px; }
+  .pc-title { font-family:var(--serif);font-size:20px;line-height:1.1;letter-spacing:-.01em;flex:1;min-width:0; }
+  .pc-title i { font-style:italic;color:var(--brick); }
+  .pc-rating { font-size:12.5px;display:inline-flex;align-items:center;gap:4px;color:var(--ink);flex-shrink:0; }
+  .pc-rating svg { width:12px;height:12px;fill:var(--ink);stroke:none; }
+  .pc-rating .ct { color:var(--ink-4); }
+  .pc-loc { font-size:12.5px;color:var(--ink-3);display:flex;align-items:center;gap:4px;margin-bottom:6px; }
+  .pc-loc svg { width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:1.6; }
+  .pc-meta { display:flex;gap:10px;font-size:12px;color:var(--ink-3);margin-bottom:10px;flex-wrap:wrap; }
+  .pc-price { display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding-top:10px;border-top:1px solid var(--rule); }
+  .pc-price .p-amt { font-family:var(--serif);font-size:22px;color:var(--ink); }
+  .pc-price .p-amt i { font-style:italic;color:var(--brick); }
+  .pc-price .p-per { font-size:12px;color:var(--ink-3); }
+  .pc-price .p-fee { font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--moss); }
+  .featured-banner { grid-column:span 2;background:var(--ink);color:var(--paper);border-radius:16px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:24px; }
+  .featured-banner h3 { font-family:var(--serif);font-size:26px;line-height:1;margin-bottom:4px; }
+  .featured-banner h3 i { font-style:italic;color:var(--brick-2); }
+  .featured-banner p { font-size:13px;color:rgba(255,255,255,0.65); }
+  .featured-banner .fb-cta { background:var(--brick);color:white;padding:10px 18px;border-radius:var(--r-md);font-size:13px;font-weight:500;text-decoration:none;white-space:nowrap;flex-shrink:0;cursor:pointer;border:none;font-family:var(--sans); }
+  .featured-banner .fb-cta:hover { background:var(--brick-2); }
+  .side { position:sticky;top:80px;height:calc(100vh - 110px);background:var(--surface);border:1px solid var(--rule);border-radius:18px;overflow:hidden;display:flex;flex-direction:column; }
+  .mini-map { flex:1;position:relative;background:#E8E2D4;overflow:hidden; }
+  .mini-map::before { content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(22,20,15,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(22,20,15,0.04) 1px,transparent 1px);background-size:28px 28px; }
+  .mini-map .uk-outline { position:absolute;inset:0;width:100%;height:100%; }
+  .mini-map .pin { position:absolute;transform:translate(-50%,-50%);background:var(--brick);color:white;padding:5px 10px;border-radius:var(--r-pill);font-family:var(--sans);font-weight:500;font-size:12px;box-shadow:0 2px 10px rgba(22,20,15,0.18);cursor:pointer;transition:transform .15s,background .15s;white-space:nowrap;z-index:2; }
+  .mini-map .pin:hover { transform:translate(-50%,-50%) scale(1.08);background:var(--brick-2); }
+  .mini-map .pin.active { background:var(--ink);transform:translate(-50%,-50%) scale(1.12);z-index:5; }
+  .map-overlay { position:absolute;top:14px;left:14px;background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:10px 14px;max-width:210px;box-shadow:0 4px 14px rgba(22,20,15,0.06); }
+  .map-overlay .ttl { font-family:var(--serif);font-size:17px;line-height:1.05;margin-bottom:3px; }
+  .map-overlay .ttl i { font-style:italic;color:var(--brick); }
+  .map-overlay .ms { font-size:11px;color:var(--ink-3); }
+  .map-zoom { position:absolute;right:14px;bottom:56px;display:flex;flex-direction:column;gap:4px; }
+  .map-zoom button { width:34px;height:34px;background:var(--surface);border:1px solid var(--rule);border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;color:var(--ink); }
+  .map-zoom button:hover { background:var(--paper); }
+  .map-zoom svg { width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2; }
+  .open-map-btn { position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);text-decoration:none;padding:9px 18px;border-radius:var(--r-pill);font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:7px;white-space:nowrap; }
+  .open-map-btn:hover { background:var(--ink-2); }
+  .open-map-btn svg { width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2; }
+  .load-more-row { grid-column:span 2;text-align:center;padding:12px 0 4px; }
+  .load-more-btn { display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border:1px solid var(--rule);border-radius:var(--r-pill);background:var(--surface);font-family:var(--sans);font-size:14px;color:var(--ink-2);cursor:pointer;transition:all .12s; }
+  .load-more-btn:hover { border-color:var(--ink);color:var(--ink);background:var(--paper); }
+  .empty-state { grid-column:span 2;padding:56px 24px;text-align:center; }
+  .empty-state h3 { font-family:var(--serif);font-style:italic;font-size:32px;margin-bottom:12px; }
+  .empty-state p { font-size:14px;color:var(--ink-3);margin-bottom:24px; }
+  .region-suggestions { display:flex;gap:10px;flex-wrap:wrap;justify-content:center; }
+  .rs-card { text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:14px 18px;transition:all .12s;display:block; }
+  .rs-card:hover { border-color:var(--ink); }
+  .rs-card .rs-name { font-family:var(--serif);font-style:italic;font-size:17px;margin-bottom:2px; }
+  .rs-card .rs-ct { font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3); }
+  .rise { animation:rise .45s ease both; }
+  .rise-2 { animation:rise .45s .07s ease both; }
+  .rise-3 { animation:rise .45s .14s ease both; }
+  .rise-4 { animation:rise .45s .21s ease both; }
+  @keyframes rise { from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)} }
+  @media(max-width:1080px){.layout{grid-template-columns:1fr}.side{position:relative;top:auto;height:380px}}
+  @media(max-width:680px){.results{grid-template-columns:1fr}.head-strip h1{font-size:40px}.nav-search{display:none}.wrap{padding:0 16px}}
+</style>
+</head>
+<body>
+<nav class="casa-nav">
+  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
+  <div class="nav-search" id="navSearch" onclick="openSearchPanel()">
+    <div class="seg" style="flex:1.5;cursor:pointer">
+      <span class="l">Where</span>
+      <span class="v" id="navWhere">Lake District</span>
+    </div>
+    <div class="seg" style="position:relative;cursor:pointer" onclick="event.stopPropagation();document.getElementById('nsCheckin').showPicker?.()">
+      <span class="l">Check in</span>
+      <span class="v" id="navIn">12 Jul</span>
+      <input type="date" id="nsCheckin" style="position:absolute;opacity:0;width:0;height:0" onchange="updateNavDate('in',this.value)">
+    </div>
+    <div class="seg" style="position:relative;cursor:pointer" onclick="event.stopPropagation();document.getElementById('nsCheckout').showPicker?.()">
+      <span class="l">Check out</span>
+      <span class="v" id="navOut">19 Jul</span>
+      <input type="date" id="nsCheckout" style="position:absolute;opacity:0;width:0;height:0" onchange="updateNavDate('out',this.value)">
+    </div>
+    <div class="seg" style="cursor:pointer;position:relative" onclick="event.stopPropagation();document.getElementById('nsGuests').focus()">
+      <span class="l">Guests</span>
+      <span class="v" id="navGuests">2</span>
+      <select id="nsGuests" style="position:absolute;opacity:0;width:100%;height:100%;top:0;left:0;cursor:pointer" onchange="updateNavGuests(this.value)">
+        <option value="1">1 guest</option>
+        <option value="2" selected>2 guests</option>
+        <option value="3">3 guests</option>
+        <option value="4">4 guests</option>
+        <option value="5">5 guests</option>
+        <option value="6">6 guests</option>
+        <option value="8">8 guests</option>
+        <option value="10">10 guests</option>
+        <option value="12">12+ guests</option>
+      </select>
+    </div>
+    <button class="go" onclick="event.stopPropagation();runNavSearch()">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+    </button>
+  </div>
+
+  <!-- Where search panel -->
+  <div id="wherePanel" style="display:none;position:fixed;top:68px;left:50%;transform:translateX(-50%);background:var(--paper);border:1px solid var(--rule);border-radius:18px;box-shadow:0 12px 40px rgba(22,20,15,0.14);z-index:200;padding:20px;min-width:380px">
+    <div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px">Search by location</div>
+    <input type="text" id="whereInput" placeholder="e.g. Lake District, Cornwall, Whitby…"
+      style="width:100%;border:1px solid var(--rule);border-radius:10px;padding:11px 14px;font-family:var(--sans);font-size:14px;color:var(--ink);outline:none;margin-bottom:12px;transition:border-color .12s"
+      oninput="filterWhereOptions(this.value)" onfocus="this.style.borderColor='var(--brick)'" onblur="this.style.borderColor='var(--rule)'"
+      onkeydown="if(event.key==='Enter')runNavSearch()">
+    <div style="display:flex;flex-wrap:wrap;gap:6px" id="whereSuggestions">
+      <button class="region-pill" onclick="pickWhere('Lake District','lake-district')" style="font-size:12px;padding:6px 12px">🏔️ Lake District</button>
+      <button class="region-pill" onclick="pickWhere('Cornwall','cornwall')" style="font-size:12px;padding:6px 12px">🌊 Cornwall</button>
+      <button class="region-pill" onclick="pickWhere('Scottish Highlands','highlands')" style="font-size:12px;padding:6px 12px">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Highlands</button>
+      <button class="region-pill" onclick="pickWhere('Norfolk','norfolk')" style="font-size:12px;padding:6px 12px">🌾 Norfolk</button>
+      <button class="region-pill" onclick="pickWhere('Yorkshire','yorkshire')" style="font-size:12px;padding:6px 12px">🐑 Yorkshire</button>
+      <button class="region-pill" onclick="pickWhere('Cotswolds','cotswolds')" style="font-size:12px;padding:6px 12px">🌿 Cotswolds</button>
+      <button class="region-pill" onclick="pickWhere('Isle of Skye','skye')" style="font-size:12px;padding:6px 12px">⛵ Isle of Skye</button>
+      <button class="region-pill" onclick="pickWhere('Snowdonia','snowdonia')" style="font-size:12px;padding:6px 12px">🏴󠁧󠁢󠁷󠁬󠁳󠁿 Snowdonia</button>
+      <button class="region-pill" onclick="pickWhere('Pembrokeshire','pembrokeshire')" style="font-size:12px;padding:6px 12px">🌊 Pembrokeshire</button>
+      <button class="region-pill" onclick="pickWhere('Causeway Coast','causeway')" style="font-size:12px;padding:6px 12px">🇬🇧 Causeway Coast</button>
+    </div>
+  </div>
+  <div class="nav-right">
+    <a class="nav-link" href="browse.html" style="color:var(--brick);font-weight:500">Browse</a>
+    <a class="nav-link" href="map.html">Map</a>
+    <a class="nav-link" href="feed.html">Feed</a>
+    <a class="nav-link" href="list.html">Become a host</a>
+    <div class="nav-divider"></div>
+    <a class="nav-link" href="saved.html">Saved</a>
+    <a class="nav-link" href="messages.html">Messages</a>
+    <div class="nav-divider"></div>
+    <a class="nav-link" href="signup.html">Sign in</a>
+    <a class="nav-link primary" href="signup.html">Join free</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="head-strip">
+    <div class="top">
+      <div>
+        <div class="eyebrow"><a href="index.html">Casa</a> / <a href="browse.html">Browse</a> / <span id="crumbRegion">The Lake District</span></div>
+        <h1 id="pageTitle">Stays in the <i>Lake District</i></h1>
+      </div>
+      <div class="h-meta">
+        <div><span class="n" id="resultCount">214 stays</span> · <span id="metaDates">12–19 Jul</span> · <span id="metaGuests">2 guests</span></div>
+        <div style="margin-top:4px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)" id="metaPrice">From £85 · avg. £175 / night</div>
+      </div>
+    </div>
+
+    <div class="region-bar" id="regionBar">
+      <button class="region-pill" data-region="all" onclick="setRegion(this)">All UK <span class="ct">4,202</span></button>
+      <button class="region-pill active" data-region="lake-district" onclick="setRegion(this)">Lake District <span class="ct">214</span></button>
+      <button class="region-pill" data-region="cornwall" onclick="setRegion(this)">Cornwall <span class="ct">198</span></button>
+      <button class="region-pill" data-region="highlands" onclick="setRegion(this)">Scottish Highlands <span class="ct">145</span></button>
+      <button class="region-pill" data-region="norfolk" onclick="setRegion(this)">Norfolk <span class="ct">112</span></button>
+      <button class="region-pill" data-region="yorkshire" onclick="setRegion(this)">Yorkshire <span class="ct">98</span></button>
+      <button class="region-pill" data-region="cotswolds" onclick="setRegion(this)">Cotswolds <span class="ct">87</span></button>
+      <button class="region-pill" data-region="skye" onclick="setRegion(this)">Isle of Skye <span class="ct">67</span></button>
+      <button class="region-pill" data-region="snowdonia" onclick="setRegion(this)">Snowdonia <span class="ct">54</span></button>
+      <button class="region-pill" data-region="pembrokeshire" onclick="setRegion(this)">Pembrokeshire <span class="ct">48</span></button>
+      <button class="region-pill" data-region="causeway" onclick="setRegion(this)">Causeway Coast <span class="ct">29</span></button>
+    </div>
+
+    <div class="cat-bar">
+      <a class="cat-tile active" data-type="all" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/></svg><span>All stays</span></a>
+      <a class="cat-tile" data-type="cottage" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="M5 21V8l7-5 7 5v13"/><path d="M5 21h14"/><path d="M9 21v-6h6v6"/></svg><span>Cottage</span></a>
+      <a class="cat-tile" data-type="farmhouse" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="M5 21V8l7-5 7 5v13"/><path d="M12 21V13"/></svg><span>Farmhouse</span></a>
+      <a class="cat-tile" data-type="barn" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="M3 16h18M5 16V8h14v8"/><path d="M9 8V4h6v4"/></svg><span>Barn conv.</span></a>
+      <a class="cat-tile" data-type="glamping" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="m3 21 9-18 9 18z"/><path d="M12 13v8"/></svg><span>Glamping</span></a>
+      <a class="cat-tile" data-type="cabin" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="M4 17c2 0 3-2 5-2s3 2 5 2 3-2 5-2"/><path d="M3 11h18M5 11l3-7h8l3 7"/></svg><span>Lodge / cabin</span></a>
+      <a class="cat-tile" data-type="houseboat" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="M3 17h18M5 17V11h14v6"/><path d="M9 11V7h6v4"/><path d="M2 20h20"/></svg><span>Houseboat</span></a>
+      <a class="cat-tile" data-type="manor" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="M3 21V9l9-6 9 6v12"/><rect x="9" y="12" width="6" height="9"/></svg><span>Manor</span></a>
+      <a class="cat-tile" data-type="woodburner" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="M12 22c-4 0-7-3-7-7 0-3 2-5 4-7 0 3 2 4 3 2 1-3-1-5 2-8 0 4 3 5 4 9 1 4-2 11-6 11z"/></svg><span>Wood burner</span></a>
+      <a class="cat-tile" data-type="seaview" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="M2 12c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2"/><path d="M2 17c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2"/></svg><span>Sea view</span></a>
+      <a class="cat-tile" data-type="offgrid" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="M12 3 6 12h3v3h6v-3h3z"/><path d="M12 15v6"/></svg><span>Off-grid</span></a>
+      <a class="cat-tile" data-type="hottub" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="M4 12V8a4 4 0 0 1 8 0v4"/><path d="M2 16h20"/><path d="M4 18h16l-1 4H5z"/></svg><span>Hot tub</span></a>
+      <a class="cat-tile" data-type="lastminute" onclick="setType(this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Last minute</span></a>
+      <a class="cat-tile" data-type="longstay" onclick="setType(this)"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Long stay</span></a>
+    </div>
+
+    <div class="filter-bar">
+      <button class="fb-pill" onclick="this.classList.toggle('active')">
+        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="M4 5h16l-6 8v6l-4-2v-4z"/></svg>
+        Filters
+      </button>
+      <div class="fb-sep"></div>
+      <button class="fb-pill" id="fpPets" onclick="togglePill(this,'pets')">🐾 Pet friendly</button>
+      <button class="fb-pill" id="fpFire" onclick="togglePill(this,'fire')">🔥 Wood burner</button>
+      <button class="fb-pill" id="fpSea" onclick="togglePill(this,'sea')">🌊 Sea view</button>
+      <button class="fb-pill" id="fpTub" onclick="togglePill(this,'tub')">♨️ Hot tub</button>
+      <button class="fb-pill" id="fpOffgrid" onclick="togglePill(this,'offgrid')">🌿 Off-grid</button>
+      <div class="fb-right">
+        <span class="fb-count" id="fbCount">8 stays</span>
+        <select class="fb-sort" id="sortSelect" onchange="sortAndRender()">
+          <option value="curated">Sort: Curated</option>
+          <option value="price-asc">Price: low to high</option>
+          <option value="price-desc">Price: high to low</option>
+          <option value="rating">Top rated</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <div class="results" id="resultsGrid"></div>
+    <aside class="side">
+      <div class="mini-map" id="miniMap">
+        <svg class="uk-outline" viewBox="0 0 460 640" preserveAspectRatio="xMidYMid meet">
+          <path d="M218 42 L268 60 L290 105 L272 155 L300 195 L275 230 L240 222 L205 205 L178 158 L186 98 Z" fill="#D8CFBC" opacity="0.8"/>
+          <path d="M178 200 L300 220 L312 275 L330 370 L305 455 L272 508 L215 540 L182 508 L162 448 L175 370 L158 310 L152 262 Z" fill="#D8CFBC" opacity="0.8"/>
+          <path d="M125 282 L178 275 L175 370 L158 390 L132 372 L122 332 Z" fill="#D8CFBC" opacity="0.8"/>
+          <path d="M92 195 L135 188 L142 232 L118 242 L92 222 Z" fill="#D8CFBC" opacity="0.75"/>
+          <path d="M248 540 L268 560 L258 590 L238 598 L222 580 L228 555 Z" fill="#D8CFBC" opacity="0.65"/>
+        </svg>
+        <div class="map-overlay">
+          <div class="ttl" id="mapTitle">The <i>Lake District</i></div>
+          <div class="ms" id="mapSub">214 stays · Cumbria</div>
+        </div>
+        <div id="mapPins"></div>
+        <div class="map-zoom">
+          <button title="Zoom in"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+          <button title="Zoom out"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+        </div>
+        <a href="map.html" class="open-map-btn">
+          <svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>
+          Full map
+        </a>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<footer class="casa-foot">
+  <div class="inner">
+    <div class="top">
+      <div>
+        <div class="casa-mark-lg">casa</div>
+        <div class="pitch">A quieter place to find a holiday stay — <em>fee-free</em>, and direct with the host.</div>
+      </div>
+      <div><h5>Find a stay</h5><a href="browse.html">Browse all stays</a><a href="map.html">Map view</a><a href="feed.html">Community feed</a><a href="#">Last-minute deals</a></div>
+      <div><h5>For hosts</h5><a href="list.html">List a property</a><a href="host.html">Host dashboard</a><a href="how-it-works.html">How it works</a></div>
+      <div><h5>Account</h5><a href="signup.html">Sign in</a><a href="signup.html">Join free</a><a href="saved.html">Saved</a><a href="messages.html">Messages</a></div>
+      <div><h5>Casa</h5><a href="#">Our story</a><a href="how-it-works.html">How it works</a><a href="#">Help centre</a></div>
+    </div>
+    <div class="bot"><div>© 2026 Casa.co.uk — <em style="font-family:var(--serif);font-style:italic">fee-free, always.</em></div><div><a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Cookies</a></div></div>
+  </div>
+</footer>
+
+<script>
+const PROPS = [
+  {id:1,title:'Stone Cottage',loc:'Windermere',region:'lake-district',rLabel:'Lake District',type:'cottage',price:175,rating:4.9,reviews:23,sleeps:6,beds:3,tags:['woodburner','pets','parking'],badge:'verified',col:'#C8A882'},
+  {id:2,title:'Slate Barn',loc:'Ambleside',region:'lake-district',rLabel:'Lake District',type:'barn',price:215,rating:4.8,reviews:11,sleeps:4,beds:2,tags:['hottub','sauna'],badge:'new',col:'#8DA88A'},
+  {id:3,title:'Lakeside Cabin',loc:'Coniston',region:'lake-district',rLabel:'Lake District',type:'cabin',price:145,rating:5.0,reviews:34,sleeps:2,beds:1,tags:['romantic'],col:'#8A7DB0'},
+  {id:4,title:'Georgian House',loc:'Keswick',region:'lake-district',rLabel:'Lake District',type:'cottage',price:240,rating:4.9,reviews:47,sleeps:8,beds:4,tags:['garden','parking'],badge:'verified',col:'#A8B4C0'},
+  {id:5,title:"Shepherd's Hut",loc:'Buttermere',region:'lake-district',rLabel:'Lake District',type:'glamping',price:95,rating:4.7,reviews:8,sleeps:2,beds:1,tags:['offgrid'],col:'#7BA0B4'},
+  {id:6,title:"Miller's Cottage",loc:'Grasmere',region:'lake-district',rLabel:'Lake District',type:'cottage',price:165,rating:4.8,reviews:19,sleeps:4,beds:2,tags:['woodburner'],col:'#3C3830'},
+  {id:7,title:'The Granary',loc:'Hawkshead',region:'lake-district',rLabel:'Lake District',type:'farmhouse',price:195,rating:4.9,reviews:56,sleeps:5,beds:3,tags:['pets','woodburner'],badge:'editors',col:'#B05533'},
+  {id:8,title:'Hillside Farmhouse',loc:'Grizedale',region:'lake-district',rLabel:'Lake District',type:'farmhouse',price:385,rating:4.6,reviews:14,sleeps:10,beds:5,tags:['hottub','garden'],col:'#C8A882'},
+  {id:9,title:'Cliffside Cottage',loc:'Porthcurno',region:'cornwall',rLabel:'Cornwall',type:'cottage',price:210,rating:4.9,reviews:41,sleeps:4,beds:2,tags:['seaview','woodburner'],badge:'verified',col:'#8A7DB0'},
+  {id:10,title:'Tregothnan Lodge',loc:'Truro',region:'cornwall',rLabel:'Cornwall',type:'cabin',price:320,rating:4.8,reviews:22,sleeps:8,beds:4,tags:['hottub','garden','pets'],col:'#8DA88A'},
+  {id:11,title:'Harbour Cottage',loc:'Mousehole',region:'cornwall',rLabel:'Cornwall',type:'cottage',price:155,rating:4.9,reviews:63,sleeps:3,beds:2,tags:['seaview'],badge:'editors',col:'#7BA0B4'},
+  {id:12,title:'St Agnes Farmhouse',loc:'St Agnes',region:'cornwall',rLabel:'Cornwall',type:'farmhouse',price:185,rating:4.7,reviews:18,sleeps:6,beds:3,tags:['woodburner','pets'],col:'#C8A882'},
+  {id:13,title:'The Boathouse',loc:'Fowey',region:'cornwall',rLabel:'Cornwall',type:'houseboat',price:175,rating:5.0,reviews:29,sleeps:2,beds:1,tags:['seaview','romantic'],badge:'verified',col:'#A8B4C0'},
+  {id:14,title:'Mizen Shepherd Hut',loc:'Zennor',region:'cornwall',rLabel:'Cornwall',type:'glamping',price:115,rating:4.8,reviews:12,sleeps:2,beds:1,tags:['offgrid','seaview'],col:'#8A7DB0'},
+  {id:15,title:'Restored Blackhouse',loc:'Trotternish',region:'highlands',rLabel:'Isle of Skye',type:'cottage',price:195,rating:4.9,reviews:31,sleeps:4,beds:2,tags:['offgrid','hottub','seaview'],badge:'verified',col:'#7BA0B4'},
+  {id:16,title:'Glen Coe Bothy',loc:'Glencoe',region:'highlands',rLabel:'Highlands',type:'cabin',price:130,rating:4.7,reviews:15,sleeps:3,beds:2,tags:['woodburner','offgrid'],col:'#A8B4C0'},
+  {id:17,title:'Loch Ness Lodge',loc:'Drumnadrochit',region:'highlands',rLabel:'Highlands',type:'cabin',price:280,rating:4.8,reviews:44,sleeps:6,beds:3,tags:['seaview','hottub'],col:'#8DA88A'},
+  {id:18,title:'Croft House',loc:'Torridon',region:'highlands',rLabel:'Highlands',type:'farmhouse',price:165,rating:4.9,reviews:27,sleeps:4,beds:2,tags:['woodburner','pets'],badge:'verified',col:'#C8A882'},
+  {id:19,title:'Isle of Skye Hideaway',loc:'Portree',region:'skye',rLabel:'Isle of Skye',type:'cottage',price:220,rating:5.0,reviews:38,sleeps:2,beds:1,tags:['seaview','offgrid'],badge:'editors',col:'#8A7DB0'},
+  {id:20,title:'Burnham Overy Barn',loc:'Burnham Overy',region:'norfolk',rLabel:'Norfolk',type:'barn',price:195,rating:4.8,reviews:33,sleeps:6,beds:3,tags:['seaview','pets'],badge:'verified',col:'#C8A882'},
+  {id:21,title:'The Granary',loc:'Wells-next-the-Sea',region:'norfolk',rLabel:'Norfolk',type:'farmhouse',price:145,rating:4.7,reviews:21,sleeps:4,beds:2,tags:['woodburner','garden'],col:'#8DA88A'},
+  {id:22,title:'Saltmarsh Cabin',loc:'Blakeney',region:'norfolk',rLabel:'Norfolk',type:'cabin',price:110,rating:4.6,reviews:9,sleeps:2,beds:1,tags:['seaview','offgrid'],col:'#7BA0B4'},
+  {id:23,title:'Brancaster Hall',loc:'Brancaster',region:'norfolk',rLabel:'Norfolk',type:'manor',price:450,rating:4.9,reviews:17,sleeps:12,beds:6,tags:['garden','hottub'],badge:'editors',col:'#3C3830'},
+  {id:24,title:'Moorland Cottage',loc:'Goathland',region:'yorkshire',rLabel:'N. Yorkshire',type:'cottage',price:160,rating:4.8,reviews:28,sleeps:4,beds:2,tags:['woodburner','pets'],badge:'verified',col:'#C8A882'},
+  {id:25,title:'Dales Farmhouse',loc:'Wharfedale',region:'yorkshire',rLabel:'Yorkshire Dales',type:'farmhouse',price:225,rating:4.9,reviews:52,sleeps:8,beds:4,tags:['hottub','garden','pets'],badge:'editors',col:'#8A7DB0'},
+  {id:26,title:'The Old Forge',loc:'Whitby',region:'yorkshire',rLabel:'N. Yorkshire',type:'cottage',price:135,rating:4.7,reviews:14,sleeps:3,beds:2,tags:['seaview','woodburner'],col:'#A8B4C0'},
+  {id:27,title:'Honeysuckle Cottage',loc:'Bourton-on-the-Water',region:'cotswolds',rLabel:'Cotswolds',type:'cottage',price:195,rating:4.9,reviews:44,sleeps:4,beds:2,tags:['woodburner','garden'],badge:'verified',col:'#C8A882'},
+  {id:28,title:'Chipping Manor',loc:'Chipping Campden',region:'cotswolds',rLabel:'Cotswolds',type:'manor',price:550,rating:5.0,reviews:19,sleeps:14,beds:7,tags:['garden','hottub'],badge:'editors',col:'#8DA88A'},
+  {id:29,title:'The Old Mill',loc:'Bourton-on-the-Hill',region:'cotswolds',rLabel:'Cotswolds',type:'farmhouse',price:175,rating:4.8,reviews:31,sleeps:5,beds:3,tags:['woodburner','pets'],col:'#8A7DB0'},
+  {id:30,title:'Pembroke Cliffside',loc:'St Davids',region:'pembrokeshire',rLabel:'Pembrokeshire',type:'cottage',price:175,rating:4.9,reviews:36,sleeps:4,beds:2,tags:['seaview','woodburner'],badge:'verified',col:'#7BA0B4'},
+  {id:31,title:'The Boathouse',loc:'Solva',region:'pembrokeshire',rLabel:'Pembrokeshire',type:'houseboat',price:155,rating:4.8,reviews:18,sleeps:2,beds:1,tags:['seaview','romantic'],col:'#8A7DB0'},
+  {id:32,title:'Coast Path Glamping',loc:'Marloes',region:'pembrokeshire',rLabel:'Pembrokeshire',type:'glamping',price:90,rating:4.7,reviews:11,sleeps:2,beds:1,tags:['seaview','offgrid'],col:'#8DA88A'},
+  {id:33,title:'Hafod Cottage',loc:'Betws-y-Coed',region:'snowdonia',rLabel:'Snowdonia',type:'cottage',price:145,rating:4.8,reviews:24,sleeps:4,beds:2,tags:['woodburner','pets'],badge:'verified',col:'#C8A882'},
+  {id:34,title:'Llyn Padarn Cabin',loc:'Llanberis',region:'snowdonia',rLabel:'Snowdonia',type:'cabin',price:185,rating:4.9,reviews:39,sleeps:4,beds:2,tags:['seaview','hottub'],badge:'editors',col:'#7BA0B4'},
+  {id:35,title:"Giant's Causeway Cottage",loc:'Bushmills',region:'causeway',rLabel:'Causeway Coast',type:'cottage',price:165,rating:4.9,reviews:22,sleeps:4,beds:2,tags:['seaview','woodburner'],badge:'verified',col:'#A8B4C0'},
+  {id:36,title:'Dark Hedges Farmhouse',loc:'Armoy',region:'causeway',rLabel:'Antrim',type:'farmhouse',price:190,rating:4.8,reviews:15,sleeps:6,beds:3,tags:['woodburner','pets'],col:'#C8A882'},
+];
+
+const REGION_META = {
+  'all':          {label:'All UK stays',italic:'All UK',mapTitle:'The whole <i>UK</i>',mapSub:'4,202 stays nationwide',from:'£85',avg:'£195',pins:[{x:'33%',y:'45%',p:'£95'},{x:'20%',y:'24%',p:'£195'},{x:'15%',y:'84%',p:'£155'},{x:'62%',y:'48%',p:'£110'},{x:'42%',y:'61%',p:'£195'},{x:'46%',y:'41%',p:'£160'},{x:'25%',y:'53%',p:'£145'},{x:'16%',y:'62%',p:'£175'},{x:'29%',y:'17%',p:'£165'}]},
+  'lake-district':{label:'The Lake District',italic:'Lake District',mapTitle:'The <i>Lake District</i>',mapSub:'214 stays · Cumbria',from:'£85',avg:'£175',pins:[{x:'36%',y:'44%',p:'£175'},{x:'32%',y:'46%',p:'£215'},{x:'34%',y:'48%',p:'£145'},{x:'31%',y:'43%',p:'£240'},{x:'30%',y:'45%',p:'£95'},{x:'33%',y:'47%',p:'£165'},{x:'35%',y:'49%',p:'£195'},{x:'33%',y:'50%',p:'£385'}]},
+  'cornwall':     {label:'Cornwall',italic:'Cornwall',mapTitle:'<i>Cornwall</i>',mapSub:'198 stays',from:'£90',avg:'£185',pins:[{x:'13%',y:'83%',p:'£155'},{x:'14%',y:'84%',p:'£210'},{x:'16%',y:'82%',p:'£320'},{x:'17%',y:'83%',p:'£175'},{x:'12%',y:'84%',p:'£115'},{x:'15%',y:'83%',p:'£185'}]},
+  'highlands':    {label:'Scottish Highlands',italic:'Scottish Highlands',mapTitle:'The <i>Highlands</i>',mapSub:'145 stays · Scotland',from:'£110',avg:'£195',pins:[{x:'24%',y:'28%',p:'£130'},{x:'28%',y:'26%',p:'£280'},{x:'22%',y:'23%',p:'£165'},{x:'20%',y:'22%',p:'£195'}]},
+  'norfolk':      {label:'Norfolk',italic:'Norfolk',mapTitle:'<i>Norfolk</i>',mapSub:'112 stays · East Anglia',from:'£95',avg:'£165',pins:[{x:'61%',y:'47%',p:'£450'},{x:'62%',y:'48%',p:'£195'},{x:'63%',y:'47%',p:'£145'},{x:'63%',y:'46%',p:'£110'}]},
+  'yorkshire':    {label:'Yorkshire',italic:'Yorkshire',mapTitle:'<i>Yorkshire</i>',mapSub:'98 stays',from:'£100',avg:'£170',pins:[{x:'42%',y:'42%',p:'£225'},{x:'46%',y:'40%',p:'£160'},{x:'48%',y:'39%',p:'£135'}]},
+  'cotswolds':    {label:'Cotswolds',italic:'Cotswolds',mapTitle:'The <i>Cotswolds</i>',mapSub:'87 stays · Gloucestershire',from:'£140',avg:'£195',pins:[{x:'41%',y:'61%',p:'£550'},{x:'42%',y:'60%',p:'£195'},{x:'40%',y:'60%',p:'£175'}]},
+  'skye':         {label:'Isle of Skye',italic:'Isle of Skye',mapTitle:'<i>Isle of Skye</i>',mapSub:'67 stays · Scotland',from:'£110',avg:'£210',pins:[{x:'18%',y:'24%',p:'£220'},{x:'19%',y:'25%',p:'£195'},{x:'17%',y:'23%',p:'£175'}]},
+  'pembrokeshire':{label:'Pembrokeshire',italic:'Pembrokeshire',mapTitle:'<i>Pembrokeshire</i>',mapSub:'48 stays · Wales',from:'£85',avg:'£155',pins:[{x:'16%',y:'62%',p:'£175'},{x:'15%',y:'63%',p:'£155'},{x:'14%',y:'63%',p:'£90'}]},
+  'snowdonia':    {label:'Snowdonia',italic:'Snowdonia',mapTitle:'<i>Snowdonia</i>',mapSub:'54 stays · Wales',from:'£95',avg:'£165',pins:[{x:'24%',y:'53%',p:'£185'},{x:'25%',y:'52%',p:'£145'},{x:'23%',y:'54%',p:'£120'}]},
+  'causeway':     {label:'Causeway Coast',italic:'Causeway Coast',mapTitle:'<i>Causeway Coast</i>',mapSub:'29 stays · N. Ireland',from:'£110',avg:'£175',pins:[{x:'28%',y:'16%',p:'£165'},{x:'30%',y:'18%',p:'£190'},{x:'27%',y:'17%',p:'£145'}]},
+};
+
+const TAG_LABELS = {woodburner:'Wood burner',hottub:'Hot tub',pets:'Pets ok',seaview:'Sea view',offgrid:'Off-grid',garden:'Garden',parking:'Parking',sauna:'Sauna',riverside:'Riverside',romantic:'Romantic',fire:'Open fire'};
+const BADGE_CFG = {verified:{cls:'moss',text:'✓ Verified'},editors:{cls:'',text:"Editor's pick"},new:{cls:'ink',text:'New'}};
+
+let state = {region:'lake-district',type:'all',sort:'curated',filters:new Set()};
+
+function getFiltered() {
+  let p = PROPS.slice();
+  if(state.region!=='all') p=p.filter(x=>x.region===state.region);
+  if(state.type!=='all') p=p.filter(x=>x.type===state.type||x.tags.includes(state.type));
+  if(state.filters.has('pets'))    p=p.filter(x=>x.tags.includes('pets'));
+  if(state.filters.has('fire'))    p=p.filter(x=>x.tags.includes('woodburner'));
+  if(state.filters.has('sea'))     p=p.filter(x=>x.tags.includes('seaview'));
+  if(state.filters.has('tub'))     p=p.filter(x=>x.tags.includes('hottub'));
+  if(state.filters.has('offgrid')) p=p.filter(x=>x.tags.includes('offgrid'));
+  if(state.sort==='price-asc')  p=[...p].sort((a,b)=>a.price-b.price);
+  if(state.sort==='price-desc') p=[...p].sort((a,b)=>b.price-a.price);
+  if(state.sort==='rating')     p=[...p].sort((a,b)=>b.rating-a.rating);
+  return p;
+}
+
+function card(p,i) {
+  const img=`<div style="width:100%;height:100%;background:${p.col};display:flex;align-items:flex-end;padding:10px"><span style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,0.75)">${p.title.toUpperCase()} · ${p.loc.toUpperCase()}</span></div>`;
+  const bdg=p.badge?`<div class="badge-row"><span class="badge ${BADGE_CFG[p.badge].cls}">${BADGE_CFG[p.badge].text}</span></div>`:'';
+  const tags=p.tags.slice(0,3).map(t=>TAG_LABELS[t]||t).join(' · ');
+  return`<a class="pc" href="property.html" style="animation:rise .4s ${i*.06}s ease both;opacity:0">
+<div class="pc-image">${img}${bdg}<button class="save-heart" onclick="event.preventDefault();this.classList.toggle('saved')"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button><div class="img-nav"><span class="dt on"></span><span class="dt"></span><span class="dt"></span></div></div>
+<div class="pc-body"><div class="pc-row1"><div class="pc-title">${p.title}, <i>${p.loc}</i></div><div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>${p.rating} <span class="ct">(${p.reviews})</span></div></div>
+<div class="pc-loc"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>${p.loc}, ${p.rLabel}</div>
+<div class="pc-meta"><span>Sleeps ${p.sleeps}</span><span>${p.beds} bed</span><span>${tags}</span></div>
+<div class="pc-price"><div><span class="p-amt"><i>£${p.price}</i></span><span class="p-per"> / night</span><div class="p-fee">£0 booking fee · pay host direct</div></div></div></div></a>`;
+}
+
+function render() {
+  const grid=document.getElementById('resultsGrid');
+  const props=getFiltered();
+  const meta=REGION_META[state.region]||REGION_META.all;
+  document.getElementById('pageTitle').innerHTML=`Stays in <i>${meta.italic}</i>`;
+  document.getElementById('crumbRegion').textContent=meta.label;
+  document.getElementById('resultCount').textContent=props.length+' stays';
+  document.getElementById('metaPrice').textContent=`From ${meta.from} · avg. ${meta.avg} / night`;
+  document.getElementById('fbCount').textContent=props.length+' stays';
+  document.getElementById('mapTitle').innerHTML=meta.mapTitle;
+  document.getElementById('mapSub').textContent=meta.mapSub;
+  document.getElementById('mapPins').innerHTML=meta.pins.map((pin,i)=>`<div class="pin${i===0?' active':''}" style="left:${pin.x};top:${pin.y}" onclick="activatePin(this)">${pin.p}</div>`).join('');
+
+  if(!props.length){
+    grid.innerHTML=`<div class="empty-state"><h3>No stays match those filters.</h3><p>Try clearing a filter, or browse another region:</p><div class="region-suggestions">
+      <a class="rs-card" onclick="setRegionKey('lake-district')"><div class="rs-name">Lake District</div><div class="rs-ct">214 stays</div></a>
+      <a class="rs-card" onclick="setRegionKey('cornwall')"><div class="rs-name">Cornwall</div><div class="rs-ct">198 stays</div></a>
+      <a class="rs-card" onclick="setRegionKey('highlands')"><div class="rs-name">Scottish Highlands</div><div class="rs-ct">145 stays</div></a>
+      <a class="rs-card" onclick="setRegionKey('norfolk')"><div class="rs-name">Norfolk</div><div class="rs-ct">112 stays</div></a>
+    </div></div>`;return;
+  }
+
+  let html='';
+  props.forEach((p,i)=>{
+    if(i===4&&state.region==='all') html+=`<div class="featured-banner"><div><h3>Stays across <i>all of the UK.</i></h3><p>Lake District · Cornwall · Highlands · Norfolk · Yorkshire · and more.</p></div></div>`;
+    else if(i===4&&state.region!=='all') html+=`<div class="featured-banner"><div><h3>Also popular: <i>other UK regions.</i></h3><p>Cornwall · Scottish Highlands · Norfolk · Cotswolds.</p></div><button class="fb-cta" onclick="setRegionKey('all')">Browse all UK →</button></div>`;
+    html+=card(p,i%6);
+  });
+  if(props.length>=6) html+=`<div class="load-more-row"><button class="load-more-btn" onclick="this.textContent='Showing all available stays in this view'">Load more stays</button></div>`;
+  grid.innerHTML=html;
+}
+
+function setRegion(btn){
+  document.querySelectorAll('.region-pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  state.region=btn.dataset.region;
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function setRegionKey(key){
+  const btn=document.querySelector(`.region-pill[data-region="${key}"]`);
+  if(btn)setRegion(btn);
+}
+function setType(tile){
+  document.querySelectorAll('.cat-tile').forEach(t=>t.classList.remove('active'));
+  tile.classList.add('active');
+  state.type=tile.dataset.type;
+  render();
+}
+function togglePill(btn,filter){
+  btn.classList.toggle('active');
+  state.filters.has(filter)?state.filters.delete(filter):state.filters.add(filter);
+  render();
+}
+function sortAndRender(){state.sort=document.getElementById('sortSelect').value;render();}
+function activatePin(pin){document.querySelectorAll('.mini-map .pin').forEach(p=>p.classList.remove('active'));pin.classList.add('active');}
+
+// Init: read URL params
+const qp=new URLSearchParams(location.search);
+const urlR=qp.get('region')||qp.get('where');
+if(urlR){
+  const key=urlR.toLowerCase().replace(/\s+/g,'-');
+  const match=Object.keys(REGION_META).find(k=>k===key||REGION_META[k].italic.toLowerCase().includes(urlR.toLowerCase())||k.includes(key));
+  if(match){
+    state.region=match;
+    document.querySelectorAll('.region-pill').forEach(p=>p.classList.remove('active'));
+    const b=document.querySelector(`.region-pill[data-region="${match}"]`);
+    if(b)b.classList.add('active');
+    // Update nav where label
+    document.getElementById('navWhere').textContent=REGION_META[match]?.label||urlR;
+  }
+}
+if(qp.get('guests')){
+  const g=qp.get('guests');
+  document.getElementById('navGuests').textContent=g+' guest'+(parseInt(g)>1?'s':'');
+}
+
+// ── NAV SEARCH FUNCTIONS ──
+function openSearchPanel(){
+  const p=document.getElementById('wherePanel');
+  if(p.style.display==='none'){
+    p.style.display='block';
+    setTimeout(()=>document.getElementById('whereInput').focus(),50);
+  } else {
+    p.style.display='none';
+  }
+}
+
+function pickWhere(label, regionKey){
+  document.getElementById('navWhere').textContent=label;
+  document.getElementById('wherePanel').style.display='none';
+  state.region=regionKey;
+  document.querySelectorAll('.region-pill').forEach(p=>p.classList.remove('active'));
+  const b=document.querySelector(`.region-pill[data-region="${regionKey}"]`);
+  if(b)b.classList.add('active');
+  render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function filterWhereOptions(val){
+  const suggestions=document.getElementById('whereSuggestions');
+  if(!val){suggestions.style.display='flex';return;}
+  suggestions.querySelectorAll('button').forEach(btn=>{
+    btn.style.display=btn.textContent.toLowerCase().includes(val.toLowerCase())?'':'none';
+  });
+}
+
+function updateNavDate(which, val){
+  if(!val) return;
+  const d=new Date(val+'T12:00:00');
+  const label=d.toLocaleDateString('en-GB',{day:'numeric',month:'short'});
+  document.getElementById(which==='in'?'navIn':'navOut').textContent=label;
+  document.getElementById('metaDates').textContent=
+    document.getElementById('navIn').textContent+' – '+document.getElementById('navOut').textContent;
+}
+
+function updateNavGuests(val){
+  document.getElementById('navGuests').textContent=val+' guest'+(parseInt(val)>1?'s':'');
+  document.getElementById('metaGuests').textContent=val+' guest'+(parseInt(val)>1?'s':'');
+}
+
+function runNavSearch(){
+  document.getElementById('wherePanel').style.display='none';
+  const input=document.getElementById('whereInput')?.value?.trim();
+  if(input){
+    const REGION_MAP={'lake district':'lake-district','lakes':'lake-district','cumbria':'lake-district','windermere':'lake-district','keswick':'lake-district','cornwall':'cornwall','highlands':'highlands','highland':'highlands','scotland':'highlands','skye':'skye','isle of skye':'skye','norfolk':'norfolk','wells':'norfolk','yorkshire':'yorkshire','dales':'yorkshire','whitby':'yorkshire','cotswolds':'cotswolds','gloucestershire':'cotswolds','snowdonia':'snowdonia','wales':'snowdonia','pembrokeshire':'pembrokeshire','causeway':'causeway','antrim':'causeway','devon':'devon','dartmoor':'devon'};
+    const lc=input.toLowerCase();
+    let matched=null;
+    for(const [term,key] of Object.entries(REGION_MAP)){if(lc.includes(term)){matched=key;break;}}
+    if(matched){
+      state.region=matched;
+      document.querySelectorAll('.region-pill').forEach(p=>p.classList.remove('active'));
+      const b=document.querySelector(`.region-pill[data-region="${matched}"]`);
+      if(b)b.classList.add('active');
+      document.getElementById('navWhere').textContent=REGION_META[matched]?.label||input;
+    }
+  }
+  render();
+  window.scrollTo({top:document.querySelector('.head-strip').offsetTop,behavior:'smooth'});
+}
+
+// Close where panel on outside click
+document.addEventListener('click',e=>{
+  if(!e.target.closest('#wherePanel')&&!e.target.closest('#navSearch')){
+    const p=document.getElementById('wherePanel');
+    if(p) p.style.display='none';
+  }
+});
+
+render();
+</script>
+<script src="casa.js"></script>
+</body>
+</html>

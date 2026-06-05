@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>casa.co.uk — Stay closer to the host.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+  /* ─── HERO ─── */
+  .hero {
+    position: relative;
+    padding: 56px 0 0;
+    overflow: hidden;
+  }
+  .hero-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+  .hero-top { display: grid; grid-template-columns: 1.4fr 1fr; gap: 64px; align-items: end; margin-bottom: 56px; }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--ink-3); margin-bottom: 28px;
+  }
+  .hero-eyebrow .live-dot { background: var(--brick); }
+  .hero-title {
+    font-family: var(--serif); font-size: 116px; line-height: 0.92;
+    letter-spacing: -0.035em; color: var(--ink);
+  }
+  .hero-title i { font-style: italic; color: var(--brick); }
+  .hero-aside { padding-bottom: 18px; }
+  .hero-aside p {
+    font-family: var(--serif); font-size: 22px; line-height: 1.4;
+    color: var(--ink-2); max-width: 360px; margin-bottom: 20px;
+  }
+  .hero-aside p i { font-style: italic; color: var(--brick); }
+  .hero-aside .stat-row { display: flex; gap: 28px; align-items: baseline; }
+  .hero-aside .stat-row .stat { }
+  .hero-aside .stat-row .n { font-family: var(--serif); font-style: italic; font-size: 32px; line-height: 1; color: var(--brick); }
+  .hero-aside .stat-row .l { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin-top: 4px; }
+
+  /* SEARCH BOX */
+  .search {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 22px; padding: 12px;
+    display: grid; grid-template-columns: 1.6fr 1fr 1fr 0.9fr auto;
+    gap: 0; align-items: stretch; position: relative;
+    box-shadow: 0 8px 40px rgba(22,20,15,0.05);
+  }
+  .search .seg {
+    padding: 14px 22px; position: relative;
+    border-right: 1px solid var(--rule);
+    cursor: pointer; transition: background .12s;
+    border-radius: 14px; display: flex; flex-direction: column; justify-content: center;
+  }
+  .search .seg:nth-last-child(2) { border-right: none; }
+  .search .seg:hover { background: rgba(22,20,15,0.025); }
+  .search .seg.active { background: var(--paper); }
+  .search .seg .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; display: block; }
+  .search .seg .val { font-size: 15px; color: var(--ink); display: flex; align-items: center; gap: 8px; width: 100%; }
+  .search .seg input, .search .seg select {
+    border: none; background: transparent; padding: 0; margin: 0;
+    font-family: var(--sans); font-size: 15px; color: var(--ink); outline: none; width: 100%;
+    cursor: pointer; appearance: none; -webkit-appearance: none;
+  }
+  .search .seg input[type="text"] { cursor: text; }
+  .search .seg input::placeholder { color: var(--ink-4); }
+  
+  /* Calendar Dropdown Styling */
+  .cal-pop {
+    position: absolute; top: calc(100% + 12px); left: 0; right: 0; margin: 0 auto;
+    max-width: 360px; background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 16px; padding: 20px; box-shadow: 0 12px 36px rgba(22,20,15,0.12);
+    z-index: 100; display: none;
+  }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; text-align: center; margin-top: 12px; }
+  .cal-head { font-family: var(--mono); font-size: 10px; color: var(--ink-3); text-transform: uppercase; }
+  .cal-day { padding: 8px 0; font-size: 13px; border-radius: 8px; color: var(--ink-2); cursor: pointer; transition: background .1s; }
+  .cal-day:hover { background: var(--paper); color: var(--ink); }
+  .cal-day.disabled { color: var(--ink-4); opacity: 0.3; pointer-events: none; }
+  .cal-day.selected { background: var(--brick); color: white !important; }
+
+  .search-go {
+    background: var(--brick); color: white; border: none; border-radius: 14px;
+    padding: 0 28px; cursor: pointer; display: flex; align-items: center; gap: 10px;
+    font-family: var(--sans); font-weight: 500; font-size: 15px;
+    transition: background .12s; margin-left: 8px;
+  }
+  .search-go:hover { background: var(--brick-2); }
+  .search-go svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+  /* Quick filters under search */
+  .qf { display:flex; gap: 10px; margin-top: 18px; align-items: center; flex-wrap: wrap; }
+  .qf .qf-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); margin-right: 4px; }
+
+  .hero-strip {
+    margin: 56px -32px 0;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 0 32px;
+  }
+  .hero-strip .ph, .hero-strip .prop-scene {
+    aspect-ratio: 3/4; border-radius: 14px; align-self: stretch;
+    background-size: cover; background-position: center; overflow: hidden;
+  }
+  .hero-strip .prop-scene svg { width: 100%; height: 100%; display: block; }
+
+  /* ─── DESTINATIONS ─── */
+  .dest { padding: 96px 0 48px; }
+  /* Scaled down aspect ratios to make cards vertically more compact */
+  .dest-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+  .dest-card { position: relative; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform .25s; text-decoration: none; display: block; }
+  .dest-card:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(22,20,15,0.15); }
+  .dest-card svg { width: 100%; height: 100%; display: block; }
+  .dest-card .ph { width: 100%; height: 100%; background-size: cover; background-position: center; }
+  .dest-card .meta {
+    position: absolute; left: 16px; right: 16px; bottom: 16px;
+    color: white; z-index: 2;
+  }
+  .dest-card::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(22,20,15,0.6) 0%, transparent 60%);
+    z-index: 1;
+  }
+  .dest-card .title { font-family: var(--serif); font-style: italic; font-size: 32px; line-height: 1; }
+  .dest-card .sub { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.75); margin-top: 6px; }
+  
+  /* Reduced grid heights for an elegant compact feel */
+  .dest-1 { grid-column: span 5; aspect-ratio: 5/4.2; }
+  .dest-2 { grid-column: span 4; aspect-ratio: 4/3.5; }
+  .dest-3 { grid-column: span 3; aspect-ratio: 3/2.8; }
+  .dest-4 { grid-column: span 3; aspect-ratio: 4/3.5; }
+  .dest-5 { grid-column: span 5; aspect-ratio: 5/3.5; }
+  .dest-6 { grid-column: span 4; aspect-ratio: 4/3.5; }
+
+  /* ─── DIFFERENCE STRIP ─── */
+  .diff { background: var(--surface); color: var(--ink); padding: 96px 0; margin: 56px 0 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .diff-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+  .diff-head { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: end; margin-bottom: 64px; }
+  .diff-head h2 { font-family: var(--serif); font-size: 72px; line-height: 0.95; letter-spacing: -0.025em; color: var(--ink); }
+  .diff-head h2 i { font-style: italic; color: var(--brick); }
+  .diff-head p { font-size: 16px; color: var(--ink-2); line-height: 1.6; }
+
+  /* COMPARISON TABLE */
+  .compare {
+    background: var(--paper); border: 1px solid var(--rule);
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 8px 32px rgba(22,20,15,0.03);
+  }
+  .compare .crow { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; padding: 22px 28px; border-bottom: 1px solid var(--rule); align-items: center; }
+  .compare .crow:last-child { border-bottom: none; }
+  .compare .crow.head { background: rgba(22,20,15,0.02); padding: 18px 28px; }
+  .compare .crow.head .h-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-3); }
+  .compare .crow.head .casa-pill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--serif); font-style: italic; font-size: 28px; color: var(--brick); }
+  .compare .label-cell { font-size: 16px; color: var(--ink); }
+  .compare .label-cell .sub { display: block; font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+  .compare .val { font-size: 15px; color: var(--ink-2); }
+  .compare .val.win { color: var(--brick); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+  .compare .val.win svg { width: 14px; height: 14px; stroke: var(--brick); fill: none; stroke-width: 2.5; }
+  .compare .val.lose { color: var(--ink-4); text-decoration: line-through; }
+
+  .compare .crow > *:nth-child(4) {
+    background: rgba(188, 71, 54, 0.03);
+    padding-left: 16px; padding-right: 16px;
+    margin-left: -16px; margin-right: -16px;
+    align-self: stretch; display: flex; align-items: center;
+  }
+  .compare .crow.head > *:nth-child(4) {
+    background: rgba(188, 71, 54, 0.07);
+  }
+
+  /* ─── COMMUNITY ─── */
+  .community { padding: 96px 0 48px; }
+  .community-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 80px; align-items: start; }
+  .community-head h2 { font-family: var(--serif); font-size: 56px; line-height: 1; letter-spacing: -0.025em; margin-bottom: 20px; }
+  .community-head h2 i { font-style: italic; color: var(--brick); }
+  .community-head p { font-size: 16px; line-height: 1.6; color: var(--ink-2); max-width: 520px; margin-bottom: 24px; }
+
+  /* tag wall */
+  .tag-wall { display: flex; flex-wrap: wrap; gap: 10px; max-width: 720px; }
+  .tag-wall .ch {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface); border: 1px solid var(--rule);
+    padding: 9px 16px; border-radius: var(--r-pill);
+    font-size: 13.5px; color: var(--ink-2); cursor: pointer;
+    transition: all .15s;
+  }
+  .tag-wall .ch:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .tag-wall .ch .tag-name { font-family: var(--serif); font-style: italic; color: var(--brick); }
+  .tag-wall .ch:hover .tag-name { color: var(--brick-2); }
+  .tag-wall .ch .ct { font-family: var(--mono); font-size: 10px; color: var(--ink-4); }
+  .tag-wall .ch:hover .ct { color: rgba(255,255,255,0.55); }
+
+  .post-feed { display: flex; flex-direction: column; gap: 16px; }
+  .post-mini { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 20px; }
+  .post-mini .pm-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .post-mini .av { width: 32px; height: 32px; border-radius: 50%; background: var(--brick); color: white; display: inline-flex; align-items: center; justify-content: center; font-family: var(--serif); font-style: italic; font-size: 14px; }
+  .post-mini .av.guest { background: var(--moss); }
+  .post-mini .nm { font-size: 13.5px; font-weight: 500; }
+  .post-mini .when { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-left: auto; }
+  .post-mini .body { font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
+  .post-mini .body i { font-style: italic; color: var(--brick); cursor: pointer; }
+
+  /* ─── DUAL SPLIT HOST/RENTER CTA ─── */
+  .host-cta { padding: 0 0 96px; }
+  .host-cta-inner {
+    background: var(--brick); color: var(--paper);
+    border-radius: 24px; padding: 56px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+    position: relative; overflow: hidden;
+  }
+  .cta-card {
+    background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px; padding: 40px; display: flex; flex-direction: column;
+    justify-content: space-between; position: relative; z-index: 2;
+  }
+  .cta-card h3 { font-family: var(--serif); font-size: 44px; line-height: 1.05; letter-spacing: -0.02em; margin-bottom: 14px; }
+  .cta-card h3 i { font-style: italic; color: rgba(255,255,255,0.85); }
+  .cta-card p { font-size: 15px; color: rgba(255,255,255,0.8); line-height: 1.5; margin-bottom: 24px; }
+  .cta-link-btn {
+    background: var(--paper); color: var(--ink); padding: 16px 24px;
+    border-radius: 12px; text-decoration: none; font-size: 15px; font-weight: 500;
+    display: inline-flex; align-items: center; justify-content: space-between;
+    transition: background .15s, transform .12s; margin-top: auto;
+  }
+  .cta-link-btn:hover { background: white; transform: translateY(-1px); }
+  .cta-link-btn svg { stroke: var(--brick); width: 18px; height: 18px; fill: none; stroke-width: 2; }
+
+  @media (max-width: 1000px) {
+    .hero-title { font-size: 80px; }
+    .hero-top { grid-template-columns: 1fr; gap: 32px; }
+    .search { grid-template-columns: 1fr; }
+    .search .seg { border-right: none; border-bottom: 1px solid var(--rule); padding: 16px; }
+    .search-go { margin-left: 0; margin-top: 12px; padding: 16px; justify-content: center; }
+    .diff-head { grid-template-columns: 1fr; }
+    .community-grid { grid-template-columns: 1fr; }
+    .host-cta-inner { grid-template-columns: 1fr; padding: 32px; gap: 24px; }
+    .hero-strip { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<nav class="casa-nav">
+  <a class="brand-lockup" href="index.html">
+    <span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span>
+  </a>
+
+  <div class="nav-right">
+    <a class="nav-link" href="browse.html">Browse</a>
+    <a class="nav-link" href="map.html">Map</a>
+    <a class="nav-link" href="feed.html">Feed</a>
+    <a class="nav-link" href="list.html">Become a host</a>
+    <a class="nav-link" href="signup.html">Sign in</a>
+    <a class="nav-link primary" href="waitlist.html">Join waitlist</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+
+    <div class="hero-top">
+      <div class="rise">
+        <div class="hero-eyebrow">
+          <span class="live-dot"></span> Casa &mdash; UK holiday rentals &mdash; est. 2025
+        </div>
+        <h1 class="hero-title">
+          <i>Connect</i>, <i>search</i><br>
+          &amp; <i>stay</i> at<br>
+          casa<span style="color:var(--ink-3);font-style:normal">.co.uk</span>.
+        </h1>
+      </div>
+      <div class="hero-aside rise-2">
+        <p><i>Connect</i> with hosts &amp; guests across the UK. <i>Search</i> the whole country, by county or by feeling. <i>Stay</i> direct &mdash; no commission, no fees, ever.</p>
+        <div class="stat-row">
+          <div class="stat"><div class="n">4,202</div><div class="l">UK stays</div></div>
+          <div class="stat"><div class="n">£0</div><div class="l">Booking fees</div></div>
+          <div class="stat"><div class="n">4.9</div><div class="l">Avg. rating</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="search rise-3">
+      <div class="seg active" id="where-seg">
+        <span class="lbl">Where</span>
+        <div class="val">
+          <input type="text" id="where-input" placeholder="Lake District, Cornwall, #cottage…" value="Lake District">
+        </div>
+      </div>
+      
+      <div class="seg" id="checkin-seg">
+        <span class="lbl">Check in</span>
+        <div class="val">
+          <input type="text" id="checkin-input" placeholder="Select date" readonly>
+        </div>
+      </div>
+      
+      <div class="seg" id="checkout-seg">
+        <span class="lbl">Check out</span>
+        <div class="val">
+          <input type="text" id="checkout-input" placeholder="Select date" readonly>
+        </div>
+      </div>
+      
+      <div class="seg" id="guests-seg">
+        <span class="lbl">Guests</span>
+        <div class="val">
+          <select id="guests-input">
+            <option value="1 guest">1 guest</option>
+            <option value="2 guests" selected>2 guests</option>
+            <option value="3 guests">3 guests</option>
+            <option value="4 guests">4 guests</option>
+            <option value="5 guests">5 guests</option>
+            <option value="6 guests">6 guests</option>
+            <option value="7 guests">7 guests</option>
+            <option value="8 guests">8 guests</option>
+            <option value="9 guests">9 guests</option>
+            <option value="10 guests">10 guests</option>
+            <option value="11 guests">11 guests</option>
+            <option value="12 guests">12 guests</option>
+            <option value="13 guests">13 guests</option>
+            <option value="14 guests">14 guests</option>
+            <option value="15 guests">15 guests</option>
+            <option value="16 guests">16 guests</option>
+          </select>
+        </div>
+      </div>
+      
+      <button class="search-go" id="search-submit-btn">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        Search
+      </button>
+
+      <div class="cal-pop" id="calendar-widget">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <span style="font-weight:600; font-size:14px; color:var(--ink);" id="cal-month-title">July 2026</span>
+        </div>
+        <div class="cal-grid cal-head">
+          <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+        </div>
+        <div class="cal-grid" id="cal-days-container">
+          </div>
+      </div>
+    </div>
+
+    <div class="qf">
+      <span class="qf-label">Popular</span>
+      <a href="browse.html" class="chip"><svg class="i i-sm" viewBox="0 0 24 24"><path d="M12 22c-4 0-7-3-7-7 0-3 2-5 4-7 0 3 2 4 3 2 1-3-1-5 2-8 0 4 3 5 4 9 1 4-2 11-6 11z"/></svg> Wood burner</a>
+      <a href="browse.html" class="chip"><svg class="i i-sm" viewBox="0 0 24 24"><path d="M2 12c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2"/><path d="M2 17c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2"/></svg> Sea view</a>
+      <a href="browse.html" class="chip"><svg class="i i-sm" viewBox="0 0 24 24"><circle cx="6" cy="9" r="2"/><circle cx="18" cy="9" r="2"/><circle cx="9" cy="5" r="2"/><circle cx="15" cy="5" r="2"/><path d="M8 18c0-3 2-5 4-5s4 2 4 5c0 2-2 3-4 3s-4-1-4-3z"/></svg> Pet friendly</a>
+      <a href="browse.html" class="chip"><svg class="i i-sm" viewBox="0 0 24 24"><path d="M3 20 9 10l4 6 2-3 6 7z"/></svg> Mountain</a>
+      <a href="browse.html" class="chip"><svg class="i i-sm" viewBox="0 0 24 24"><path d="M12 3 6 12h3v3h6v-3h3z"/><path d="M12 15v6"/></svg> Off-grid</a>
+      <a href="browse.html" class="chip">Last minute</a>
+      <a href="browse.html" class="chip">Long stay</a>
+    </div>
+
+    <div class="hero-strip rise-4">
+
+      <!-- 1: Stone Cottage, Lake District -->
+      <div class="ph prop-scene" style="background:none;position:relative;overflow:hidden;aspect-ratio:3/4;border-radius:14px">
+        <svg viewBox="0 0 280 380" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+          <!-- Sky gradient -->
+          <defs>
+            <linearGradient id="sky1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#D4CABC"/><stop offset="100%" stop-color="#EDE7D8"/></linearGradient>
+            <linearGradient id="fell1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#8A9480"/><stop offset="100%" stop-color="#6B7A62"/></linearGradient>
+          </defs>
+          <rect width="280" height="380" fill="url(#sky1)"/>
+          <!-- Fells background -->
+          <path d="M0 220 L50 160 L90 180 L130 140 L170 165 L210 145 L250 170 L280 155 L280 280 L0 280Z" fill="url(#fell1)" opacity="0.6"/>
+          <path d="M0 240 L60 195 L100 210 L150 180 L190 200 L230 185 L280 205 L280 300 L0 300Z" fill="#6B7A62" opacity="0.8"/>
+          <!-- Lake water -->
+          <ellipse cx="140" cy="310" rx="100" ry="18" fill="#8AAAB8" opacity="0.4"/>
+          <ellipse cx="140" cy="312" rx="80" ry="10" fill="#7A9AAA" opacity="0.3"/>
+          <!-- Ground -->
+          <rect x="0" y="295" width="280" height="85" fill="#C8B99A"/>
+          <!-- Stone wall -->
+          <path d="M20 310 Q140 300 260 312" fill="none" stroke="#8A7A62" stroke-width="6" stroke-linecap="round"/>
+          <!-- COTTAGE -->
+          <!-- Main body -->
+          <rect x="72" y="228" width="136" height="82" fill="#D4C8B0" stroke="#A89878" stroke-width="1.5"/>
+          <!-- Stone texture lines -->
+          <line x1="72" y1="248" x2="208" y2="248" stroke="#B8A888" stroke-width="0.8" opacity="0.6"/>
+          <line x1="72" y1="268" x2="208" y2="268" stroke="#B8A888" stroke-width="0.8" opacity="0.6"/>
+          <line x1="72" y1="288" x2="208" y2="288" stroke="#B8A888" stroke-width="0.8" opacity="0.6"/>
+          <line x1="120" y1="228" x2="120" y2="310" stroke="#B8A888" stroke-width="0.8" opacity="0.4"/>
+          <line x1="160" y1="228" x2="160" y2="310" stroke="#B8A888" stroke-width="0.8" opacity="0.4"/>
+          <!-- Roof -->
+          <path d="M62 230 L140 188 L218 230Z" fill="#6B5A48" stroke="#5A4A3A" stroke-width="1.5"/>
+          <!-- Chimney -->
+          <rect x="155" y="170" width="18" height="30" fill="#7A6A58" stroke="#5A4A3A" stroke-width="1"/>
+          <rect x="152" y="167" width="24" height="5" fill="#5A4A3A"/>
+          <!-- Smoke wisps -->
+          <path d="M164 165 Q166 158 163 150 Q160 142 162 135" fill="none" stroke="#C8C0B4" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+          <path d="M168 163 Q171 156 169 148 Q167 140 169 133" fill="none" stroke="#C8C0B4" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+          <!-- Windows -->
+          <rect x="82" y="246" width="30" height="24" fill="#8AAAC0" stroke="#7A8A90" stroke-width="1.2"/>
+          <line x1="97" y1="246" x2="97" y2="270" stroke="#6A7A80" stroke-width="0.8"/>
+          <line x1="82" y1="258" x2="112" y2="258" stroke="#6A7A80" stroke-width="0.8"/>
+          <rect x="168" y="246" width="30" height="24" fill="#8AAAC0" stroke="#7A8A90" stroke-width="1.2"/>
+          <line x1="183" y1="246" x2="183" y2="270" stroke="#6A7A80" stroke-width="0.8"/>
+          <line x1="168" y1="258" x2="198" y2="258" stroke="#6A7A80" stroke-width="0.8"/>
+          <!-- Door -->
+          <rect x="124" y="270" width="32" height="40" rx="3" fill="#8A6848" stroke="#6A5038" stroke-width="1.2"/>
+          <circle cx="153" cy="291" r="2.5" fill="#C8A848"/>
+          <!-- Garden path -->
+          <path d="M140 310 Q136 330 138 360" fill="none" stroke="#B8A882" stroke-width="8" stroke-linecap="round" opacity="0.6"/>
+          <!-- Label -->
+          <rect x="0" y="345" width="280" height="35" fill="rgba(22,20,15,0.55)"/>
+          <text x="140" y="358" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="2" fill="rgba(250,248,244,0.9)" text-transform="uppercase">STONE COTTAGE</text>
+          <text x="140" y="372" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7" letter-spacing="1.5" fill="rgba(250,248,244,0.6)">WINDERMERE · LAKE DISTRICT</text>
+        </svg>
+      </div>
+
+      <!-- 2: Blackhouse, Isle of Skye -->
+      <div class="ph prop-scene" style="background:none;position:relative;overflow:hidden;aspect-ratio:3/4;border-radius:14px">
+        <svg viewBox="0 0 280 380" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+          <defs>
+            <linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4A5568"/><stop offset="40%" stop-color="#718096"/><stop offset="100%" stop-color="#A0AEC0"/></linearGradient>
+          </defs>
+          <rect width="280" height="380" fill="url(#sky2)"/>
+          <!-- Dramatic clouds -->
+          <ellipse cx="60" cy="80" rx="55" ry="28" fill="rgba(255,255,255,0.12)"/>
+          <ellipse cx="210" cy="60" rx="65" ry="25" fill="rgba(255,255,255,0.08)"/>
+          <ellipse cx="140" cy="100" rx="80" ry="22" fill="rgba(255,255,255,0.06)"/>
+          <!-- The Storr silhouette -->
+          <path d="M0 200 L30 150 L50 160 L70 110 L85 125 L100 95 L110 108 L125 80 L135 100 L145 88 L155 105 L170 125 L190 115 L210 140 L240 130 L260 150 L280 145 L280 250 L0 250Z" fill="#2D3748" opacity="0.85"/>
+          <!-- Sea -->
+          <rect x="0" y="250" width="280" height="50" fill="#2C5282" opacity="0.7"/>
+          <path d="M0 258 Q35 252 70 258 Q105 264 140 258 Q175 252 210 258 Q245 264 280 258" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+          <path d="M0 268 Q40 262 80 268 Q120 274 160 268 Q200 262 240 268 Q260 271 280 268" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          <!-- Ground -->
+          <rect x="0" y="292" width="280" height="88" fill="#4A5C3A"/>
+          <!-- BLACKHOUSE low profile -->
+          <!-- Main body - low, long, dark stone -->
+          <rect x="40" y="248" width="200" height="58" fill="#2D2D2A" stroke="#1A1A18" stroke-width="1.5"/>
+          <!-- Stone texture -->
+          <line x1="40" y1="262" x2="240" y2="262" stroke="#3D3D38" stroke-width="0.8" opacity="0.7"/>
+          <line x1="40" y1="276" x2="240" y2="276" stroke="#3D3D38" stroke-width="0.8" opacity="0.7"/>
+          <line x1="40" y1="290" x2="240" y2="290" stroke="#3D3D38" stroke-width="0.8" opacity="0.7"/>
+          <!-- Thatched roof - rounded top -->
+          <path d="M34 250 Q140 218 246 250Z" fill="#8B7355" stroke="#6B5A3A" stroke-width="1.5"/>
+          <path d="M38 250 Q140 222 242 250" fill="none" stroke="#9B8365" stroke-width="2" opacity="0.6"/>
+          <!-- Thatch texture lines -->
+          <path d="M60 248 Q100 226 140 224 Q180 226 220 248" fill="none" stroke="#7B6345" stroke-width="1" opacity="0.5"/>
+          <path d="M75 249 Q110 230 140 228 Q170 230 205 249" fill="none" stroke="#7B6345" stroke-width="1" opacity="0.4"/>
+          <!-- Chimney end wall -->
+          <rect x="40" y="232" width="16" height="18" fill="#3D3A30"/>
+          <rect x="44" y="228" width="8" height="8" fill="#2D2A20"/>
+          <!-- Door - low and wide -->
+          <rect x="122" y="266" width="36" height="40" rx="2" fill="#4A3822" stroke="#3A2812" stroke-width="1"/>
+          <circle cx="155" cy="288" r="2" fill="#C8A848"/>
+          <!-- Windows - small and deep-set -->
+          <rect x="60" y="262" width="22" height="18" fill="#3A5C7A" stroke="#2A3C4A" stroke-width="1"/>
+          <rect x="198" y="262" width="22" height="18" fill="#3A5C7A" stroke="#2A3C4A" stroke-width="1"/>
+          <!-- Warm light glow from windows -->
+          <rect x="61" y="263" width="20" height="16" fill="#D4A840" opacity="0.35"/>
+          <rect x="199" y="263" width="20" height="16" fill="#D4A840" opacity="0.35"/>
+          <!-- Surrounding heather/grass -->
+          <path d="M0 305 Q70 295 140 300 Q210 305 280 295 L280 380 L0 380Z" fill="#3A4C2E"/>
+          <!-- Label -->
+          <rect x="0" y="345" width="280" height="35" fill="rgba(22,20,15,0.65)"/>
+          <text x="140" y="358" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="2" fill="rgba(250,248,244,0.9)">BLACKHOUSE</text>
+          <text x="140" y="372" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7" letter-spacing="1.5" fill="rgba(250,248,244,0.6)">TROTTERNISH · ISLE OF SKYE</text>
+        </svg>
+      </div>
+
+      <!-- 3: Shepherd's Hut, Buttermere -->
+      <div class="ph prop-scene" style="background:none;position:relative;overflow:hidden;aspect-ratio:3/4;border-radius:14px">
+        <svg viewBox="0 0 280 380" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+          <defs>
+            <linearGradient id="sky3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#C8D8E8"/><stop offset="100%" stop-color="#E8EEF4"/></linearGradient>
+            <linearGradient id="mtn3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#7A8C78"/><stop offset="100%" stop-color="#5A6C58"/></linearGradient>
+          </defs>
+          <rect width="280" height="380" fill="url(#sky3)"/>
+          <!-- Dawn sky blush -->
+          <ellipse cx="260" cy="60" rx="80" ry="60" fill="rgba(255,200,150,0.25)"/>
+          <!-- Mountains -->
+          <path d="M0 215 L40 165 L70 178 L100 145 L130 160 L160 130 L185 148 L210 135 L240 155 L270 145 L280 148 L280 280 L0 280Z" fill="url(#mtn3)" opacity="0.7"/>
+          <path d="M0 230 L50 190 L90 205 L130 185 L165 200 L200 188 L240 202 L280 195 L280 295 L0 295Z" fill="#5A6C58" opacity="0.9"/>
+          <!-- Lake reflection -->
+          <ellipse cx="140" cy="305" rx="110" ry="20" fill="#A8C4D8" opacity="0.45"/>
+          <!-- Reflection ripples -->
+          <path d="M60 305 Q140 300 220 305" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1"/>
+          <path d="M80 310 Q140 306 200 310" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="0.8"/>
+          <!-- Ground / meadow -->
+          <path d="M0 292 Q70 282 140 288 Q210 294 280 285 L280 380 L0 380Z" fill="#8A9E78"/>
+          <!-- SHEPHERD'S HUT on wheels -->
+          <!-- Wheels -->
+          <circle cx="100" cy="298" r="14" fill="#3A3028" stroke="#2A2018" stroke-width="2"/>
+          <circle cx="100" cy="298" r="6" fill="#5A4A38"/>
+          <circle cx="180" cy="298" r="14" fill="#3A3028" stroke="#2A2018" stroke-width="2"/>
+          <circle cx="180" cy="298" r="6" fill="#5A4A38"/>
+          <!-- Axle -->
+          <line x1="86" y1="298" x2="194" y2="298" stroke="#5A4A38" stroke-width="4"/>
+          <!-- Hut body -->
+          <rect x="70" y="238" width="140" height="58" fill="#8B7A5A" stroke="#6B5A3A" stroke-width="1.5"/>
+          <!-- Corrugated roof - rounded barrel -->
+          <path d="M65 238 Q140 205 215 238Z" fill="#6A6A68" stroke="#4A4A48" stroke-width="1.5"/>
+          <!-- Roof ridges -->
+          <path d="M72 237 Q140 208 208 237" fill="none" stroke="#7A7A78" stroke-width="1" opacity="0.7"/>
+          <path d="M80 236 Q140 212 200 236" fill="none" stroke="#7A7A78" stroke-width="0.8" opacity="0.5"/>
+          <!-- Chimney pipe -->
+          <rect x="162" y="210" width="8" height="28" fill="#4A4A48" stroke="#3A3A38" stroke-width="1"/>
+          <rect x="159" y="208" width="14" height="4" fill="#3A3A38"/>
+          <!-- Smoke -->
+          <path d="M166 207 Q168 199 165 191 Q162 183 164 175" fill="none" stroke="#C8C0B4" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>
+          <!-- Door - half-glazed Dutch door -->
+          <rect x="126" y="255" width="28" height="41" rx="2" fill="#5A4030" stroke="#3A2818" stroke-width="1.2"/>
+          <rect x="127" y="256" width="26" height="18" fill="#8AAAC0" opacity="0.7"/>
+          <line x1="140" y1="256" x2="140" y2="274" stroke="#6A8A98" stroke-width="0.8"/>
+          <circle cx="151" cy="278" r="2" fill="#C8A030"/>
+          <!-- Side window -->
+          <rect x="82" y="254" width="26" height="20" fill="#8AAAC0" stroke="#6A8A90" stroke-width="1"/>
+          <line x1="95" y1="254" x2="95" y2="274" stroke="#6A8A90" stroke-width="0.8"/>
+          <!-- Warm light inside -->
+          <rect x="83" y="255" width="24" height="18" fill="#D4A840" opacity="0.3"/>
+          <rect x="127" y="257" width="24" height="16" fill="#D4A840" opacity="0.25"/>
+          <!-- Steps -->
+          <rect x="130" y="293" width="20" height="4" rx="1" fill="#6A5A48"/>
+          <!-- Label -->
+          <rect x="0" y="345" width="280" height="35" fill="rgba(22,20,15,0.55)"/>
+          <text x="140" y="358" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="2" fill="rgba(250,248,244,0.9)">SHEPHERD'S HUT</text>
+          <text x="140" y="372" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7" letter-spacing="1.5" fill="rgba(250,248,244,0.6)">BUTTERMERE · CUMBRIA</text>
+        </svg>
+      </div>
+
+      <!-- 4: Barn Conversion, Norfolk -->
+      <div class="ph prop-scene" style="background:none;position:relative;overflow:hidden;aspect-ratio:3/4;border-radius:14px">
+        <svg viewBox="0 0 280 380" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+          <defs>
+            <linearGradient id="sky4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#E8D8B8"/><stop offset="60%" stop-color="#D4C4A0"/><stop offset="100%" stop-color="#C8B888"/></linearGradient>
+          </defs>
+          <rect width="280" height="380" fill="url(#sky4)"/>
+          <!-- Golden hour sun -->
+          <circle cx="220" cy="80" r="32" fill="rgba(255,200,80,0.3)"/>
+          <circle cx="220" cy="80" r="20" fill="rgba(255,210,100,0.35)"/>
+          <!-- Flat Norfolk horizon -->
+          <line x1="0" y1="225" x2="280" y2="225" stroke="#B8A870" stroke-width="1" opacity="0.5"/>
+          <!-- Marshes / reed beds in distance -->
+          <path d="M0 220 Q35 214 70 218 Q105 222 140 216 Q175 210 210 218 Q245 225 280 220 L280 240 L0 240Z" fill="#8A9858" opacity="0.6"/>
+          <!-- Sky reflections / flat water -->
+          <path d="M30 235 Q80 228 130 234 Q180 240 230 232 Q255 228 270 234" fill="none" stroke="rgba(200,180,120,0.5)" stroke-width="1.2"/>
+          <!-- Ground -->
+          <rect x="0" y="268" width="280" height="112" fill="#C8B480"/>
+          <!-- Field texture -->
+          <path d="M0 280 Q70 272 140 278 Q210 284 280 275 L280 300 L0 300Z" fill="#B8A470" opacity="0.5"/>
+          <!-- BARN CONVERSION - large, distinctive -->
+          <!-- Main barn body -->
+          <rect x="28" y="198" width="224" height="80" fill="#C4A870" stroke="#A08848" stroke-width="1.5"/>
+          <!-- Brick pattern overlay -->
+          <rect x="28" y="210" width="224" height="0.8" fill="#B09858" opacity="0.5"/>
+          <rect x="28" y="222" width="224" height="0.8" fill="#B09858" opacity="0.5"/>
+          <rect x="28" y="234" width="224" height="0.8" fill="#B09858" opacity="0.5"/>
+          <rect x="28" y="246" width="224" height="0.8" fill="#B09858" opacity="0.5"/>
+          <rect x="28" y="258" width="224" height="0.8" fill="#B09858" opacity="0.5"/>
+          <!-- Pantile roof -->
+          <path d="M22 200 L140 155 L258 200Z" fill="#7A5A3A" stroke="#5A3A1A" stroke-width="1.5"/>
+          <!-- Roof pantile lines -->
+          <path d="M28 200 L140 157 L252 200" fill="none" stroke="#8A6A4A" stroke-width="1" opacity="0.6"/>
+          <path d="M35 200 L140 160 L245 200" fill="none" stroke="#8A6A4A" stroke-width="0.8" opacity="0.4"/>
+          <!-- Chimney stack - brick -->
+          <rect x="100" y="140" width="20" height="28" fill="#8A6848" stroke="#6A4828" stroke-width="1"/>
+          <rect x="97" y="136" width="26" height="6" fill="#6A4828"/>
+          <!-- Original barn doors - huge, converted to glazing -->
+          <rect x="88" y="218" width="104" height="60" fill="#A8C4D8" stroke="#88A4B0" stroke-width="1.5" rx="2"/>
+          <!-- Glazing bars grid -->
+          <line x1="122" y1="218" x2="122" y2="278" stroke="#7A9AA8" stroke-width="0.8"/>
+          <line x1="140" y1="218" x2="140" y2="278" stroke="#7A9AA8" stroke-width="0.8"/>
+          <line x1="158" y1="218" x2="158" y2="278" stroke="#7A9AA8" stroke-width="0.8"/>
+          <line x1="88" y1="238" x2="192" y2="238" stroke="#7A9AA8" stroke-width="0.8"/>
+          <line x1="88" y1="258" x2="192" y2="258" stroke="#7A9AA8" stroke-width="0.8"/>
+          <!-- Warm interior glow -->
+          <rect x="89" y="219" width="102" height="58" fill="#D4A840" opacity="0.2"/>
+          <!-- Side windows - smaller, original openings -->
+          <rect x="40" y="228" width="36" height="28" fill="#A8C4D8" stroke="#88A4B0" stroke-width="1" rx="1"/>
+          <line x1="58" y1="228" x2="58" y2="256" stroke="#7A9AA8" stroke-width="0.8"/>
+          <line x1="40" y1="242" x2="76" y2="242" stroke="#7A9AA8" stroke-width="0.8"/>
+          <rect x="204" y="228" width="36" height="28" fill="#A8C4D8" stroke="#88A4B0" stroke-width="1" rx="1"/>
+          <line x1="222" y1="228" x2="222" y2="256" stroke="#7A9AA8" stroke-width="0.8"/>
+          <line x1="204" y1="242" x2="240" y2="242" stroke="#7A9AA8" stroke-width="0.8"/>
+          <!-- Exterior path + garden -->
+          <path d="M110 278 Q112 295 110 320" fill="none" stroke="#B0A070" stroke-width="10" stroke-linecap="round" opacity="0.5"/>
+          <path d="M130 278 Q132 295 130 320" fill="none" stroke="#B0A070" stroke-width="10" stroke-linecap="round" opacity="0.5"/>
+          <!-- Norfolk sky reeds silhouette -->
+          <line x1="12" y1="225" x2="12" y2="208" stroke="#8A9858" stroke-width="2" stroke-linecap="round"/>
+          <line x1="18" y1="225" x2="16" y2="205" stroke="#8A9858" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="255" y1="225" x2="258" y2="207" stroke="#8A9858" stroke-width="2" stroke-linecap="round"/>
+          <line x1="262" y1="225" x2="264" y2="210" stroke="#8A9858" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- Label -->
+          <rect x="0" y="345" width="280" height="35" fill="rgba(22,20,15,0.55)"/>
+          <text x="140" y="358" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="2" fill="rgba(250,248,244,0.9)">COASTAL BARN</text>
+          <text x="140" y="372" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="7" letter-spacing="1.5" fill="rgba(250,248,244,0.6)">HOLKHAM · NORFOLK</text>
+        </svg>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="dest">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="eyebrow" style="color:var(--brick);margin-bottom:8px">01 &mdash; Search</div>
+        <h2><i>Search</i> the country, by county or by feeling.</h2>
+      </div>
+      <a href="browse.html" class="see">See all 4,202 stays
+        <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    <div class="dest-grid">
+
+      <!-- Lake District -->
+      <a href="browse.html?region=lake-district" class="dest-card dest-1">
+        <svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+          <defs>
+            <linearGradient id="ld-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4A6080"/><stop offset="100%" stop-color="#8AAAC0"/></linearGradient>
+            <linearGradient id="ld-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5A8AA8"/><stop offset="100%" stop-color="#3A6080"/></linearGradient>
+          </defs>
+          <rect width="500" height="400" fill="url(#ld-sky)"/>
+          <!-- Clouds -->
+          <ellipse cx="100" cy="70" rx="70" ry="25" fill="rgba(255,255,255,0.18)"/>
+          <ellipse cx="380" cy="50" rx="80" ry="22" fill="rgba(255,255,255,0.14)"/>
+          <ellipse cx="250" cy="90" rx="60" ry="18" fill="rgba(255,255,255,0.1)"/>
+          <!-- Back fells -->
+          <path d="M0 200 L60 140 L100 160 L150 115 L195 138 L240 105 L280 125 L320 100 L365 120 L410 108 L450 130 L500 115 L500 280 L0 280Z" fill="#5A7058" opacity="0.65"/>
+          <!-- Mid fells -->
+          <path d="M0 225 L80 175 L130 190 L180 160 L230 178 L280 155 L330 172 L380 158 L430 175 L500 165 L500 295 L0 295Z" fill="#4A6048" opacity="0.9"/>
+          <!-- Lake Windermere -->
+          <path d="M60 295 Q120 282 180 288 Q240 294 290 284 Q340 274 380 280 Q420 286 450 278 L460 295 Q420 305 380 299 Q340 293 290 303 Q240 313 180 307 Q120 301 60 315Z" fill="url(#ld-water)"/>
+          <!-- Water reflections -->
+          <path d="M80 297 Q180 290 280 296 Q380 302 450 294" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+          <path d="M100 304 Q200 298 300 304 Q380 308 440 302" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+          <!-- Foreground fields -->
+          <path d="M0 310 Q125 295 250 305 Q375 315 500 300 L500 400 L0 400Z" fill="#6A8058"/>
+          <!-- Stone wall -->
+          <path d="M30 335 Q150 325 280 332 Q380 338 460 328" fill="none" stroke="#8A7060" stroke-width="4" stroke-linecap="round" opacity="0.7"/>
+          <!-- Cottage in distance -->
+          <rect x="195" y="286" width="28" height="18" fill="#D4C0A0" opacity="0.8"/>
+          <path d="M192 287 L209 275 L226 287Z" fill="#8A6848" opacity="0.8"/>
+          <!-- Sheep dots -->
+          <ellipse cx="80" cy="340" rx="7" ry="5" fill="rgba(250,248,244,0.85)"/>
+          <ellipse cx="90" cy="345" rx="6" ry="4" fill="rgba(250,248,244,0.85)"/>
+          <ellipse cx="360" cy="330" rx="7" ry="5" fill="rgba(250,248,244,0.85)"/>
+          <!-- Gradient overlay for text -->
+          <rect width="500" height="400" fill="url(#ld-grad)" opacity="0"/>
+          <defs><linearGradient id="ld-grad" x1="0" y1="0.4" x2="0" y2="1"><stop offset="0%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(22,20,15,0.55)"/></linearGradient></defs>
+          <rect width="500" height="400" fill="url(#ld-grad)"/>
+        </svg>
+        <div class="meta"><div class="title">The <i>Lake District</i></div><div class="sub">214 stays · from £95/night</div></div>
+      </a>
+
+      <!-- Isle of Skye -->
+      <a href="browse.html?region=skye" class="dest-card dest-2">
+        <svg viewBox="0 0 400 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+          <defs>
+            <linearGradient id="sk-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2D3A4A"/><stop offset="60%" stop-color="#5A6A7A"/><stop offset="100%" stop-color="#8A9AA8"/></linearGradient>
+          </defs>
+          <rect width="400" height="340" fill="url(#sk-sky)"/>
+          <!-- Dramatic storm light break -->
+          <path d="M200 0 L240 80 L160 80Z" fill="rgba(255,220,150,0.12)"/>
+          <!-- The Storr pinnacle -->
+          <path d="M150 180 L170 100 L178 115 L185 90 L192 108 L200 85 L208 105 L215 92 L222 110 L230 95 L238 112 L248 135 L260 120 L275 145 L290 130 L310 160 L400 155 L400 220 L0 220Z" fill="#1E2830" opacity="0.9"/>
+          <!-- Secondary ridge -->
+          <path d="M0 200 L40 165 L80 178 L120 158 L160 172 L200 155 L240 168 L280 158 L320 170 L360 160 L400 168 L400 235 L0 235Z" fill="#2A3440" opacity="0.85"/>
+          <!-- Sea loch -->
+          <path d="M0 235 Q100 222 200 230 Q300 238 400 225 L400 260 Q300 272 200 265 Q100 258 0 268Z" fill="#2C4A5C" opacity="0.85"/>
+          <!-- Sea shimmer -->
+          <path d="M20 240 Q110 234 200 240 Q290 246 380 238" fill="none" stroke="rgba(150,200,230,0.3)" stroke-width="1.5"/>
+          <path d="M10 250 Q100 244 200 250 Q300 256 390 248" fill="none" stroke="rgba(150,200,230,0.2)" stroke-width="1"/>
+          <!-- Heather slopes -->
+          <path d="M0 258 Q100 245 200 252 Q300 259 400 248 L400 340 L0 340Z" fill="#3A3050"/>
+          <!-- Heather texture -->
+          <path d="M0 268 Q100 260 200 265 Q300 270 400 262 L400 280 L0 280Z" fill="#4A3A60" opacity="0.6"/>
+          <!-- Blackhouse silhouette -->
+          <rect x="60" y="252" width="70" height="20" fill="#1A1A18"/>
+          <path d="M55 253 Q95 238 135 253Z" fill="#3A3028"/>
+          <!-- Gradient overlay -->
+          <defs><linearGradient id="sk-grad" x1="0" y1="0.35" x2="0" y2="1"><stop offset="0%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(22,20,15,0.6)"/></linearGradient></defs>
+          <rect width="400" height="340" fill="url(#sk-grad)"/>
+        </svg>
+        <div class="meta"><div class="title">Isle of <i>Skye</i></div><div class="sub">67 stays · from £110</div></div>
+      </a>
+
+      <!-- Cornwall -->
+      <a href="browse.html?region=cornwall" class="dest-card dest-3">
+        <svg viewBox="0 0 300 270" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+          <defs>
+            <linearGradient id="cn-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4A8AB0"/><stop offset="100%" stop-color="#8ABCD0"/></linearGradient>
+            <linearGradient id="cn-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2A6A98"/><stop offset="100%" stop-color="#1A5080"/></linearGradient>
+          </defs>
+          <rect width="300" height="270" fill="url(#cn-sky)"/>
+          <!-- Clouds -->
+          <ellipse cx="70" cy="55" rx="55" ry="18" fill="rgba(255,255,255,0.22)"/>
+          <ellipse cx="230" cy="42" rx="60" ry="16" fill="rgba(255,255,255,0.18)"/>
+          <!-- Cliff tops -->
+          <path d="M0 160 L40 130 L80 120 L120 135 L150 110 L180 125 L220 112 L260 128 L300 115 L300 190 L0 190Z" fill="#5A7848"/>
+          <!-- Dramatic cliff face -->
+          <path d="M0 190 L0 230 Q50 210 100 218 Q150 226 180 215 Q210 204 240 212 L300 200 L300 190Z" fill="#8A7A60"/>
+          <path d="M0 230 Q30 222 60 228 Q90 234 120 228 Q150 222 180 228 Q210 234 240 226 Q270 218 300 224 L300 220" fill="none" stroke="#9A8A70" stroke-width="1.5" opacity="0.7"/>
+          <!-- Sea -->
+          <rect x="0" y="218" width="300" height="52" fill="url(#cn-sea)"/>
+          <!-- Waves -->
+          <path d="M0 228 Q37 222 75 228 Q112 234 150 228 Q187 222 225 228 Q262 234 300 228" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.8"/>
+          <path d="M0 238 Q40 232 80 238 Q120 244 160 238 Q200 232 240 238 Q270 242 300 238" fill="none" stroke="rgba(255,255,255,0.25)" stroke-width="1.2"/>
+          <path d="M0 250 Q37 245 75 250 Q112 255 150 250 Q187 245 225 250 Q262 255 300 250" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+          <!-- White foam at cliff base -->
+          <path d="M20 220 Q60 216 100 220 Q140 224 170 218" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+          <!-- Cottage on cliff -->
+          <rect x="130" y="143" width="34" height="22" fill="#D4C0A0"/>
+          <path d="M126 145 L147 130 L168 145Z" fill="#8A6848"/>
+          <rect x="138" y="148" width="10" height="17" fill="#7A5038"/>
+          <!-- Cliff path zigzag -->
+          <path d="M145 165 Q135 178 145 192 Q155 205 145 218" fill="none" stroke="#7A6A50" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+          <!-- Seagulls -->
+          <path d="M200 95 Q205 91 210 95" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M220 82 Q226 77 232 82" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M80 105 Q85 101 90 105" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          <!-- Gradient overlay -->
+          <defs><linearGradient id="cn-grad" x1="0" y1="0.35" x2="0" y2="1"><stop offset="0%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(22,20,15,0.55)"/></linearGradient></defs>
+          <rect width="300" height="270" fill="url(#cn-grad)"/>
+        </svg>
+        <div class="meta"><div class="title"><i>Cornwall</i></div><div class="sub">198 stays</div></div>
+      </a>
+
+      <!-- Cotswolds -->
+      <a href="browse.html?region=cotswolds" class="dest-card dest-4">
+        <svg viewBox="0 0 300 270" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+          <defs>
+            <linearGradient id="ct-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#9AAAC0"/><stop offset="100%" stop-color="#C8D8E8"/></linearGradient>
+          </defs>
+          <rect width="300" height="270" fill="url(#ct-sky)"/>
+          <!-- Soft clouds -->
+          <ellipse cx="80" cy="65" rx="65" ry="22" fill="rgba(255,255,255,0.35)"/>
+          <ellipse cx="230" cy="48" rx="55" ry="18" fill="rgba(255,255,255,0.28)"/>
+          <!-- Rolling wolds -->
+          <path d="M0 180 Q75 150 150 160 Q225 170 300 148 L300 230 L0 230Z" fill="#8A9E6A" opacity="0.7"/>
+          <path d="M0 195 Q60 172 120 180 Q180 188 240 170 Q270 162 300 168 L300 245 L0 245Z" fill="#7A8E5A" opacity="0.9"/>
+          <!-- Ground -->
+          <rect x="0" y="230" width="300" height="40" fill="#A8B878"/>
+          <!-- HONEY-STONE VILLAGE -->
+          <!-- Main manor house -->
+          <rect x="95" y="175" width="110" height="62" fill="#D4B878" stroke="#B49858" stroke-width="1.2"/>
+          <!-- Stone detail -->
+          <line x1="95" y1="188" x2="205" y2="188" stroke="#C4A868" stroke-width="0.7" opacity="0.6"/>
+          <line x1="95" y1="200" x2="205" y2="200" stroke="#C4A868" stroke-width="0.7" opacity="0.6"/>
+          <line x1="95" y1="212" x2="205" y2="212" stroke="#C4A868" stroke-width="0.7" opacity="0.6"/>
+          <line x1="95" y1="224" x2="205" y2="224" stroke="#C4A868" stroke-width="0.7" opacity="0.6"/>
+          <!-- Roof with gables -->
+          <path d="M88 177 L150 148 L212 177Z" fill="#8A7050" stroke="#6A5030" stroke-width="1.2"/>
+          <!-- Left wing -->
+          <rect x="55" y="190" width="48" height="47" fill="#CCA86A" stroke="#AC8848" stroke-width="1"/>
+          <path d="M50 192 L79 170 L108 192Z" fill="#8A7050" stroke="#6A5030" stroke-width="1"/>
+          <!-- Right wing -->
+          <rect x="197" y="190" width="48" height="47" fill="#CCA86A" stroke="#AC8848" stroke-width="1"/>
+          <path d="M192 192 L221 170 L250 192Z" fill="#8A7050" stroke="#6A5030" stroke-width="1"/>
+          <!-- Chimneys -->
+          <rect x="126" y="136" width="10" height="18" fill="#A08060"/>
+          <rect x="164" y="136" width="10" height="18" fill="#A08060"/>
+          <rect x="123" y="133" width="16" height="4" fill="#806040"/>
+          <rect x="161" y="133" width="16" height="4" fill="#806040"/>
+          <!-- Windows - mullioned -->
+          <rect x="110" y="192" width="22" height="18" fill="#8AAAC0" stroke="#6A8090" stroke-width="0.8"/>
+          <line x1="121" y1="192" x2="121" y2="210" stroke="#6A8090" stroke-width="0.6"/>
+          <rect x="168" y="192" width="22" height="18" fill="#8AAAC0" stroke="#6A8090" stroke-width="0.8"/>
+          <line x1="179" y1="192" x2="179" y2="210" stroke="#6A8090" stroke-width="0.6"/>
+          <!-- Central door arch -->
+          <rect x="135" y="210" width="30" height="27" rx="3" fill="#8A6848"/>
+          <path d="M135 216 Q150 208 165 216" fill="none" stroke="#6A5038" stroke-width="1"/>
+          <!-- Garden: yew hedges -->
+          <rect x="88" y="237" width="30" height="14" rx="7" fill="#3A5830"/>
+          <rect x="182" y="237" width="30" height="14" rx="7" fill="#3A5830"/>
+          <!-- Gravel path -->
+          <path d="M150 237 Q148 252 150 270" fill="none" stroke="#C8B888" stroke-width="12" stroke-linecap="round" opacity="0.5"/>
+          <!-- Cotswold church tower to left -->
+          <rect x="20" y="178" width="28" height="55" fill="#C8A870" stroke="#A88850" stroke-width="1"/>
+          <path d="M18 180 L34 165 L50 180Z" fill="#8A7050"/>
+          <rect x="29" y="165" width="10" height="14" fill="#8A7050"/>
+          <rect x="27" y="195" width="14" height="16" fill="#7A9AA8" stroke="#6A8090" stroke-width="0.8"/>
+          <!-- Gradient overlay -->
+          <defs><linearGradient id="ct-grad" x1="0" y1="0.3" x2="0" y2="1"><stop offset="0%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(22,20,15,0.5)"/></linearGradient></defs>
+          <rect width="300" height="270" fill="url(#ct-grad)"/>
+        </svg>
+        <div class="meta"><div class="title">The <i>Cotswolds</i></div><div class="sub">87 stays</div></div>
+      </a>
+
+      <!-- Snowdonia -->
+      <a href="browse.html?region=snowdonia" class="dest-card dest-5">
+        <svg viewBox="0 0 500 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+          <defs>
+            <linearGradient id="sn-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2A3848"/><stop offset="50%" stop-color="#5A6A78"/><stop offset="100%" stop-color="#8A9AA8"/></linearGradient>
+          </defs>
+          <rect width="500" height="340" fill="url(#sn-sky)"/>
+          <!-- Cloud cap on summit -->
+          <ellipse cx="240" cy="75" rx="70" ry="28" fill="rgba(255,255,255,0.2)"/>
+          <ellipse cx="250" cy="85" rx="90" ry="22" fill="rgba(255,255,255,0.14)"/>
+          <!-- Y Wyddfa (Snowdon) - dramatic peak -->
+          <path d="M0 225 L80 180 L120 192 L160 155 L190 170 L215 130 L235 145 L250 95 L265 142 L285 125 L310 148 L340 160 L370 142 L400 158 L440 170 L500 160 L500 270 L0 270Z" fill="#3A4840" opacity="0.8"/>
+          <!-- Snow cap -->
+          <path d="M232 148 L250 95 L268 148 Q260 142 250 140 Q240 142 232 148Z" fill="rgba(250,248,244,0.7)"/>
+          <path d="M238 158 Q250 148 262 158 Q258 152 250 150 Q242 152 238 158Z" fill="rgba(250,248,244,0.5)"/>
+          <!-- Mid slopes -->
+          <path d="M0 242 L70 208 L120 218 L170 200 L220 212 L270 198 L320 210 L370 200 L420 212 L500 205 L500 280 L0 280Z" fill="#2E3A2E" opacity="0.95"/>
+          <!-- Llyn (lake) at base -->
+          <path d="M100 278 Q150 268 200 274 Q250 280 290 272 Q330 264 370 270 L380 278 Q340 287 290 282 Q240 277 190 283 Q140 289 100 282Z" fill="#2A4A5C" opacity="0.8"/>
+          <!-- Water shimmer -->
+          <path d="M115 278 Q190 271 265 278 Q320 282 365 275" fill="none" stroke="rgba(180,220,240,0.35)" stroke-width="1.5"/>
+          <!-- Slate foreground -->
+          <path d="M0 278 Q125 265 250 272 Q375 279 500 268 L500 340 L0 340Z" fill="#3A3A38"/>
+          <!-- Slate quarry stepped texture -->
+          <path d="M50 290 Q150 282 250 288 Q350 294 450 285" fill="none" stroke="#4A4A48" stroke-width="2" opacity="0.7"/>
+          <path d="M30 300 Q130 293 230 298 Q330 303 470 296" fill="none" stroke="#4A4A48" stroke-width="1.5" opacity="0.5"/>
+          <!-- Welsh chapel -->
+          <rect x="68" y="262" width="32" height="24" fill="#5A5A50"/>
+          <path d="M65 264 L84 250 L103 264Z" fill="#4A4A40"/>
+          <rect x="78" y="250" width="12" height="14" fill="#4A4A40"/>
+          <!-- Gradient overlay -->
+          <defs><linearGradient id="sn-grad" x1="0" y1="0.3" x2="0" y2="1"><stop offset="0%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(22,20,15,0.58)"/></linearGradient></defs>
+          <rect width="500" height="340" fill="url(#sn-grad)"/>
+        </svg>
+        <div class="meta"><div class="title"><i>Snowdonia</i></div><div class="sub">54 stays · from £120</div></div>
+      </a>
+
+      <!-- Causeway Coast -->
+      <a href="browse.html?region=causeway" class="dest-card dest-6">
+        <svg viewBox="0 0 400 340" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">
+          <defs>
+            <linearGradient id="cc-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#5A7898"/><stop offset="100%" stop-color="#8AACC0"/></linearGradient>
+            <linearGradient id="cc-sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2A5878"/><stop offset="100%" stop-color="#1A4060"/></linearGradient>
+          </defs>
+          <rect width="400" height="340" fill="url(#cc-sky)"/>
+          <!-- Dramatic sky -->
+          <ellipse cx="100" cy="60" rx="80" ry="28" fill="rgba(255,255,255,0.2)"/>
+          <ellipse cx="320" cy="45" rx="70" ry="22" fill="rgba(255,255,255,0.16)"/>
+          <!-- Basalt cliffs - dark and dramatic -->
+          <path d="M0 195 L50 160 L90 148 L130 162 L165 145 L200 158 L240 142 L275 155 L310 140 L345 152 L380 138 L400 145 L400 240 L0 240Z" fill="#2A2E2A" opacity="0.9"/>
+          <!-- Giant's Causeway hexagonal columns suggestion -->
+          <g opacity="0.85">
+            <!-- Row of hexagonal basalt columns at water's edge -->
+            <rect x="20" y="228" width="14" height="28" rx="2" fill="#3A3C38" stroke="#2A2C28" stroke-width="0.8"/>
+            <rect x="36" y="232" width="14" height="24" rx="2" fill="#404240" stroke="#2A2C28" stroke-width="0.8"/>
+            <rect x="52" y="225" width="14" height="31" rx="2" fill="#383A36" stroke="#2A2C28" stroke-width="0.8"/>
+            <rect x="68" y="230" width="14" height="26" rx="2" fill="#3C3E3A" stroke="#2A2C28" stroke-width="0.8"/>
+            <rect x="84" y="226" width="14" height="30" rx="2" fill="#383A36" stroke="#2A2C28" stroke-width="0.8"/>
+            <rect x="100" y="233" width="14" height="23" rx="2" fill="#404240" stroke="#2A2C28" stroke-width="0.8"/>
+            <rect x="116" y="228" width="14" height="28" rx="2" fill="#3A3C38" stroke="#2A2C28" stroke-width="0.8"/>
+            <rect x="132" y="235" width="14" height="21" rx="2" fill="#404240" stroke="#2A2C28" stroke-width="0.8"/>
+            <rect x="148" y="229" width="14" height="27" rx="2" fill="#383A36" stroke="#2A2C28" stroke-width="0.8"/>
+            <rect x="164" y="225" width="14" height="31" rx="2" fill="#3A3C38" stroke="#2A2C28" stroke-width="0.8"/>
+            <rect x="180" y="232" width="14" height="24" rx="2" fill="#404240" stroke="#2A2C28" stroke-width="0.8"/>
+            <rect x="196" y="228" width="14" height="28" rx="2" fill="#383A36" stroke="#2A2C28" stroke-width="0.8"/>
+          </g>
+          <!-- Atlantic sea -->
+          <rect x="0" y="252" width="400" height="88" fill="url(#cc-sea)"/>
+          <!-- Wild sea waves -->
+          <path d="M0 262 Q25 256 50 262 Q75 268 100 262 Q125 256 150 262 Q175 268 200 262 Q225 256 250 262 Q275 268 300 262 Q325 256 350 262 Q375 268 400 262" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+          <path d="M0 275 Q30 268 60 275 Q90 282 120 275 Q150 268 180 275 Q210 282 240 275 Q270 268 300 275 Q330 282 360 275 Q380 271 400 275" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+          <path d="M0 288 Q35 281 70 288 Q105 295 140 288 Q175 281 210 288 Q245 295 280 288 Q315 281 350 288 Q375 292 400 288" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+          <!-- White foam spray -->
+          <path d="M80 256 Q100 250 120 255" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M200 259 Q220 252 240 258" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-linecap="round"/>
+          <!-- Carrick-a-Rede style rope bridge suggestion on cliff -->
+          <line x1="160" y1="165" x2="220" y2="175" stroke="#8A7848" stroke-width="1.5" opacity="0.7"/>
+          <path d="M165 165 Q190 172 215 175" fill="none" stroke="#7A6838" stroke-width="2" stroke-linecap="round"/>
+          <!-- Gradient overlay -->
+          <defs><linearGradient id="cc-grad" x1="0" y1="0.3" x2="0" y2="1"><stop offset="0%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(22,20,15,0.58)"/></linearGradient></defs>
+          <rect width="400" height="340" fill="url(#cc-grad)"/>
+        </svg>
+        <div class="meta"><div class="title">Causeway <i>Coast</i></div><div class="sub">29 stays</div></div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<section class="diff">
+  <div class="diff-inner">
+    <div class="diff-head">
+      <div>
+        <div class="eyebrow" style="color:var(--brick);margin-bottom:12px;">02 &mdash; Stay</div>
+        <h2><i>Zero</i> fees.<br>For guests &amp; hosts.</h2>
+      </div>
+      <p>The corporate platforms tack on hefty service markups and take a massive cut from the people doing the actual work. Casa strips away the middlemen completely: <strong>£0 booking fees</strong> for guests, and <strong>0% commission rules</strong> for property owners. Just a seamless, direct connection.</p>
+    </div>
+
+    <div class="compare">
+      <div class="crow head">
+        <div class="h-label">Same property &mdash; £175 / night</div>
+        <div class="h-label">Booking.com</div>
+        <div class="h-label">Airbnb</div>
+        <div class="h-label"><span class="casa-pill">casa</span></div>
+      </div>
+      <div class="crow">
+        <div class="label-cell">Stay cost <span class="sub">£175 × 7 nights base rate</span></div>
+        <div class="val">£1,225</div>
+        <div class="val">£1,225</div>
+        <div class="val">£1,225</div>
+      </div>
+      <div class="crow">
+        <div class="label-cell">Guest booking fee <span class="sub">Zero added platform service charges</span></div>
+        <div class="val">£183 markup</div>
+        <div class="val">£170 markup</div>
+        <div class="val win"><svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg> £0 fee</div>
+      </div>
+      <div class="crow">
+        <div class="label-cell">Host commission cut <span class="sub">Portions taken from property owners</span></div>
+        <div class="val">15% commission</div>
+        <div class="val">3% commission</div>
+        <div class="val win"><svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg> 0% cut</div>
+      </div>
+      <div class="crow">
+        <div class="label-cell">Cleaning fees <span class="sub">Transparency at the checkout step</span></div>
+        <div class="val">£60 hidden surcharge</div>
+        <div class="val">£80 hidden surcharge</div>
+        <div class="val win"><svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg> Agreed direct</div>
+      </div>
+      <div class="crow">
+        <div class="label-cell">Total guest outlay <span class="sub">What leaves your bank account</span></div>
+        <div class="val">£1,468</div>
+        <div class="val">£1,475</div>
+        <div class="val win" style="font-weight:600;"><svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg> £1,225</div>
+      </div>
+      <div class="crow">
+        <div class="label-cell">Property owner receives <span class="sub">Keeping 100% of the hard work</span></div>
+        <div class="val">£1,041</div>
+        <div class="val">£1,188</div>
+        <div class="val win" style="font-weight:600;"><svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg> £1,225</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="community">
+  <div class="wrap">
+    <div class="community-grid">
+      <div>
+        <div class="eyebrow" style="color:var(--brick);margin-bottom:12px">03 &mdash; Connect</div>
+        <h2><i>Connect</i> with the people<br>who run the places.</h2>
+        <p>Hosts post their stays. Guests share their reviews and ask questions. Conversations happen in the open &mdash; with hashtags, replies, and the people behind the listings. Follow a place, follow a host.</p>
+        <a href="feed.html" class="btn btn-ink btn-lg">
+          Open the community feed
+          <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+
+        <div class="tag-wall" style="margin-top: 40px;">
+          <span class="ch"><span class="tag-name">#lakedistrict</span><span class="ct">214</span></span>
+          <span class="ch"><span class="tag-name">#cornwall</span><span class="ct">198</span></span>
+          <span class="ch"><span class="tag-name">#scottishhighlands</span><span class="ct">145</span></span>
+          <span class="ch"><span class="tag-name">#norfolk</span><span class="ct">112</span></span>
+          <span class="ch"><span class="tag-name">#cotswolds</span><span class="ct">87</span></span>
+          <span class="ch"><span class="tag-name">#snowdonia</span><span class="ct">54</span></span>
+          <span class="ch"><span class="tag-name">#cottage</span><span class="ct">341</span></span>
+          <span class="ch"><span class="tag-name">#seaview</span><span class="ct">156</span></span>
+          <span class="ch"><span class="tag-name">#petfriendly</span><span class="ct">134</span></span>
+          <span class="ch"><span class="tag-name">#glamping</span><span class="ct">89</span></span>
+          <span class="ch"><span class="tag-name">#hottub</span><span class="ct">71</span></span>
+          <span class="ch"><span class="tag-name">#offgrid</span><span class="ct">62</span></span>
+          <span class="ch"><span class="tag-name">#causewaycoast</span><span class="ct">29</span></span>
+        </div>
+      </div>
+
+      <div class="post-feed">
+        <div class="post-mini">
+          <div class="pm-head">
+            <div class="av">S</div>
+            <div>
+              <div class="nm">Sarah R.</div>
+              <div class="mono" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)">Host · Windermere</div>
+            </div>
+            <span class="when">2 hrs</span>
+          </div>
+          <div class="body">300-year-old stone cottage, sleeps 6. Wood burner, garden onto the fells. July is open. <i>#lakedistrict</i> <i>#cottage</i> <i>#familyfriendly</i></div>
+        </div>
+
+        <div class="post-mini">
+          <div class="pm-head">
+            <div class="av guest">M</div>
+            <div>
+              <div class="nm">Marcus J.</div>
+              <div class="mono" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)">Guest · Trip review</div>
+            </div>
+            <span class="when">5 hrs</span>
+          </div>
+          <div class="body">Just back from a week in Cornwall &mdash; booked direct through Casa, saved about £180. Cannot recommend it enough. <i>#cornwall</i> <i>#seaview</i></div>
+        </div>
+
+        <div class="post-mini">
+          <div class="pm-head">
+            <div class="av">F</div>
+            <div>
+              <div class="nm">Fiona C.</div>
+              <div class="mono" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)">Host · Isle of Skye</div>
+            </div>
+            <span class="when">Yest.</span>
+          </div>
+          <div class="body">Restored blackhouse on the Trotternish. Solar, wood-fired hot tub, views to the Old Man. <i>#isleofskye</i> <i>#offgrid</i></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section class="host-cta">
+  <div class="wrap">
+    <div class="host-cta-inner">
+      <div class="cta-card">
+        <div>
+          <h3>Looking to <i>Rent?</i></h3>
+          <p>Book authentic stays directly with homeowners. Enjoy standard transparent pricing with absolutely zero booking platform markup fees attached to your checkout bill.</p>
+        </div>
+        <a href="signup.html" class="cta-link-btn">
+          Sign in to book free
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+
+      <div class="cta-card">
+        <div>
+          <h3>Have a <i>Place?</i></h3>
+          <p>List your UK property for a simple flat fee. Take full ownership of your calendar with 0% booking commission cuts subtracted from your hard-earned payouts.</p>
+        </div>
+        <a href="signup.html" class="cta-link-btn">
+          Sign in to list property
+          <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="casa-foot">
+  <div class="inner">
+    <div class="top">
+      <div>
+        <div class="casa-mark-lg">casa</div>
+        <div class="pitch">A quieter place to find a holiday stay &mdash; <em>fee-free</em>, and direct with the host.</div>
+        <div class="mono" style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,0.4)">EST. 2025 · UK · LDN</div>
+      </div>
+      <div>
+        <h5>Stays</h5>
+        <a href="browse.html">Browse all</a>
+        <a href="map.html">Map view</a>
+        <a href="#">Last minute</a>
+        <a href="#">Long stays</a>
+        <a href="#">Gift cards</a>
+      </div>
+      <div>
+        <h5>Hosts</h5>
+        <a href="list.html">List a property</a>
+        <a href="host.html">Host dashboard</a>
+        <a href="#">Resources</a>
+        <a href="#">Community</a>
+      </div>
+      <div>
+        <h5>Account</h5>
+        <a href="signup.html">Sign in</a>
+        <a href="signup.html">Join free</a>
+        <a href="saved.html">Saved</a>
+        <a href="messages.html">Messages</a>
+        <a href="profile.html">Profile</a>
+      </div>
+      <div>
+        <h5>Casa</h5>
+        <a href="#">Our story</a>
+        <a href="#">Press</a>
+        <a href="#">Careers</a>
+        <a href="#">Help &amp; contact</a>
+      </div>
+    </div>
+    <div class="bot">
+      <div>&copy; 2026 Casa.co.uk &mdash; <em style="font-family:var(--serif);font-style:italic">a quieter way to book.</em></div>
+      <div><a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Cookies</a></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+let currentTargetField = null;
+
+// Calendar State Generation Loop
+function generateCalendarWidget() {
+  const container = document.getElementById('cal-days-container');
+  container.innerHTML = '';
+  // Empty space offsets for starting position days of month
+  for (let i = 0; i < 3; i++) {
+    const space = document.createElement('div');
+    container.appendChild(space);
+  }
+  // Generate visual text nodes
+  for (let day = 1; day <= 31; day++) {
+    const dayBox = document.createElement('div');
+    dayBox.className = 'cal-day';
+    dayBox.textContent = day;
+    dayBox.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if(currentTargetField) {
+        document.getElementById(currentTargetField).value = day + ' Jul 2026';
+        document.getElementById('calendar-widget').style.display = 'none';
+      }
+    });
+    container.appendChild(dayBox);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  generateCalendarWidget();
+
+  // Tab Selection Visual Feedback Toggle Loop
+  document.querySelectorAll('.search .seg').forEach(segment => {
+    segment.addEventListener('click', (e) => {
+      document.querySelectorAll('.search .seg').forEach(s => s.classList.remove('active'));
+      segment.classList.add('active');
+      
+      const widget = document.getElementById('calendar-widget');
+      if (segment.id === 'checkin-seg') {
+        currentTargetField = 'checkin-input';
+        widget.style.display = 'block';
+        widget.style.left = segment.offsetLeft + 'px';
+      } else if (segment.id === 'checkout-seg') {
+        currentTargetField = 'checkout-input';
+        widget.style.display = 'block';
+        widget.style.left = segment.offsetLeft + 'px';
+      } else {
+        widget.style.display = 'none';
+      }
+    });
+  });
+
+  // Global document closing handler for calendar overlay 
+  document.addEventListener('click', (e) => {
+    if(!e.target.closest('.search')) {
+      document.getElementById('calendar-widget').style.display = 'none';
+    }
+  });
+
+  // Search Submit Redirection Handler (Carrying parameters strictly over on click)
+  document.getElementById('search-submit-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    
+    const where = document.getElementById('where-input').value.trim();
+    const checkin = document.getElementById('checkin-input').value.trim();
+    const checkout = document.getElementById('checkout-input').value.trim();
+    const guests = document.getElementById('guests-input').value;
+    
+    const datesConcatenated = (checkin || checkout) ? `${checkin} - ${checkout}` : '12-19 Jul';
+    
+    const targetUrl = new URL('browse.html', window.location.href);
+    targetUrl.searchParams.set('where', where || 'Lake District');
+    targetUrl.searchParams.set('dates', datesConcatenated);
+    targetUrl.searchParams.set('guests', guests);
+    
+    window.location.href = targetUrl.toString();
+  });
+});
+</script>
+
+<script src="casa.js"></script>
+</body>
+</html>

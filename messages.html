@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Messages — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+  html,body{height:100vh;overflow:hidden}
+  .msg-page{display:grid;grid-template-columns:340px 1fr 300px;height:calc(100vh - 64px);overflow:hidden}
+  .conv-list{border-right:1px solid var(--rule);display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
+  .cl-head{padding:22px 20px 14px;border-bottom:1px solid var(--rule);flex-shrink:0}
+  .cl-head h1{font-family:var(--serif);font-size:32px;line-height:1;letter-spacing:-.02em;margin-bottom:12px}
+  .cl-head h1 i{font-style:italic;color:var(--brick)}
+  .cl-search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:9px 12px;transition:border-color .12s}
+  .cl-search:focus-within{border-color:var(--brick)}
+  .cl-search svg{width:14px;height:14px;stroke:var(--ink-3);fill:none;stroke-width:1.8;flex-shrink:0}
+  .cl-search input{flex:1;border:none;background:transparent;outline:none;font-family:var(--sans);font-size:13.5px;color:var(--ink)}
+  .cl-search input::placeholder{color:var(--ink-4)}
+  .cl-tabs{display:flex;padding:0 10px;border-bottom:1px solid var(--rule);flex-shrink:0}
+  .cl-tab{padding:10px 10px;font-size:12px;color:var(--ink-3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;font-family:var(--sans);background:none;border-left:none;border-right:none;border-top:none;transition:color .12s}
+  .cl-tab .ct{font-family:var(--mono);font-size:10px;opacity:.55;margin-left:3px}
+  .cl-tab.active{color:var(--brick);border-bottom-color:var(--brick);font-weight:500}
+  .cl-scroll{flex:1;overflow-y:auto}
+  .cl-scroll::-webkit-scrollbar{width:3px}
+  .cl-scroll::-webkit-scrollbar-thumb{background:var(--rule);border-radius:2px}
+  .conv{display:flex;gap:12px;padding:13px 18px;cursor:pointer;border-bottom:1px solid var(--rule-2);transition:background .1s;position:relative}
+  .conv:hover{background:var(--surface)}
+  .conv.active{background:var(--surface)}
+  .conv.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--brick);border-radius:0 2px 2px 0}
+  .conv.hidden{display:none}
+  .conv-av{width:42px;height:42px;border-radius:50%;background:var(--brick);color:white;display:inline-flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-size:17px;flex-shrink:0;position:relative}
+  .conv-av.moss{background:var(--moss)}
+  .conv-av.ink{background:var(--ink)}
+  .conv-av .online{position:absolute;bottom:-1px;right:-1px;width:11px;height:11px;border-radius:50%;background:var(--moss);border:2px solid var(--paper)}
+  .conv-av .udot{position:absolute;top:-2px;right:-2px;width:10px;height:10px;border-radius:50%;background:var(--brick);border:2px solid var(--paper);display:none}
+  .conv.unread .conv-av .udot{display:block}
+  .conv-body{flex:1;min-width:0}
+  .conv-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:2px}
+  .conv-name{font-size:13.5px;font-weight:500;color:var(--ink)}
+  .conv-name i{font-style:italic;color:var(--brick);font-weight:400}
+  .conv-time{font-family:var(--mono);font-size:10px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-4);flex-shrink:0}
+  .conv-prop{font-family:var(--serif);font-style:italic;font-size:12px;color:var(--brick);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .conv-preview{font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .conv.unread .conv-preview{color:var(--ink-2);font-weight:500}
+  .conv-tag{display:inline-block;font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:1px 6px;border-radius:3px;margin-top:5px}
+  .conv-tag.enquiry{background:var(--brick-pale);color:var(--brick-text)}
+  .conv-tag.confirmed{background:var(--moss-pale);color:var(--moss)}
+  .conv-tag.stayed{background:var(--paper-2);color:var(--ink-3)}
+  .conv-tag.community{background:var(--surface);color:var(--ink-3);border:1px solid var(--rule)}
+  .no-res{padding:28px 20px;text-align:center;font-size:13px;color:var(--ink-3);display:none}
+  .thread{display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
+  .th-head{padding:16px 22px;border-bottom:1px solid var(--rule);flex-shrink:0;display:flex;align-items:center;gap:12px;background:var(--paper)}
+  .th-av{width:40px;height:40px;border-radius:50%;background:var(--brick);color:white;display:inline-flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-size:17px;flex-shrink:0}
+  .th-av.moss{background:var(--moss)}
+  .th-av.ink{background:var(--ink)}
+  .th-who{flex:1;min-width:0}
+  .th-who h2{font-family:var(--serif);font-size:20px;line-height:1.1;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .th-who h2 i{font-style:italic;color:var(--brick)}
+  .th-who .meta{font-size:12px;color:var(--ink-3);margin-top:2px;display:flex;align-items:center;gap:5px}
+  .th-who .meta .ld{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--moss);flex-shrink:0}
+  .th-actions{display:flex;gap:6px}
+  .th-status{margin:10px 22px 0;padding:11px 15px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;gap:11px}
+  .th-status.accepted{background:var(--moss-pale);border-left:3px solid var(--moss)}
+  .th-status.pending{background:var(--brick-pale);border-left:3px solid var(--brick)}
+  .th-status.confirmed{background:var(--ink);color:var(--paper)}
+  .th-status .si{width:28px;height:28px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  .th-status.accepted .si{background:var(--moss)}
+  .th-status.pending .si{background:var(--brick)}
+  .th-status.confirmed .si{background:rgba(255,255,255,.15)}
+  .th-status .si svg{width:14px;height:14px;stroke:white;fill:none;stroke-width:1.8}
+  .th-status .sb h4{font-family:var(--serif);font-style:italic;font-size:14px;margin-bottom:2px}
+  .th-status.accepted .sb h4{color:var(--moss)}
+  .th-status.pending .sb h4{color:var(--brick)}
+  .th-status.confirmed .sb h4{color:var(--paper)}
+  .th-status .sb p{font-size:12px;line-height:1.4}
+  .th-status.accepted .sb p{color:#3F4B36}
+  .th-status.pending .sb p{color:var(--brick-text)}
+  .th-status.confirmed .sb p{color:rgba(255,255,255,.6)}
+  .th-stream{flex:1;overflow-y:auto;padding:18px 22px 10px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+  .th-stream::-webkit-scrollbar{width:3px}
+  .th-stream::-webkit-scrollbar-thumb{background:var(--rule);border-radius:2px}
+  .day-div{display:flex;align-items:center;gap:12px;margin:4px 0}
+  .day-div::before,.day-div::after{content:'';flex:1;height:1px;background:var(--rule)}
+  .day-div span{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-4);white-space:nowrap}
+  .msg-row{display:flex;gap:10px;align-items:flex-end;max-width:80%;animation:msgIn .25s ease both}
+  .msg-row.from-me{margin-left:auto;flex-direction:row-reverse}
+  @keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .av-sm{width:30px;height:30px;border-radius:50%;background:var(--brick);color:white;display:inline-flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-size:12px;flex-shrink:0}
+  .msg-row.from-me .av-sm{background:var(--ink)}
+  .bubble-wrap{display:flex;flex-direction:column;gap:4px}
+  .msg-bubble{background:var(--surface);border:1px solid var(--rule);padding:11px 15px;border-radius:16px 16px 16px 4px;font-size:14px;line-height:1.55;color:var(--ink)}
+  .msg-row.from-me .msg-bubble{background:var(--ink);color:var(--paper);border-color:var(--ink);border-radius:16px 16px 4px 16px}
+  .msg-bubble i{font-style:italic;color:var(--brick)}
+  .msg-row.from-me .msg-bubble i{color:var(--brick-2)}
+  .meta-time{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-top:6px;display:block}
+  .msg-row.from-me .meta-time{color:rgba(255,255,255,.35)}
+  .msg-prop{background:var(--surface);border:1px solid var(--rule);border-radius:11px;padding:8px 10px;display:flex;gap:10px;align-items:center;cursor:pointer;transition:border-color .12s;max-width:300px;text-decoration:none;margin-top:4px}
+  .msg-prop:hover{border-color:var(--ink)}
+  .msg-prop .pn{font-family:var(--serif);font-size:14px;line-height:1.1;margin-bottom:2px}
+  .msg-prop .pn i{font-style:italic;color:var(--brick)}
+  .msg-prop .pd{font-size:11px;color:var(--ink-3)}
+  .pay-card{background:var(--moss-pale);border:1px solid rgba(77,92,64,.25);border-radius:13px;padding:14px 16px;max-width:320px;margin-top:4px}
+  .pay-card h5{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--moss);margin-bottom:8px}
+  .pay-card .pr{display:flex;justify-content:space-between;font-size:13px;color:#3F4B36;padding:3px 0}
+  .pay-card .pr.tot{font-weight:500;padding-top:8px;border-top:1px solid rgba(77,92,64,.2);margin-top:6px}
+  .pay-card .pr.tot .v{font-family:var(--serif);font-style:italic;font-size:17px;color:var(--moss)}
+  .pay-card .pf{font-size:11px;color:var(--moss);margin-top:8px;line-height:1.4}
+  .typing-row{display:none;align-items:center;gap:10px;padding:0 22px 4px;flex-shrink:0}
+  .typing-row.show{display:flex;animation:msgIn .2s ease both}
+  .typing-dots{display:flex;gap:4px;background:var(--surface);border:1px solid var(--rule);padding:11px 15px;border-radius:16px 16px 16px 4px}
+  .typing-dots span{width:6px;height:6px;border-radius:50%;background:var(--ink-3);animation:dot 1.2s infinite}
+  .typing-dots span:nth-child(2){animation-delay:.2s}
+  .typing-dots span:nth-child(3){animation-delay:.4s}
+  @keyframes dot{0%,80%,100%{transform:scale(1);opacity:.4}40%{transform:scale(1.2);opacity:1}}
+  .quick-replies{display:flex;gap:6px;flex-wrap:wrap;padding:8px 22px;border-top:1px solid var(--rule-2);flex-shrink:0;min-height:44px}
+  .qr-chip{padding:6px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--rule);font-size:12px;color:var(--ink-2);cursor:pointer;transition:all .12s;white-space:nowrap;font-family:var(--sans)}
+  .qr-chip:hover{border-color:var(--brick);color:var(--brick);background:var(--brick-pale)}
+  .composer{border-top:1px solid var(--rule);padding:12px 18px;flex-shrink:0;background:var(--paper)}
+  .cw{display:flex;align-items:flex-end;gap:8px;background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:7px 7px 7px 14px;transition:border-color .12s}
+  .cw:focus-within{border-color:var(--rule-3)}
+  .cw textarea{flex:1;border:none;background:transparent;outline:none;resize:none;font-family:var(--sans);font-size:14px;color:var(--ink);padding:5px 0;line-height:1.5;max-height:120px;min-height:22px}
+  .cw textarea::placeholder{color:var(--ink-4)}
+  .ctools{display:flex;gap:2px;align-items:center}
+  .ct-btn{width:32px;height:32px;background:transparent;border:none;border-radius:8px;cursor:pointer;color:var(--ink-3);display:inline-flex;align-items:center;justify-content:center;transition:all .1s;position:relative}
+  .ct-btn:hover{background:var(--paper-2);color:var(--ink)}
+  .ct-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+  .send-btn{background:var(--brick);color:white;border:none;padding:0 14px;height:38px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;font-family:var(--sans);transition:background .12s;flex-shrink:0}
+  .send-btn:hover:not(:disabled){background:var(--brick-2)}
+  .send-btn:disabled{opacity:.35;cursor:default}
+  .send-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+  .compose-hint{font-size:11px;color:var(--ink-4);margin-top:5px;display:flex;justify-content:space-between}
+  .compose-hint kbd{font-family:var(--mono);font-size:10px;background:var(--paper-2);border:1px solid var(--rule-3);border-radius:4px;padding:1px 5px;color:var(--ink-3)}
+  .char-warn{font-family:var(--mono);font-size:10px;color:var(--ink-4)}
+  .char-warn.near{color:var(--brick)}
+  .emoji-panel{display:none;position:absolute;bottom:calc(100% + 6px);left:0;background:var(--paper);border:1px solid var(--rule);border-radius:12px;padding:10px;box-shadow:0 8px 24px rgba(22,20,15,.1);z-index:50;width:256px}
+  .emoji-panel.open{display:block;animation:msgIn .15s ease both}
+  .emoji-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px}
+  .em{font-size:18px;padding:4px;border-radius:6px;cursor:pointer;text-align:center;transition:background .1s;border:none;background:none}
+  .em:hover{background:var(--surface)}
+  .side-prop{border-left:1px solid var(--rule);background:var(--paper);overflow-y:auto;padding:18px 16px 24px}
+  .side-prop::-webkit-scrollbar{width:3px}
+  .sp-card{background:var(--surface);border:1px solid var(--rule);border-radius:14px;overflow:hidden;margin-bottom:12px}
+  .sp-img{aspect-ratio:16/9}
+  .sp-img .ph{width:100%;height:100%}
+  .sp-body{padding:12px 14px}
+  .sp-name{font-family:var(--serif);font-size:17px;line-height:1.05;margin-bottom:3px}
+  .sp-name i{font-style:italic;color:var(--brick)}
+  .sp-loc{font-size:11.5px;color:var(--ink-3);margin-bottom:10px}
+  .sp-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding-top:8px;border-top:1px solid var(--rule)}
+  .pf{text-align:center;padding:4px 0}
+  .pf .n{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--ink)}
+  .pf .l{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-4)}
+  .sp-block{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:13px;margin-bottom:10px}
+  .sp-block h5{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:9px}
+  .det-row{display:flex;justify-content:space-between;padding:4px 0;font-size:12.5px;color:var(--ink-2)}
+  .det-row .v{font-weight:500;color:var(--ink)}
+  .det-row.save{color:var(--moss)}
+  .det-row.tot{font-weight:500;padding-top:6px;border-top:1px solid var(--rule-2);margin-top:4px}
+  .det-row.tot .v{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--brick)}
+  .full-btn{width:100%;margin-top:10px}
+  @media(max-width:1100px){.msg-page{grid-template-columns:300px 1fr}.side-prop{display:none}}
+  @media(max-width:720px){.msg-page{grid-template-columns:1fr}.conv-list{display:none}}
+</style>
+</head>
+<body>
+<nav class="casa-nav solid">
+  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
+  <div class="nav-right">
+    <a class="nav-link" href="browse.html">Browse</a>
+    <a class="nav-link" href="map.html">Map</a>
+    <a class="nav-link" href="feed.html">Feed</a>
+    <a class="nav-link" href="list.html">Become a host</a>
+    <div style="width:1px;height:20px;background:var(--rule);margin:0 4px"></div>
+    <a class="nav-link" href="saved.html">Saved</a>
+    <a class="nav-link" href="messages.html" style="color:var(--brick);font-weight:500">Messages</a>
+    <a class="nav-link" href="profile.html"><span class="nav-avatar">J</span></a>
+  </div>
+</nav>
+<div class="msg-page">
+  <aside class="conv-list">
+    <div class="cl-head">
+      <h1><i>Inbox</i></h1>
+      <div class="cl-search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="text" id="convSearch" placeholder="Search conversations…" oninput="searchConvos(this.value)">
+      </div>
+    </div>
+    <div class="cl-tabs">
+      <button class="cl-tab active" data-filter="all" onclick="filterTab(this)">All <span class="ct" id="ct-all">8</span></button>
+      <button class="cl-tab" data-filter="unread" onclick="filterTab(this)">Unread <span class="ct" id="ct-unread">3</span></button>
+      <button class="cl-tab" data-filter="enquiry" onclick="filterTab(this)">Enquiries <span class="ct" id="ct-enq">3</span></button>
+      <button class="cl-tab" data-filter="stayed" onclick="filterTab(this)">Stayed <span class="ct" id="ct-stayed">3</span></button>
+    </div>
+    <div class="cl-scroll" id="convList"></div>
+    <div class="no-res" id="noRes">No conversations match that search.</div>
+  </aside>
+
+  <main class="thread">
+    <div class="th-head">
+      <div class="th-av" id="thAv">S</div>
+      <div class="th-who">
+        <h2 id="thName"><i>Sarah R.</i></h2>
+        <div class="meta" id="thMeta"><span class="ld"></span> Active now</div>
+      </div>
+      <div class="th-actions">
+        <button class="btn btn-outline btn-sm" onclick="toast('Calling — available once live')">
+          <svg class="i i-sm" viewBox="0 0 24 24"><path d="M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg> Call
+        </button>
+        <button class="btn btn-ghost btn-sm" onclick="toast('Archive, report, block — available once live')">
+          <svg class="i i-sm" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="th-status accepted" id="thStatus" style="display:none">
+      <div class="si" id="thStatusIcon"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:white;fill:none;stroke-width:1.8"><path d="m4 12 5 5 11-11"/></svg></div>
+      <div class="sb"><h4 id="thStatusTitle"></h4><p id="thStatusBody"></p></div>
+    </div>
+    <div class="th-stream" id="thStream"></div>
+    <div class="typing-row" id="typingRow">
+      <div class="av-sm" id="typingAv">S</div>
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+    </div>
+    <div class="quick-replies" id="quickReplies"></div>
+    <div class="composer">
+      <div class="cw">
+        <textarea id="msgTA" placeholder="Reply to Sarah…" rows="1" oninput="onType()" onkeydown="onKey(event)"></textarea>
+        <div class="ctools">
+          <div style="position:relative">
+            <button class="ct-btn" id="emojiBtn" onclick="toggleEmoji()" title="Emoji">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><circle cx="9.5" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="14.5" cy="10" r="1" fill="currentColor" stroke="none"/></svg>
+            </button>
+            <div class="emoji-panel" id="emojiPanel"><div class="emoji-grid" id="emojiGrid"></div></div>
+          </div>
+          <button class="ct-btn" onclick="insertTpl('dates')" title="Suggest dates">
+            <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+          </button>
+          <button class="ct-btn" onclick="insertTpl('price')" title="Share price">
+            <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </button>
+          <button class="send-btn" id="sendBtn" onclick="sendMsg()" disabled>
+            Send <svg viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="compose-hint">
+        <span>Direct to host &mdash; <kbd>⌘</kbd><kbd>↵</kbd> to send</span>
+        <span class="char-warn" id="charWarn"></span>
+      </div>
+    </div>
+  </main>
+
+  <aside class="side-prop" id="sideProp">
+    <div class="sp-card">
+      <div class="sp-img"><div class="ph warm" data-label="STONE COTTAGE · WINDERMERE"></div></div>
+      <div class="sp-body">
+        <div class="sp-name">Stone Cottage, <i>Windermere</i></div>
+        <div class="sp-loc">Lake District · 4.9 ★ (23)</div>
+        <div class="sp-facts">
+          <div class="pf"><div class="n">6</div><div class="l">Guests</div></div>
+          <div class="pf"><div class="n">3</div><div class="l">Beds</div></div>
+          <div class="pf"><div class="n">2</div><div class="l">Baths</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="sp-block">
+      <h5>Your trip</h5>
+      <div class="det-row"><span>Check in</span><span class="v">Sat 12 Jul</span></div>
+      <div class="det-row"><span>Check out</span><span class="v">Sat 19 Jul</span></div>
+      <div class="det-row"><span>Guests</span><span class="v">2 + 2 kids · 1 dog</span></div>
+      <div class="det-row" style="border-top:1px solid var(--rule);padding-top:6px;margin-top:4px"><span>7 nights</span><span class="v">£1,225</span></div>
+      <div class="det-row"><span>Cleaning</span><span class="v">£60</span></div>
+      <div class="det-row save"><span>vs Booking.com</span><span>−£243</span></div>
+      <div class="det-row tot"><span>Total to Sarah</span><span class="v">£1,285</span></div>
+      <a href="property.html" class="btn btn-outline btn-sm full-btn">View property</a>
+    </div>
+    <div class="sp-block">
+      <h5>Pay Sarah</h5>
+      <p style="font-size:12.5px;color:var(--ink-2);line-height:1.5;margin-bottom:10px">Bank details shared in the thread. Pay £200 deposit to lock the dates.</p>
+      <button class="btn btn-primary btn-sm full-btn" id="depositBtn" onclick="markDeposit()">
+        <svg class="i i-sm" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg> Mark deposit paid (£200)
+      </button>
+    </div>
+    <div class="sp-block" style="border-style:dashed">
+      <h5 style="color:var(--brick)">Casa support</h5>
+      <p style="font-size:12px;color:var(--ink-2);line-height:1.5">Something feel off? We don't process payments but we're here to help with disputes.</p>
+      <a href="#" style="font-size:12px;color:var(--brick);text-decoration:underline;text-underline-offset:2px;display:inline-block;margin-top:8px" onclick="toast('Support — available once live');return false">Open a support ticket →</a>
+    </div>
+  </aside>
+</div>
+
+<script>
+// ═══════════════════
+// DATA
+// ═══════════════════
+const CONVOS = [
+  { id:'sarah', name:'Sarah R.', ni:true, av:'S', avc:'', prop:'Stone Cottage, Windermere', time:'2 hrs', tag:'enquiry', tagLabel:'Awaiting your reply', unread:true, online:true, preview:"Lovely — we'd be very happy to host you…", st:'accepted', stTitle:"Sarah accepted your enquiry — ready to confirm", stBody:"Agree the price below, then pay by bank transfer to lock the dates.", meta:"Active now — usually replies within 2 hours", badge:true, qr:["That works perfectly 👍","Could you send bank details?","What time is check-in?","We'll pay the deposit today"], msgs:[
+    {f:'me', t:"Hi Sarah — we'd love to stay at the Stone Cottage for the week of <i>12–19 July</i>. Family of four (kids 5 and 8) with one well-behaved Labrador.\n\nAre those dates still available? And is there parking for two cars?", ts:'14:22', prop:true},
+    {f:'them', t:"Hi James — lovely to hear from you! The cottage <i>is</i> free 12–19 July and we'd be delighted to host you. Labrador very welcome — we have two of our own.\n\nYes, <i>off-street parking for two cars</i> right outside.", ts:'09:14'},
+    {f:'them', t:"Here's the price for your week:", ts:'09:16', payment:true},
+    {f:'me', t:"Brilliant — that all works. Could you send bank details and we'll get the deposit across this afternoon.\n\nQuick question — is there a cot for a toddler?", ts:'11:08'},
+    {f:'them', t:"Sending bank details now. There's a travel cot in the loft — I'll set it up in the small bedroom.\n\nLooking forward to having you! Full check-in instructions a week before.", ts:'11:21'},
+  ]},
+  { id:'fiona', name:'Fiona C.', ni:true, av:'F', avc:'', prop:'Blackhouse, Trotternish', time:'Yest.', tag:'enquiry', tagLabel:'Enquiry sent', unread:false, online:false, preview:"Yes, the blackhouse is free 2nd–9th August…", st:'pending', stTitle:"Awaiting Fiona's reply", stBody:"Your enquiry was sent yesterday. Fiona usually replies within a few hours.", meta:"Last seen yesterday", badge:true, qr:["Thanks — looking forward to it","What's the deposit?","Is it dog friendly?"], msgs:[
+    {f:'me', t:"Hi Fiona — interested in the Blackhouse for 2nd–9th August. 4 adults, 2 dogs. Is it available?", ts:'16:40'},
+    {f:'them', t:"Hi James — yes it's free 2nd–9th August. We require a £200 holding deposit. Off-grid solar, no phone signal — that's rather the point 😊", ts:'09:02'},
+  ]},
+  { id:'patrick', name:'Patrick M.', ni:true, av:'P', avc:'', prop:'Cliffside Cottage, Portrush', time:'2 days', tag:'confirmed', tagLabel:'Booking confirmed', unread:true, online:false, preview:"Confirming you're all set for the 14th…", st:'confirmed', stTitle:"Booking confirmed ✓", stBody:"Deposit paid. Patrick will send check-in details a week before you arrive.", meta:"Last seen 2 days ago", badge:true, qr:["Great — see you then!","What's the Wi-Fi password?","Anything we should bring?"], msgs:[
+    {f:'me', t:"Hi Patrick — enquiring about Cliffside for 14–21 Aug. 2 adults.", ts:'10:15'},
+    {f:'them', t:"Hi James — yes it's available! £165/night, sleeps 4, sea views to Scotland on a clear day. Shall I confirm?", ts:'11:30'},
+    {f:'me', t:"Perfect — please confirm. Transferring the deposit now.", ts:'14:02'},
+    {f:'them', t:"Deposit received — <i>you're confirmed!</i> Full check-in instructions a week before. Looking forward to having you.", ts:'16:45'},
+    {f:'them', t:"Just confirming you're all set for the 14th. Key under the second flowerpot on the left 🗝️", ts:'09:30'},
+  ]},
+  { id:'rhys', name:'Rhys W.', ni:true, av:'R', avc:'', prop:'Stone Farmhouse, Snowdonia', time:'5 days', tag:'enquiry', tagLabel:'Awaiting your reply', unread:true, online:false, preview:"Yes, both dogs are welcome — we have two of our own…", st:'accepted', stTitle:"Rhys has responded to your enquiry", stBody:"Review his message and reply to confirm.", meta:"Last seen 5 days ago", badge:false, qr:["Brilliant — let's confirm","What dates are best?","Can you send a price breakdown?"], msgs:[
+    {f:'me', t:"Hi Rhys — interested in the farmhouse for September. Are dogs welcome?", ts:'09:00'},
+    {f:'them', t:"Yes, both dogs welcome — we have two of our own 🐕 September is mostly open. Which dates are you thinking?", ts:'14:22'},
+  ]},
+  { id:'hannah', name:'Hannah F.', ni:true, av:'H', avc:'', prop:'The Granary, Hawkshead', time:'1 wk', tag:'stayed', tagLabel:"Stayed · Sept '25", unread:false, online:false, preview:"Thanks so much for staying — would love a review…", st:null, meta:"Last seen 1 week ago", badge:true, qr:["Left you a review ⭐","Would love to come back","Any recommendations?"], msgs:[
+    {f:'them', t:"Hope you had a wonderful stay! Would love a review when you have a moment. Hope to see you again next year 🙏", ts:'10:00'},
+    {f:'me', t:"Just left you a 5-star review — thoroughly deserved. One of the best places we've stayed in years. Thank you!", ts:'11:30'},
+    {f:'them', t:"Thank you so much James — made our morning! You're welcome back any time 😊", ts:'12:14'},
+  ]},
+  { id:'laura', name:'Laura P.', ni:false, av:'L', avc:'moss', prop:'Re: Cotswolds recommendation', time:'3 days', tag:'community', tagLabel:'Community', unread:false, online:true, preview:"Saw your post in the Cotswolds feed…", st:null, meta:"Active now", badge:false, qr:["Try Honeysuckle Cottage in Bourton","Happy to share more tips!"], msgs:[
+    {f:'them', t:"Hi! Saw your post in the Cotswolds feed. Did you find somewhere good? We're looking for August.", ts:'15:00'},
+    {f:'me', t:"For the Cotswolds, try Honeysuckle Cottage in Bourton-on-the-Water — we stayed there two years ago, brilliant.", ts:'16:22'},
+  ]},
+  { id:'daniel', name:'Daniel R.', ni:true, av:'D', avc:'', prop:'Coastal Barn, Holkham', time:'2 wks', tag:'stayed', tagLabel:"Stayed · Jun '25", unread:false, online:false, preview:"Lovely to have you — drive safely…", st:null, meta:"Last seen 2 weeks ago", badge:true, qr:["Wonderful stay — thank you!","Hope to come back next year"], msgs:[
+    {f:'them', t:"All sorted! Lovely to have you — don't forget the binoculars for the bird hide 🦆", ts:'10:00'},
+    {f:'me', t:"Absolutely brilliant stay. The marsh at dawn was something else. Already looking at dates for next year.", ts:'14:30'},
+  ]},
+  { id:'tom', name:'Tom & Anna', ni:false, av:'T', avc:'ink', prop:"Shepherd's Hut, Buttermere", time:'3 wks', tag:'stayed', tagLabel:"Stayed · '24", unread:false, online:false, preview:"Hut is back online for September…", st:null, meta:"Last seen 3 weeks ago", badge:false, qr:["Would love to come back!","What dates in September?"], msgs:[
+    {f:'them', t:"The hut is back online for September — we'd love to host you again. Early October is magical up here.", ts:'09:00'},
+    {f:'me', t:"Wonderful — we were just talking about coming back. Will check dates and message you this week.", ts:'11:45'},
+  ]},
+];
+
+const EMOJIS = ['😊','👍','🏡','🐕','⭐','🙏','✅','🔑','🏔️','🌊','❤️','👋','😂','🎉','💯','🌿','☀️','🌧️','🍃','🦆','🐑','🍺','☕','🎒','🗝️','💷','📅','✉️','🏴󠁧󠁢󠁳󠁣󠁴󠁿','🇬🇧','🌸','🏖️'];
+
+let active = 'sarah';
+let filterMode = 'all';
+let searchStr = '';
+
+// ── BUILD EMOJI ──
+document.getElementById('emojiGrid').innerHTML = EMOJIS.map(e =>
+  `<button class="em" onclick="insertEmoji('${e}')">${e}</button>`).join('');
+
+// ── RENDER LIST ──
+function renderList() {
+  let shown = 0;
+  document.getElementById('convList').innerHTML = CONVOS.map(c => {
+    const mf = filterMode === 'all' || (filterMode==='unread'&&c.unread) || (filterMode==='enquiry'&&c.tag==='enquiry') || (filterMode==='stayed'&&c.tag==='stayed');
+    const ms = !searchStr || c.name.toLowerCase().includes(searchStr) || c.prop.toLowerCase().includes(searchStr) || c.preview.toLowerCase().includes(searchStr);
+    if (mf && ms) shown++;
+    return `<div class="conv${c.id===active?' active':''}${c.unread?' unread':''}${(!mf||!ms)?' hidden':''}" onclick="switchConvo('${c.id}')">
+      <div class="conv-av${c.avc?' '+c.avc:''}">${c.av}${c.online?'<span class="online"></span>':''}<span class="udot"></span></div>
+      <div class="conv-body">
+        <div class="conv-head"><div class="conv-name">${c.ni?`<i>${c.name}</i>`:c.name}</div><div class="conv-time">${c.time}</div></div>
+        <div class="conv-prop">${c.prop}</div>
+        <div class="conv-preview">${c.preview}</div>
+        <span class="conv-tag ${c.tag}">${c.tagLabel}</span>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('noRes').style.display = (!shown && searchStr) ? 'block' : 'none';
+  document.getElementById('ct-all').textContent = CONVOS.length;
+  document.getElementById('ct-unread').textContent = CONVOS.filter(c=>c.unread).length;
+  document.getElementById('ct-enq').textContent = CONVOS.filter(c=>c.tag==='enquiry').length;
+  document.getElementById('ct-stayed').textContent = CONVOS.filter(c=>c.tag==='stayed').length;
+}
+
+// ── RENDER THREAD ──
+function renderThread() {
+  const c = CONVOS.find(x=>x.id===active);
+  if (!c) return;
+
+  // Header
+  const avEl = document.getElementById('thAv');
+  avEl.textContent = c.av;
+  avEl.className = `th-av${c.avc?' '+c.avc:''}`;
+  document.getElementById('thName').innerHTML = `${c.ni?`<i>${c.name}</i>`:c.name}` +
+    (c.badge ? ` <span class="badge moss"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> Verified host</span>` : '');
+  document.getElementById('thMeta').innerHTML = `${c.online?'<span class="ld"></span> Active now':'Last seen '+c.time}`;
+  document.getElementById('typingAv').textContent = c.av;
+
+  // Status
+  const st = document.getElementById('thStatus');
+  if (c.st) {
+    st.style.display = 'flex';
+    st.className = `th-status ${c.st}`;
+    const icons = {accepted:'<path d="m4 12 5 5 11-11"/>',pending:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',confirmed:'<path d="m4 12 5 5 11-11"/>'};
+    document.getElementById('thStatusIcon').innerHTML = `<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:white;fill:none;stroke-width:1.8">${icons[c.st]}</svg>`;
+    document.getElementById('thStatusTitle').textContent = c.stTitle;
+    document.getElementById('thStatusBody').textContent = c.stBody;
+  } else { st.style.display = 'none'; }
+
+  // Quick replies
+  document.getElementById('quickReplies').innerHTML = (c.qr||[]).map(r=>
+    `<button class="qr-chip" onclick="useQR(this.dataset.v)" data-v="${r.replace(/"/g,'&quot;')}">✦ ${r}</button>`).join('');
+
+  // Messages
+  const stream = document.getElementById('thStream');
+  stream.innerHTML = '';
+  c.msgs.forEach((m,i) => {
+    const row = document.createElement('div');
+    row.className = `msg-row${m.f==='me'?' from-me':''}`;
+    row.style.animationDelay = (i * 0.05) + 's';
+    const av = m.f === 'me' ? 'J' : c.av;
+    let extra = '';
+    if (m.prop) extra = `<a class="msg-prop" href="property.html"><div class="ph warm" style="width:56px;height:56px;border-radius:7px;flex-shrink:0"></div><div><div class="pn">Stone Cottage, <i>Windermere</i></div><div class="pd">£175/night · 12–19 Jul · 2 adults · 1 dog</div></div></a>`;
+    if (m.payment) extra = `<div class="pay-card"><h5>Confirmed price — £1,285 total</h5><div class="pr"><span>£175 × 7 nights</span><span>£1,225</span></div><div class="pr"><span>Cleaning</span><span>£60</span></div><div class="pr"><span>Casa booking fee</span><span style="color:var(--moss);font-weight:500">£0</span></div><div class="pr tot"><span>Total to me, direct</span><span class="v">£1,285</span></div><div class="pf">Bank transfer — £200 deposit to hold dates, balance 4 weeks before.</div></div>`;
+    row.innerHTML = `<div class="av-sm">${av}</div><div class="bubble-wrap"><div class="msg-bubble"><p>${m.t.replace(/\n/g,'<br>')}</p><span class="meta-time">${m.ts}</span></div>${extra}</div>`;
+    stream.appendChild(row);
+  });
+  stream.scrollTop = stream.scrollHeight;
+
+  // Composer
+  const ta = document.getElementById('msgTA');
+  ta.placeholder = `Reply to ${c.name.split(' ')[0]}…`;
+  ta.value = '';
+  ta.style.height = 'auto';
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('charWarn').textContent = '';
+  hideEmoji();
+}
+
+// ── SWITCH ──
+function switchConvo(id) {
+  active = id;
+  const c = CONVOS.find(x=>x.id===id);
+  if (c) c.unread = false;
+  renderList();
+  renderThread();
+}
+
+// ── SEND ──
+function sendMsg() {
+  const ta = document.getElementById('msgTA');
+  const text = ta.value.trim();
+  if (!text) return;
+  const c = CONVOS.find(x=>x.id===active);
+  if (!c) return;
+  const now = new Date();
+  const ts = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  c.msgs.push({f:'me', t:esc(text), ts});
+  c.preview = text.length > 55 ? text.slice(0,55)+'…' : text;
+  c.time = 'Just now';
+  ta.value = ''; ta.style.height = 'auto';
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('charWarn').textContent = '';
+  hideEmoji();
+  renderThread();
+  renderList();
+  // Simulate reply for Sarah thread
+  if (active === 'sarah') simulateReply(c);
+}
+
+function simulateReply(c) {
+  const replies = ["Perfect — I'll sort that for you right away.","Of course! Let me check and come back to you shortly.","That's great — looking forward to having you 🏡","No problem at all. Anything else I can help with?","Brilliant — noted! See you on the 12th."];
+  const delay = 1800 + Math.random() * 2000;
+  setTimeout(()=>{
+    if (active !== c.id) return;
+    document.getElementById('typingRow').classList.add('show');
+    document.getElementById('thStream').scrollTop = 99999;
+    setTimeout(()=>{
+      document.getElementById('typingRow').classList.remove('show');
+      const reply = replies[Math.floor(Math.random()*replies.length)];
+      const now = new Date();
+      c.msgs.push({f:'them', t:reply, ts: now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')});
+      c.preview = reply.length > 55 ? reply.slice(0,55)+'…' : reply;
+      if (active === c.id) { renderThread(); renderList(); }
+    }, 1800);
+  }, delay);
+}
+
+// ── TYPING ──
+function onType() {
+  const ta = document.getElementById('msgTA');
+  ta.style.height = 'auto';
+  ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+  const len = ta.value.length;
+  document.getElementById('sendBtn').disabled = len === 0;
+  const warn = document.getElementById('charWarn');
+  if (len > 850) { warn.textContent = `${len}/1000`; warn.className = 'char-warn' + (len>950?' near':''); }
+  else { warn.textContent = ''; }
+}
+
+function onKey(e) {
+  if ((e.metaKey||e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); sendMsg(); }
+  if (e.key === 'Escape') hideEmoji();
+}
+
+// ── QUICK REPLY ──
+function useQR(v) {
+  const ta = document.getElementById('msgTA');
+  ta.value = v; ta.focus(); onType();
+}
+
+// ── EMOJI ──
+function toggleEmoji() { document.getElementById('emojiPanel').classList.toggle('open'); }
+function hideEmoji() { document.getElementById('emojiPanel').classList.remove('open'); }
+function insertEmoji(e) {
+  const ta = document.getElementById('msgTA');
+  const p = ta.selectionStart;
+  ta.value = ta.value.slice(0,p) + e + ta.value.slice(p);
+  ta.selectionStart = ta.selectionEnd = p + e.length;
+  ta.focus(); onType(); hideEmoji();
+}
+document.addEventListener('click', e => { if (!e.target.closest('#emojiBtn') && !e.target.closest('#emojiPanel')) hideEmoji(); });
+
+// ── TEMPLATES ──
+function insertTpl(type) {
+  const ta = document.getElementById('msgTA');
+  const tpls = { dates:'Would [date range] work for you?', price:'Happy to confirm at £[amount] total — does that work?' };
+  const tpl = tpls[type];
+  ta.value = (ta.value ? ta.value + ' ' : '') + tpl;
+  ta.focus();
+  const s = ta.value.indexOf('[');
+  const en = ta.value.indexOf(']') + 1;
+  ta.setSelectionRange(s, en);
+  onType();
+}
+
+// ── SEARCH / FILTER ──
+function searchConvos(v) { searchStr = v.toLowerCase(); renderList(); }
+function filterTab(btn) {
+  document.querySelectorAll('.cl-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  filterMode = btn.dataset.filter;
+  renderList();
+}
+
+// ── DEPOSIT ──
+function markDeposit() {
+  const btn = document.getElementById('depositBtn');
+  btn.innerHTML = '✓ Deposit marked as paid';
+  btn.style.background = 'var(--moss)';
+  btn.disabled = true;
+  toast('Deposit marked as paid — dates are locked 🎉');
+}
+
+// ── TOAST ──
+function toast(msg) {
+  let el = document.getElementById('msgToast');
+  if (!el) { el=document.createElement('div'); el.id='msgToast'; el.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(10px);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:var(--r-pill);font-size:13.5px;font-family:var(--sans);opacity:0;transition:all .2s;z-index:999;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center'; document.body.appendChild(el); }
+  el.textContent = msg; el.style.opacity='1'; el.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(el._t); el._t = setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(-50%) translateY(10px)'; }, 2800);
+}
+
+function esc(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── INIT ──
+renderList();
+renderThread();
+</script>
+<script src="casa.js"></script>
+</body>
+</html>

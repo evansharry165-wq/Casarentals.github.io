@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>List your property — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+  html, body { min-height: 100vh; }
+  body { display: flex; flex-direction: column; }
+
+  /* ── TOP BAR ── */
+  .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 14px 32px; border-bottom: 1px solid var(--rule); background: var(--paper); flex-shrink: 0; gap: 24px; }
+  .progress { flex: 1; max-width: 480px; display: flex; align-items: center; gap: 12px; }
+  .prog-label { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
+  .prog-label .cur { color: var(--brick); font-weight: 500; }
+  .prog-bar { flex: 1; height: 4px; background: var(--rule); border-radius: 2px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--brick); border-radius: 2px; transition: width .4s ease; }
+  .prog-name { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--brick); white-space: nowrap; }
+
+  /* ── LAYOUT ── */
+  .list-page { flex: 1; display: grid; grid-template-columns: 1fr 1fr; min-height: 0; overflow: hidden; }
+
+  /* ── LEFT EDITORIAL PANE ── */
+  .lp-left { background: var(--paper-2); padding: 52px 60px; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; }
+  .lp-left::before { content: ''; position: absolute; right: -100px; top: 40%; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle at center, rgba(176,85,51,0.10), transparent 60%); pointer-events: none; }
+  .lp-h { font-family: var(--serif); font-size: 72px; line-height: 0.92; letter-spacing: -0.03em; color: var(--ink); margin: 20px 0; position: relative; }
+  .lp-h i { font-style: italic; color: var(--brick); }
+  .lp-sub { font-family: var(--serif); font-size: 20px; line-height: 1.4; color: var(--ink-2); max-width: 440px; position: relative; margin-bottom: 40px; }
+  .lp-sub i { font-style: italic; color: var(--brick); }
+  .lp-quote { position: relative; padding-left: 20px; border-left: 2px solid var(--brick); margin-bottom: 28px; max-width: 420px; }
+  .lp-quote p { font-family: var(--serif); font-style: italic; font-size: 18px; line-height: 1.45; color: var(--ink); margin-bottom: 8px; }
+  .lp-quote .who { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+  .lp-points { position: relative; display: flex; flex-direction: column; gap: 12px; }
+  .lp-point { display: flex; gap: 10px; align-items: flex-start; }
+  .lp-point .pi { width: 22px; height: 22px; flex-shrink: 0; background: var(--ink); color: var(--paper); border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; margin-top: 1px; }
+  .lp-point .pi svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .lp-point .pt { font-size: 14px; color: var(--ink-2); line-height: 1.5; }
+  .lp-point .pt strong { font-family: var(--serif); font-style: italic; font-weight: 400; color: var(--brick); font-size: 16px; }
+
+  /* ── RIGHT FORM PANE ── */
+  .lp-right { background: var(--paper); overflow-y: auto; padding: 52px 60px; }
+  .lp-right-inner { max-width: 520px; }
+
+  /* Steps (hide all, show active) */
+  .form-step { display: none; }
+  .form-step.active { display: block; animation: fadeUp .3s ease both; }
+  @keyframes fadeUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
+
+  .step-eye { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--brick); margin-bottom: 10px; }
+  .step-h { font-family: var(--serif); font-size: 44px; line-height: 1; letter-spacing: -.02em; margin-bottom: 12px; }
+  .step-h i { font-style: italic; color: var(--brick); }
+  .step-tag { font-family: var(--serif); font-size: 17px; color: var(--ink-3); margin-bottom: 28px; line-height: 1.5; }
+
+  /* ── FORM FIELDS ── */
+  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .field label { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+  .field label .req { color: var(--brick); }
+  .field input, .field select, .field textarea {
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 10px; padding: 11px 14px;
+    font-family: var(--sans); font-size: 14px; color: var(--ink); outline: none;
+    transition: border-color .12s, box-shadow .12s; width: 100%;
+  }
+  .field input::placeholder, .field textarea::placeholder { color: var(--ink-4); }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--brick); box-shadow: 0 0 0 3px rgba(176,85,51,0.08); }
+  .field input.err, .field select.err, .field textarea.err { border-color: #C0392B; }
+  .field .hint { font-size: 12px; color: var(--ink-3); }
+  .field .err-msg { font-size: 12px; color: #C0392B; display: none; }
+  .field.has-err .err-msg { display: block; }
+  .field.has-err input, .field.has-err select, .field.has-err textarea { border-color: #C0392B; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* ── PROPERTY TYPE GRID ── */
+  .type-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 28px; }
+  .type-card { background: var(--surface); border: 1.5px solid var(--rule); border-radius: 14px; padding: 16px 14px; cursor: pointer; transition: all .12s; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+  .type-card:hover { border-color: var(--ink); }
+  .type-card.sel { border-color: var(--brick); background: var(--brick-pale); }
+  .type-card .ic { width: 34px; height: 34px; border-radius: 9px; background: var(--ink); color: var(--paper); display: inline-flex; align-items: center; justify-content: center; }
+  .type-card.sel .ic { background: var(--brick); }
+  .type-card .ic svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+  .type-card .nm { font-family: var(--serif); font-size: 16px; line-height: 1; }
+  .type-card.sel .nm { color: var(--brick); }
+  .type-card .d { font-size: 11.5px; color: var(--ink-3); line-height: 1.4; }
+  .type-err { font-size: 12px; color: #C0392B; margin-top: -20px; margin-bottom: 16px; display: none; }
+  .type-err.show { display: block; }
+
+  /* ── REGION SELECTOR ── */
+  .region-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+  .region-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 10px 14px; cursor: pointer; font-size: 13.5px; color: var(--ink-2); transition: all .12s; display: flex; align-items: center; gap: 8px; font-family: var(--sans); border-style: solid; }
+  .region-card:hover { border-color: var(--ink); color: var(--ink); }
+  .region-card.sel { border-color: var(--brick); background: var(--brick-pale); color: var(--brick-text); font-weight: 500; }
+  .region-card .em { font-size: 16px; }
+
+  /* ── STEPPER ── */
+  .stepper-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+  .stepper { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 14px; display: flex; align-items: center; justify-content: space-between; }
+  .stepper .nm { font-size: 13px; color: var(--ink); }
+  .stepper .nm .sub { display: block; font-size: 11px; color: var(--ink-4); margin-top: 1px; }
+  .stepper .ctl { display: flex; align-items: center; gap: 10px; }
+  .stepper .ctl button { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--rule-3); background: transparent; cursor: pointer; color: var(--ink); display: inline-flex; align-items: center; justify-content: center; transition: all .1s; }
+  .stepper .ctl button:hover:not(:disabled) { background: var(--ink); color: white; border-color: var(--ink); }
+  .stepper .ctl button:disabled { opacity: 0.3; cursor: not-allowed; }
+  .stepper .ctl button svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .stepper .ctl .val { font-family: var(--serif); font-style: italic; font-size: 22px; min-width: 22px; text-align: center; color: var(--brick); }
+
+  /* ── AMENITIES ── */
+  .am-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 20px; }
+  .am-pill { background: var(--surface); border: 1.5px solid var(--rule); border-radius: 10px; padding: 10px 13px; display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--ink-2); cursor: pointer; transition: all .12s; font-family: var(--sans); }
+  .am-pill:hover { border-color: var(--ink); color: var(--ink); }
+  .am-pill.on { border-color: var(--brick); background: var(--brick-pale); color: var(--brick-text); }
+  .am-pill svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.6; flex-shrink: 0; }
+  .am-pill .ck { margin-left: auto; opacity: 0; width: 13px; height: 13px; }
+  .am-pill.on .ck { opacity: 1; }
+
+  /* ── PRICE CARD ── */
+  .price-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 20px 22px; margin-bottom: 20px; }
+  .price-input { display: flex; align-items: baseline; gap: 6px; margin: 6px 0 4px; }
+  .price-input .cur { font-family: var(--serif); font-size: 34px; color: var(--ink-3); }
+  .price-input input { background: transparent; border: none; outline: none; font-family: var(--serif); font-style: italic; font-size: 68px; color: var(--brick); width: 180px; padding: 0; line-height: 1; }
+  .price-input .per { font-size: 14px; color: var(--ink-3); }
+  .price-comp { display: flex; gap: 10px; margin-top: 14px; }
+  .price-comp .c { flex: 1; padding: 10px 12px; background: var(--paper); border-radius: 8px; }
+  .price-comp .c .l { font-family: var(--mono); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 3px; }
+  .price-comp .c .v { font-size: 15px; font-weight: 500; color: var(--ink); }
+  .price-comp .c .h { font-size: 11px; color: var(--moss); margin-top: 2px; }
+
+  /* ── PHOTO DROP ── */
+  .photo-drop { border: 2px dashed var(--rule-3); border-radius: 16px; padding: 32px 24px; text-align: center; background: var(--surface); cursor: pointer; transition: border-color .12s; margin-bottom: 14px; }
+  .photo-drop:hover { border-color: var(--brick); }
+  .photo-drop .pi { width: 52px; height: 52px; border-radius: 50%; background: var(--ink); color: white; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+  .photo-drop .pi svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+  .photo-drop h4 { font-family: var(--serif); font-size: 20px; margin-bottom: 5px; }
+  .photo-drop h4 i { font-style: italic; color: var(--brick); }
+  .photo-drop p { font-size: 13px; color: var(--ink-3); }
+  .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
+  .photo-tile { aspect-ratio: 4/3; border-radius: 10px; position: relative; overflow: hidden; }
+  .photo-tile .ph { width: 100%; height: 100%; }
+  .photo-tile .rm { position: absolute; top: 5px; right: 5px; width: 22px; height: 22px; border-radius: 50%; background: rgba(22,20,15,0.7); border: none; color: white; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+  .photo-tile .rm svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+  .photo-tile.cover::after { content: 'Cover'; position: absolute; left: 6px; top: 6px; padding: 2px 7px; background: var(--brick); color: white; font-family: var(--mono); font-size: 9px; letter-spacing: .1em; border-radius: 4px; }
+
+  /* ── REVIEW SUMMARY ── */
+  .review-summary { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; overflow: hidden; margin-bottom: 20px; }
+  .rs-head { background: var(--ink); color: var(--paper); padding: 14px 20px; }
+  .rs-head h3 { font-family: var(--serif); font-size: 22px; line-height: 1; }
+  .rs-head h3 i { font-style: italic; color: var(--brick-2); }
+  .rs-head p { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+  .rs-row { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 20px; border-bottom: 1px solid var(--rule); font-size: 13.5px; }
+  .rs-row:last-child { border-bottom: none; }
+  .rs-row .l { color: var(--ink-3); }
+  .rs-row .v { color: var(--ink); font-weight: 500; }
+  .rs-row .edit { color: var(--brick); font-size: 12px; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+
+  /* ── PUBLISH BOX ── */
+  .publish-box { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 20px; margin-bottom: 16px; }
+  .pb-option { display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--rule-2); cursor: pointer; }
+  .pb-option:last-child { border-bottom: none; padding-bottom: 0; }
+  .pb-radio { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--rule-3); background: var(--paper); flex-shrink: 0; margin-top: 1px; transition: all .12s; display: flex; align-items: center; justify-content: center; }
+  .pb-radio::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--brick); opacity: 0; transition: opacity .12s; }
+  .pb-option.sel .pb-radio { border-color: var(--brick); }
+  .pb-option.sel .pb-radio::after { opacity: 1; }
+  .pb-option .pb-title { font-size: 14px; font-weight: 500; color: var(--ink); margin-bottom: 2px; }
+  .pb-option .pb-desc { font-size: 12.5px; color: var(--ink-3); line-height: 1.5; }
+
+  /* ── FOOTER NAV ── */
+  .lp-footer { border-top: 1px solid var(--rule); padding: 16px 32px; display: flex; align-items: center; justify-content: space-between; background: var(--paper); flex-shrink: 0; }
+  .lp-footer .save-draft { font-size: 13px; color: var(--ink-3); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; background: none; border: none; font-family: var(--sans); }
+  .lp-footer .save-draft:hover { color: var(--ink); }
+  .lp-footer .nav-btns { display: flex; gap: 10px; }
+
+  /* ── SUCCESS ── */
+  .success-screen { display: none; padding: 56px 60px; }
+  .success-screen.show { display: block; animation: fadeUp .4s ease; }
+  .success-icon { width: 72px; height: 72px; background: var(--moss-pale); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
+  .success-icon svg { width: 32px; height: 32px; stroke: var(--moss); fill: none; stroke-width: 1.6; }
+  .success-screen h2 { font-family: var(--serif); font-size: 52px; line-height: 0.95; letter-spacing: -.025em; margin-bottom: 12px; }
+  .success-screen h2 i { font-style: italic; color: var(--brick); }
+  .success-screen p { font-family: var(--serif); font-size: 18px; color: var(--ink-2); line-height: 1.5; max-width: 480px; margin-bottom: 28px; }
+  .success-next { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 480px; margin-bottom: 32px; }
+  .sn-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 16px; }
+  .sn-num { width: 26px; height: 26px; border-radius: 50%; background: var(--brick); color: white; font-family: var(--mono); font-size: 11px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+  .sn-card h4 { font-size: 13.5px; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
+  .sn-card p { font-size: 12.5px; color: var(--ink-3); line-height: 1.5; }
+  .success-btns { display: flex; gap: 12px; }
+
+  @media (max-width: 1000px) { .list-page { grid-template-columns: 1fr; } .lp-left { display: none; } .lp-right { padding: 32px 24px; } .type-grid { grid-template-columns: repeat(2, 1fr); } .am-list { grid-template-columns: 1fr; } .grid-2, .region-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 560px) { .top-bar { padding: 12px 16px; } .progress { display: none; } }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <a class="brand-lockup" href="index.html">
+    <span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span>
+  </a>
+  <div class="progress">
+    <span class="prog-label">Step <span class="cur" id="stepNum">1</span> of 4</span>
+    <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:25%"></div></div>
+    <span class="prog-name" id="progName">Property type</span>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <button class="save-draft" onclick="saveDraft()" style="font-size:13px;color:var(--ink-3);text-decoration:underline;text-underline-offset:3px;cursor:pointer;background:none;border:none;font-family:var(--sans)">Save draft</button>
+    <a href="host.html" class="nav-link outline" style="font-size:13px">
+      <svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"/></svg>
+      Exit
+    </a>
+  </div>
+</div>
+
+<div class="list-page" id="mainLayout">
+
+  <!-- LEFT EDITORIAL -->
+  <aside class="lp-left" id="leftPane">
+    <div>
+      <div class="eyebrow" id="leftEye">Become a Casa host</div>
+      <h2 class="lp-h" id="leftH">List your place — <i>and keep every penny.</i></h2>
+      <p class="lp-sub" id="leftSub">No commission. No service fee. <i>£19/month</i> flat — that's all. A direct line to your guests.</p>
+    </div>
+    <div id="leftBottom">
+      <div class="lp-quote">
+        <p>"I made an extra <i>£8,200</i> last year by switching to direct booking with Casa. Same guests, same nights — just no commission going somewhere else."</p>
+        <div class="who">Tom &amp; Anna · Shepherd's Hut, Buttermere · 2 yrs hosting</div>
+      </div>
+      <div class="lp-points">
+        <div class="lp-point"><div class="pi"><svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></div><div class="pt"><strong>2 minutes</strong> to create your listing. Polish it later.</div></div>
+        <div class="lp-point"><div class="pi"><svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></div><div class="pt"><strong>You set the price.</strong> Casa takes none of it.</div></div>
+        <div class="lp-point"><div class="pi"><svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></div><div class="pt"><strong>30 days free.</strong> No enquiry — second month is on us.</div></div>
+        <div class="lp-point"><div class="pi"><svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></div><div class="pt"><strong>Community feed</strong> included — post availability directly to guests.</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- RIGHT FORM -->
+  <main class="lp-right" id="rightPane">
+    <div class="lp-right-inner">
+
+      <!-- ═══════════════════════════════════
+           STEP 1 — PROPERTY TYPE
+      ═══════════════════════════════════ -->
+      <div class="form-step active" id="step1">
+        <div class="step-eye">Step 01 · Property type</div>
+        <h2 class="step-h">What kind of <i>place</i> is it?</h2>
+        <p class="step-tag">Pick the closest. You can describe it fully in your own words next.</p>
+
+        <div class="type-grid" id="typeGrid">
+          <div class="type-card sel" onclick="pickType(this,'cottage')">
+            <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 21V8l7-5 7 5v13"/><path d="M5 21h14"/><path d="M9 21v-6h6v6"/></svg></div>
+            <div class="nm"><i>Cottage</i></div>
+            <div class="d">A whole cottage — usually rural or village.</div>
+          </div>
+          <div class="type-card" onclick="pickType(this,'apartment')">
+            <div class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M4 10h16M10 4v16"/></svg></div>
+            <div class="nm">Apartment</div>
+            <div class="d">A flat or maisonette, often urban.</div>
+          </div>
+          <div class="type-card" onclick="pickType(this,'barn')">
+            <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 16h18M5 16V8h14v8"/><path d="M9 8V4h6v4"/></svg></div>
+            <div class="nm">Barn conversion</div>
+            <div class="d">Converted agricultural building.</div>
+          </div>
+          <div class="type-card" onclick="pickType(this,'farmhouse')">
+            <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 21V8l7-5 7 5v13"/><path d="M12 21V13"/></svg></div>
+            <div class="nm">Farmhouse</div>
+            <div class="d">Traditional farmhouse or smallholding.</div>
+          </div>
+          <div class="type-card" onclick="pickType(this,'glamping')">
+            <div class="ic"><svg viewBox="0 0 24 24"><path d="m3 21 9-18 9 18z"/><path d="M12 13v8"/></svg></div>
+            <div class="nm">Glamping</div>
+            <div class="d">Yurt, geodome, hut, bell tent, etc.</div>
+          </div>
+          <div class="type-card" onclick="pickType(this,'cabin')">
+            <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v18"/><path d="M5 12c4-1 4 1 7 1s3-2 7-1"/></svg></div>
+            <div class="nm">Lodge / cabin</div>
+            <div class="d">A timber lodge or forest cabin.</div>
+          </div>
+          <div class="type-card" onclick="pickType(this,'houseboat')">
+            <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 17c2 0 3-2 5-2s3 2 5 2 3-2 5-2"/><path d="M3 11h18M5 11l3-7h8l3 7"/></svg></div>
+            <div class="nm">Houseboat</div>
+            <div class="d">Canal, river, or marina.</div>
+          </div>
+          <div class="type-card" onclick="pickType(this,'manor')">
+            <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 21V9l9-6 9 6v12"/><rect x="9" y="12" width="6" height="9"/></svg></div>
+            <div class="nm">Manor / estate</div>
+            <div class="d">A grand country house or estate.</div>
+          </div>
+          <div class="type-card" onclick="pickType(this,'other')">
+            <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8.5 8 9 4.5-.5 8-4 8-9V6l-8-3z"/></svg></div>
+            <div class="nm">Something else</div>
+            <div class="d">Treehouse, lighthouse, castle…</div>
+          </div>
+        </div>
+        <div class="type-err" id="typeErr">Please select a property type to continue.</div>
+      </div>
+
+      <!-- ═══════════════════════════════════
+           STEP 2 — LOCATION & DESCRIPTION
+      ═══════════════════════════════════ -->
+      <div class="form-step" id="step2">
+        <div class="step-eye">Step 02 · Location &amp; description</div>
+        <h2 class="step-h">Where is it, and what <i>makes it yours?</i></h2>
+        <p class="step-tag">Be honest and specific. The guests who read this are the guests who'll book.</p>
+
+        <div class="field" id="f-title">
+          <label>Listing title <span class="req">*</span></label>
+          <input type="text" id="title" placeholder="e.g. Stone Cottage, Windermere" maxlength="80">
+          <span class="hint">Keep it short and descriptive. Include the place name.</span>
+          <span class="err-msg">Please give your listing a title</span>
+        </div>
+
+        <div class="field" id="f-region">
+          <label>Region <span class="req">*</span></label>
+          <div class="region-grid" id="regionGrid">
+            <div class="region-card" onclick="pickRegion(this,'lake-district')" data-region="lake-district"><span class="em">🏔️</span> Lake District</div>
+            <div class="region-card" onclick="pickRegion(this,'cornwall')" data-region="cornwall"><span class="em">🌊</span> Cornwall</div>
+            <div class="region-card" onclick="pickRegion(this,'highlands')" data-region="highlands"><span class="em">🏴󠁧󠁢󠁳󠁣󠁴󠁿</span> Scottish Highlands</div>
+            <div class="region-card" onclick="pickRegion(this,'norfolk')" data-region="norfolk"><span class="em">🌾</span> Norfolk</div>
+            <div class="region-card" onclick="pickRegion(this,'yorkshire')" data-region="yorkshire"><span class="em">🐑</span> Yorkshire</div>
+            <div class="region-card" onclick="pickRegion(this,'cotswolds')" data-region="cotswolds"><span class="em">🌿</span> Cotswolds</div>
+            <div class="region-card" onclick="pickRegion(this,'snowdonia')" data-region="snowdonia"><span class="em">🏴󠁧󠁢󠁷󠁬󠁳󠁿</span> Snowdonia</div>
+            <div class="region-card" onclick="pickRegion(this,'skye')" data-region="skye"><span class="em">⛵</span> Isle of Skye</div>
+            <div class="region-card" onclick="pickRegion(this,'pembrokeshire')" data-region="pembrokeshire"><span class="em">🌊</span> Pembrokeshire</div>
+            <div class="region-card" onclick="pickRegion(this,'causeway')" data-region="causeway"><span class="em">🇬🇧</span> Causeway Coast</div>
+            <div class="region-card" onclick="pickRegion(this,'devon')" data-region="devon"><span class="em">🌻</span> Devon</div>
+            <div class="region-card" onclick="pickRegion(this,'other')" data-region="other"><span class="em">📍</span> Somewhere else</div>
+          </div>
+          <span class="err-msg" id="regionErr" style="font-size:12px;color:#C0392B;display:none">Please select your region</span>
+        </div>
+
+        <div class="grid-2">
+          <div class="field" id="f-town">
+            <label>Town / village <span class="req">*</span></label>
+            <input type="text" id="town" placeholder="e.g. Windermere">
+            <span class="err-msg">Please enter your town or village</span>
+          </div>
+          <div class="field">
+            <label>Postcode</label>
+            <input type="text" id="postcode" placeholder="e.g. LA23 1LP">
+            <span class="hint">Exact location shared after booking only.</span>
+          </div>
+        </div>
+
+        <div class="field" id="f-desc">
+          <label>Description <span class="req">*</span></label>
+          <textarea id="desc" rows="5" placeholder="Describe your property honestly and warmly. What makes it special? What's the view like? What will guests love? What should they know before they arrive?" maxlength="2000"></textarea>
+          <span class="hint" id="descCount">0 / 2000</span>
+          <span class="err-msg">Please write a description (at least 100 characters)</span>
+        </div>
+
+        <div class="field">
+          <label>House rules</label>
+          <textarea id="rules" rows="3" placeholder="e.g. No smoking indoors. Quiet hours after 10pm. Dogs welcome in garden only. Check-in from 3pm." maxlength="500"></textarea>
+          <span class="hint">Optional but helpful. Sets expectations early.</span>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════
+           STEP 3 — DETAILS, AMENITIES, PRICE
+      ═══════════════════════════════════ -->
+      <div class="form-step" id="step3">
+        <div class="step-eye">Step 03 · Details &amp; pricing</div>
+        <h2 class="step-h">The <i>specifics.</i></h2>
+        <p class="step-tag">Capacity, what's included, and the price. You can update everything after you publish.</p>
+
+        <div class="field"><label>Capacity</label></div>
+        <div class="stepper-row">
+          <div class="stepper">
+            <div class="nm">Sleeps<span class="sub">Adults &amp; kids</span></div>
+            <div class="ctl">
+              <button onclick="bump('sleeps',-1)" id="sleepsMinus"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+              <span class="val" id="sleeps">6</span>
+              <button onclick="bump('sleeps',1)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+            </div>
+          </div>
+          <div class="stepper">
+            <div class="nm">Bedrooms<span class="sub">Rooms with a bed</span></div>
+            <div class="ctl">
+              <button onclick="bump('beds',-1)" id="bedsMinus"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+              <span class="val" id="beds">3</span>
+              <button onclick="bump('beds',1)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+            </div>
+          </div>
+        </div>
+        <div class="stepper-row" style="margin-bottom:24px">
+          <div class="stepper">
+            <div class="nm">Bathrooms<span class="sub">Full or en-suite</span></div>
+            <div class="ctl">
+              <button onclick="bump('baths',-1)" id="bathsMinus"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+              <span class="val" id="baths">2</span>
+              <button onclick="bump('baths',1)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+            </div>
+          </div>
+          <div class="stepper">
+            <div class="nm">Max guests<span class="sub">Absolute limit</span></div>
+            <div class="ctl">
+              <button onclick="bump('maxg',-1)" id="maxgMinus"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+              <span class="val" id="maxg">8</span>
+              <button onclick="bump('maxg',1)"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field" style="margin-bottom:8px"><label>Amenities — pick everything that applies</label></div>
+        <div class="am-list">
+          <button class="am-pill on" onclick="this.classList.toggle('on')" data-am="woodburner"><svg viewBox="0 0 24 24"><path d="M12 22c-4 0-7-3-7-7 0-3 2-5 4-7 0 3 2 4 3 2 1-3-1-5 2-8 0 4 3 5 4 9 1 4-2 11-6 11z"/></svg>Wood burner<svg class="ck" viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></button>
+          <button class="am-pill on" onclick="this.classList.toggle('on')" data-am="wifi"><svg viewBox="0 0 24 24"><path d="M2 9a15 15 0 0 1 20 0"/><path d="M5 13a10 10 0 0 1 14 0"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg>Fast WiFi<svg class="ck" viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></button>
+          <button class="am-pill on" onclick="this.classList.toggle('on')" data-am="pets"><svg viewBox="0 0 24 24"><circle cx="6" cy="9" r="2"/><circle cx="18" cy="9" r="2"/><circle cx="9" cy="5" r="2"/><circle cx="15" cy="5" r="2"/><path d="M8 18c0-3 2-5 4-5s4 2 4 5c0 2-2 3-4 3s-4-1-4-3z"/></svg>Pets welcome<svg class="ck" viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></button>
+          <button class="am-pill on" onclick="this.classList.toggle('on')" data-am="parking"><svg viewBox="0 0 24 24"><path d="M5 17H3v-5l2-5h14l2 5v5h-2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>Off-street parking<svg class="ck" viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></button>
+          <button class="am-pill" onclick="this.classList.toggle('on')" data-am="hottub"><svg viewBox="0 0 24 24"><path d="M4 12V8a4 4 0 0 1 8 0v4"/><path d="M2 16h20"/><path d="M4 18h16l-1 4H5z"/></svg>Hot tub<svg class="ck" viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></button>
+          <button class="am-pill on" onclick="this.classList.toggle('on')" data-am="garden"><svg viewBox="0 0 24 24"><path d="M5 9a7 7 0 0 1 14 0v3a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z"/></svg>Garden<svg class="ck" viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></button>
+          <button class="am-pill" onclick="this.classList.toggle('on')" data-am="ev"><svg viewBox="0 0 24 24"><path d="M7 17H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-2"/><path d="M9 17l3 3 3-3"/></svg>EV charging<svg class="ck" viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></button>
+          <button class="am-pill" onclick="this.classList.toggle('on')" data-am="offgrid"><svg viewBox="0 0 24 24"><path d="M12 3 6 12h3v3h6v-3h3z"/><path d="M12 15v6"/></svg>Off-grid / solar<svg class="ck" viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></button>
+          <button class="am-pill" onclick="this.classList.toggle('on')" data-am="accessible"><svg viewBox="0 0 24 24"><circle cx="12" cy="5" r="2"/><path d="M5 22l3.5-7H8a4 4 0 0 1-4-4h14a4 4 0 0 1-4 4h-.5L17 22"/></svg>Wheelchair access<svg class="ck" viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></button>
+          <button class="am-pill" onclick="this.classList.toggle('on')" data-am="tv"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>Smart TV<svg class="ck" viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></button>
+        </div>
+
+        <div class="field" style="margin-bottom:8px"><label>Nightly rate — what your guest pays</label></div>
+        <div class="price-card">
+          <div class="price-input">
+            <span class="cur">£</span>
+            <input type="number" id="price" value="175" min="1" oninput="updatePriceCalc()">
+            <span class="per">/ night</span>
+          </div>
+          <div class="price-comp">
+            <div class="c">
+              <div class="l">Similar stays in your region</div>
+              <div class="v" id="regionRange">£95 – £250</div>
+              <div class="h" id="priceHint">Enter your nightly rate above</div>
+            </div>
+            <div class="c">
+              <div class="l">Estimated monthly income</div>
+              <div class="v" id="monthlyEst">~£2,275</div>
+              <div class="h">at 75% occupancy</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom:0">
+          <div class="field">
+            <label>Cleaning fee</label>
+            <input type="number" id="cleaning" placeholder="e.g. 60" min="0">
+            <span class="hint">Agreed directly with guests. Set to 0 if included.</span>
+          </div>
+          <div class="field">
+            <label>Minimum stay (nights)</label>
+            <input type="number" id="minstay" value="2" min="1" max="30">
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════
+           STEP 4 — PHOTOS & PUBLISH
+      ═══════════════════════════════════ -->
+      <div class="form-step" id="step4">
+        <div class="step-eye">Step 04 · Photos &amp; publish</div>
+        <h2 class="step-h">Show it <i>as it is.</i></h2>
+        <p class="step-tag">Bright daylight beats staged shots. The cover photo is the first thing guests see.</p>
+
+        <div class="photo-drop" onclick="toast('Photo upload available once connected to backend.')">
+          <div class="pi"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 16-6-6-9 11"/></svg></div>
+          <h4>Drop your <i>photos</i> here</h4>
+          <p>or <span style="color:var(--brick);text-decoration:underline;text-underline-offset:3px">browse files</span> · JPEG, PNG up to 12 MB each · min. 5 photos recommended</p>
+        </div>
+        <div class="photo-grid">
+          <div class="photo-tile cover"><div class="ph warm" data-label="EXTERIOR · DUSK"></div><button class="rm" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"/></svg></button></div>
+          <div class="photo-tile"><div class="ph fog" data-label="LIVING ROOM"></div><button class="rm" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"/></svg></button></div>
+          <div class="photo-tile"><div class="ph dusk" data-label="BEDROOM"></div><button class="rm" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"/></svg></button></div>
+          <div class="photo-tile"><div class="ph sage" data-label="KITCHEN"></div><button class="rm" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"/></svg></button></div>
+          <div class="photo-tile"><div class="ph cool" data-label="GARDEN"></div><button class="rm" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"/></svg></button></div>
+        </div>
+
+        <!-- Review summary -->
+        <div class="review-summary" id="reviewSummary">
+          <div class="rs-head">
+            <h3 id="rs-title">Stone Cottage, <i>Windermere</i></h3>
+            <p>Review before you publish</p>
+          </div>
+          <div class="rs-row"><span class="l">Type</span><span class="v" id="rs-type">Cottage</span><span class="edit" onclick="goStep(1)">Edit</span></div>
+          <div class="rs-row"><span class="l">Region</span><span class="v" id="rs-region">Lake District</span><span class="edit" onclick="goStep(2)">Edit</span></div>
+          <div class="rs-row"><span class="l">Sleeps</span><span class="v" id="rs-sleeps">6 · 3 bed · 2 bath</span><span class="edit" onclick="goStep(3)">Edit</span></div>
+          <div class="rs-row"><span class="l">Nightly rate</span><span class="v" id="rs-price">£175 / night</span><span class="edit" onclick="goStep(3)">Edit</span></div>
+          <div class="rs-row"><span class="l">Amenities</span><span class="v" id="rs-amenities">Wood burner, WiFi, Pets, Parking, Garden</span><span class="edit" onclick="goStep(3)">Edit</span></div>
+          <div class="rs-row"><span class="l">Casa listing fee</span><span class="v" style="color:var(--moss)">£19 / month · 0% commission</span></div>
+        </div>
+
+        <!-- Publish options -->
+        <div class="publish-box">
+          <div class="pb-option sel" onclick="pickPublish(this,'live')">
+            <div class="pb-radio"></div>
+            <div><div class="pb-title">Publish now — go live immediately</div><div class="pb-desc">Your listing appears in search results and the community feed the moment you submit.</div></div>
+          </div>
+          <div class="pb-option" onclick="pickPublish(this,'draft')">
+            <div class="pb-radio"></div>
+            <div><div class="pb-title">Save as draft — review before publishing</div><div class="pb-desc">Only visible to you in your host dashboard. Publish when you're ready.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:64px"></div>
+    </div>
+
+    <!-- SUCCESS SCREEN -->
+    <div class="success-screen" id="successScreen">
+      <div class="success-icon"><svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></div>
+      <h2>You're <i>listed.</i></h2>
+      <p>Your property is live on Casa. Guests can find it in search, on the map, and in the community feed. The first enquiry usually comes within a few days.</p>
+      <div class="success-next">
+        <div class="sn-card"><div class="sn-num">1</div><h4>Post to the feed</h4><p>Tell the community your place is available. It takes 30 seconds and reaches thousands of guests.</p></div>
+        <div class="sn-card"><div class="sn-num">2</div><h4>Set your calendar</h4><p>Block dates you can't host, add mid-week deals, and keep availability up to date.</p></div>
+        <div class="sn-card"><div class="sn-num">3</div><h4>Reply quickly</h4><p>Hosts who reply within 2 hours get 3× more bookings. Turn on notifications.</p></div>
+        <div class="sn-card"><div class="sn-num">4</div><h4>30 days free</h4><p>No charge for the first month. If you don't get an enquiry, month 2 is on us too.</p></div>
+      </div>
+      <div class="success-btns">
+        <a href="host.html" class="btn btn-primary">Go to host dashboard<svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+        <a href="feed.html" class="btn btn-outline">Post to the feed</a>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- FOOTER NAV -->
+<div class="lp-footer" id="footerNav">
+  <button class="save-draft" onclick="saveDraft()">Save as draft</button>
+  <div class="nav-btns">
+    <button class="btn btn-outline" id="backBtn" onclick="prevStep()" style="display:none">
+      <svg class="i" viewBox="0 0 24 24"><path d="M19 12H5M11 5l-7 7 7 7"/></svg>
+      Back
+    </button>
+    <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">
+      Next: location
+      <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// STATE — mirrors the properties DB table
+// ═══════════════════════════════════════════════════════════════
+const form = {
+  type: 'cottage',
+  region: '',
+  title: '',
+  town: '',
+  postcode: '',
+  desc: '',
+  rules: '',
+  sleeps: 6, beds: 3, baths: 2, maxGuests: 8,
+  amenities: ['woodburner','wifi','pets','parking','garden'],
+  price: 175,
+  cleaning: 60,
+  minStay: 2,
+  publishMode: 'live',
+};
+
+let currentStep = 1;
+const TOTAL_STEPS = 4;
+
+const STEP_META = [
+  null,
+  { name: 'Property type',  pct: 25,  nextLabel: 'Next: location',  leftH: 'List your place — <i>and keep every penny.</i>' },
+  { name: 'Location',       pct: 50,  nextLabel: 'Next: details',    leftH: 'Where in the <i>UK</i> is it?' },
+  { name: 'Details',        pct: 75,  nextLabel: 'Next: photos',     leftH: 'The <i>details</i> that seal the deal.' },
+  { name: 'Photos',         pct: 100, nextLabel: 'Publish listing',   leftH: 'Almost <i>ready.</i>' },
+];
+
+const LEFT_SUBS = [
+  null,
+  'No commission. No service fee. <i>£19/month</i> flat — that\'s all.',
+  'Your exact address is never shown until a booking is confirmed.',
+  'Accurate details mean fewer questions, faster decisions.',
+  'Bright, honest photos get 3× more enquiries than staged shoots.',
+];
+
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════════════
+function goStep(n) {
+  document.querySelector(`.form-step.active`)?.classList.remove('active');
+  document.getElementById(`step${n}`).classList.add('active');
+  currentStep = n;
+  updateUI();
+  document.getElementById('rightPane').scrollTop = 0;
+}
+
+function nextStep() {
+  if (!validateStep(currentStep)) return;
+  if (currentStep === TOTAL_STEPS) { submitListing(); return; }
+  if (currentStep === TOTAL_STEPS - 1) updateReviewSummary();
+  goStep(currentStep + 1);
+}
+
+function prevStep() {
+  if (currentStep > 1) goStep(currentStep - 1);
+}
+
+function updateUI() {
+  const meta = STEP_META[currentStep];
+  document.getElementById('stepNum').textContent = currentStep;
+  document.getElementById('progFill').style.width = meta.pct + '%';
+  document.getElementById('progName').textContent = meta.name;
+  document.getElementById('nextBtn').innerHTML = `${meta.nextLabel} <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>`;
+  document.getElementById('backBtn').style.display = currentStep > 1 ? 'inline-flex' : 'none';
+  document.getElementById('leftH').innerHTML = STEP_META[currentStep].leftH;
+  document.getElementById('leftSub').innerHTML = LEFT_SUBS[currentStep];
+}
+
+// ═══════════════════════════════════════════════════════════════
+// VALIDATION
+// ═══════════════════════════════════════════════════════════════
+function validateStep(step) {
+  if (step === 1) {
+    if (!form.type) { document.getElementById('typeErr').classList.add('show'); return false; }
+    return true;
+  }
+  if (step === 2) {
+    let ok = true;
+    const check = (fid, iid, fn) => { const f = document.getElementById(fid); const v = document.getElementById(iid).value.trim(); f.classList.toggle('has-err', !fn(v)); if (!fn(v)) ok = false; };
+    check('f-title', 'title', v => v.length >= 5);
+    check('f-town',  'town',  v => v.length >= 2);
+    check('f-desc',  'desc',  v => v.length >= 100);
+    if (!form.region) { document.getElementById('regionErr').style.display = 'block'; ok = false; }
+    if (!ok) document.querySelector('.has-err, [style*="display: block"]')?.scrollIntoView({ behavior:'smooth', block:'center' });
+    return ok;
+  }
+  return true;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PICKERS
+// ═══════════════════════════════════════════════════════════════
+function pickType(card, type) {
+  document.querySelectorAll('.type-card').forEach(c => c.classList.remove('sel'));
+  card.classList.add('sel');
+  form.type = type;
+  document.getElementById('typeErr').classList.remove('show');
+}
+
+function pickRegion(card, region) {
+  document.querySelectorAll('.region-card').forEach(c => c.classList.remove('sel'));
+  card.classList.add('sel');
+  form.region = region;
+  document.getElementById('regionErr').style.display = 'none';
+  // Update price hint for region
+  const ranges = { 'lake-district':'£85 – £240', cornwall:'£90 – £320', highlands:'£110 – £280', norfolk:'£95 – £450', yorkshire:'£100 – £225', cotswolds:'£140 – £550', snowdonia:'£95 – £185', skye:'£110 – £220', pembrokeshire:'£85 – £175', causeway:'£110 – £190', devon:'£90 – £200', other:'£85 – £300' };
+  document.getElementById('regionRange').textContent = ranges[region] || '£85 – £300';
+}
+
+function pickPublish(card, mode) {
+  document.querySelectorAll('.pb-option').forEach(c => c.classList.remove('sel'));
+  card.classList.add('sel');
+  form.publishMode = mode;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STEPPERS
+// ═══════════════════════════════════════════════════════════════
+function bump(id, delta) {
+  const el = document.getElementById(id);
+  const min = id === 'sleeps' || id === 'beds' || id === 'baths' || id === 'maxg' ? 1 : 0;
+  const v = Math.max(min, parseInt(el.textContent) + delta);
+  el.textContent = v;
+  form[id === 'maxg' ? 'maxGuests' : id] = v;
+  document.getElementById(id + 'Minus').disabled = v <= min;
+}
+// Set initial minus states
+['sleepsMinus','bedsMinus','bathsMinus','maxgMinus'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.disabled = false;
+});
+
+// ═══════════════════════════════════════════════════════════════
+// DESCRIPTION CHAR COUNT
+// ═══════════════════════════════════════════════════════════════
+document.getElementById('desc').addEventListener('input', function() {
+  const len = this.value.length;
+  document.getElementById('descCount').textContent = len + ' / 2000';
+  form.desc = this.value;
+});
+
+// ═══════════════════════════════════════════════════════════════
+// PRICE CALCULATOR
+// ═══════════════════════════════════════════════════════════════
+function updatePriceCalc() {
+  const p = parseInt(document.getElementById('price').value) || 0;
+  form.price = p;
+  const monthly = Math.round(p * 30 * 0.75);
+  document.getElementById('monthlyEst').textContent = '~£' + monthly.toLocaleString();
+  document.getElementById('priceHint').textContent = p > 0 ? 'Looking good for this region' : 'Enter your nightly rate above';
+}
+updatePriceCalc();
+
+// ═══════════════════════════════════════════════════════════════
+// REVIEW SUMMARY (step 4)
+// ═══════════════════════════════════════════════════════════════
+function updateReviewSummary() {
+  const title = document.getElementById('title').value.trim() || 'Your property';
+  const town = document.getElementById('town').value.trim();
+  const regionLabels = { 'lake-district':'Lake District', cornwall:'Cornwall', highlands:'Scottish Highlands', norfolk:'Norfolk', yorkshire:'Yorkshire', cotswolds:'Cotswolds', snowdonia:'Snowdonia', skye:'Isle of Skye', pembrokeshire:'Pembrokeshire', causeway:'Causeway Coast', devon:'Devon', other:'Other' };
+  const typeLabels = { cottage:'Cottage', apartment:'Apartment', barn:'Barn conversion', farmhouse:'Farmhouse', glamping:'Glamping', cabin:'Lodge / cabin', houseboat:'Houseboat', manor:'Manor / estate', other:'Other' };
+  const amenities = [...document.querySelectorAll('.am-pill.on')].map(a => a.dataset.am).join(', ');
+
+  document.getElementById('rs-title').innerHTML = title + (town ? `, <i>${town}</i>` : '');
+  document.getElementById('rs-type').textContent = typeLabels[form.type] || form.type;
+  document.getElementById('rs-region').textContent = regionLabels[form.region] || '—';
+  document.getElementById('rs-sleeps').textContent = `${document.getElementById('sleeps').textContent} · ${document.getElementById('beds').textContent} bed · ${document.getElementById('baths').textContent} bath`;
+  document.getElementById('rs-price').textContent = `£${document.getElementById('price').value} / night`;
+  document.getElementById('rs-amenities').textContent = amenities || 'None selected';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SAVE DRAFT
+// ═══════════════════════════════════════════════════════════════
+function saveDraft() {
+  localStorage.setItem('casa:listing-draft', JSON.stringify({
+    step: currentStep,
+    type: form.type,
+    region: form.region,
+    title: document.getElementById('title')?.value,
+    town: document.getElementById('town')?.value,
+    desc: document.getElementById('desc')?.value,
+    price: document.getElementById('price')?.value,
+    sleeps: document.getElementById('sleeps')?.textContent,
+    beds: document.getElementById('beds')?.textContent,
+  }));
+  toast('Draft saved — you can come back to this any time');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SUBMIT
+// ─────────────────────────────────────────────────────────────
+// TO WIRE TO SUPABASE:
+// Replace the setTimeout below with:
+//
+//   const amenities = [...document.querySelectorAll('.am-pill.on')].map(a => a.dataset.am);
+//   const { data, error } = await supabase.from('properties').insert({
+//     host_id:         supabase.auth.user().id,
+//     title:           document.getElementById('title').value,
+//     region:          form.region,
+//     type:            form.type,
+//     town:            document.getElementById('town').value,
+//     description:     document.getElementById('desc').value,
+//     house_rules:     document.getElementById('rules').value,
+//     sleeps:          parseInt(document.getElementById('sleeps').textContent),
+//     bedrooms:        parseInt(document.getElementById('beds').textContent),
+//     bathrooms:       parseInt(document.getElementById('baths').textContent),
+//     max_guests:      parseInt(document.getElementById('maxg').textContent),
+//     price_per_night: parseInt(document.getElementById('price').value),
+//     cleaning_fee:    parseInt(document.getElementById('cleaning').value) || 0,
+//     min_stay:        parseInt(document.getElementById('minstay').value),
+//     amenities:       amenities,
+//     published:       form.publishMode === 'live',
+//   });
+// ═══════════════════════════════════════════════════════════════
+async function submitListing() {
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('nextBtn').textContent = 'Publishing…';
+
+  // DEMO: simulate network delay
+  await new Promise(r => setTimeout(r, 1200));
+
+  // Show success
+  document.getElementById('mainLayout').style.display = 'none';
+  document.getElementById('footerNav').style.display = 'none';
+  document.querySelector('.top-bar .progress').style.display = 'none';
+  document.getElementById('successScreen').classList.add('show');
+  document.getElementById('rightPane').scrollTop = 0;
+  localStorage.removeItem('casa:listing-draft');
+}
+
+// Toast helper (uses casa.js if available, falls back inline)
+function toast(msg) {
+  if (window.casaToast) { window.casaToast(msg); return; }
+  let el = document.querySelector('.casa-toast');
+  if (!el) { el = document.createElement('div'); el.className = 'casa-toast'; document.body.appendChild(el); }
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// Restore draft if one exists
+const draft = localStorage.getItem('casa:listing-draft');
+if (draft) {
+  try {
+    const d = JSON.parse(draft);
+    if (d.title) document.getElementById('title').value = d.title;
+    if (d.town) document.getElementById('town').value = d.town;
+    if (d.desc) document.getElementById('desc').value = d.desc;
+    if (d.price) document.getElementById('price').value = d.price;
+    if (d.region) { const btn = document.querySelector(`.region-card[data-region="${d.region}"]`); if (btn) pickRegion(btn, d.region); }
+    if (d.type) { const btn = document.querySelector('.type-card.sel'); if (btn) pickType(btn, d.type); }
+    // Small note that draft was restored
+    setTimeout(() => toast('Draft restored — pick up where you left off'), 300);
+  } catch(e) {}
+}
+
+// Init
+updateUI();
+</script>
+<script src="casa.js"></script>
+</body>
+</html>

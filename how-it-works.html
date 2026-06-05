@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How it works — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+
+  /* ── HERO ── */
+  .hiw-hero {
+    padding: 72px 0 80px;
+    border-bottom: 1px solid var(--rule);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hiw-hero::before {
+    content: '';
+    position: absolute; left: 50%; top: 0;
+    transform: translateX(-50%);
+    width: 700px; height: 700px; border-radius: 50%;
+    background: radial-gradient(circle at center, rgba(176,85,51,0.07), transparent 65%);
+    pointer-events: none;
+  }
+  .hiw-hero .eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--ink-3); margin-bottom: 24px;
+  }
+  .hiw-hero .eyebrow .live-dot { background: var(--brick); }
+  .hiw-hero h1 {
+    font-family: var(--serif); font-size: 96px; line-height: 0.92;
+    letter-spacing: -0.035em; color: var(--ink); margin-bottom: 28px;
+    position: relative;
+  }
+  .hiw-hero h1 i { font-style: italic; color: var(--brick); }
+  .hiw-hero .lede {
+    font-family: var(--serif); font-size: 22px; line-height: 1.5;
+    color: var(--ink-2); max-width: 560px; margin: 0 auto 40px;
+  }
+  .hiw-hero .lede i { font-style: italic; color: var(--brick); }
+
+  .hero-pills { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .hero-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 999px;
+    background: var(--surface); border: 1px solid var(--rule);
+    font-size: 13.5px; color: var(--ink-2);
+    text-decoration: none; transition: all .12s;
+  }
+  .hero-pill:hover { border-color: var(--ink); color: var(--ink); }
+  .hero-pill svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+
+  /* ── ROLE SWITCHER ── */
+  .role-switch {
+    display: flex; gap: 0; margin: 56px auto 0;
+    background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 14px; padding: 6px; width: fit-content;
+  }
+  .rs-btn {
+    padding: 12px 28px; border-radius: 10px; cursor: pointer; border: none;
+    background: transparent; font-family: var(--sans); font-size: 14px;
+    font-weight: 500; color: var(--ink-3); transition: all .15s;
+  }
+  .rs-btn.active { background: var(--paper); color: var(--ink); box-shadow: 0 1px 8px rgba(22,20,15,0.08); }
+
+  /* ── WRAP ── */
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+  .narrow { max-width: 900px; margin: 0 auto; padding: 0 32px; }
+
+  /* ── STEPS SECTION ── */
+  .steps-section { padding: 96px 0 48px; }
+  .section-eye {
+    display: inline-flex; align-items: center; gap: 10px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--brick); margin-bottom: 8px;
+  }
+  .section-eye::before { content: ''; width: 24px; height: 1px; background: var(--brick); }
+  .section-title {
+    font-family: var(--serif); font-size: 64px; line-height: 0.95;
+    letter-spacing: -0.025em; margin-bottom: 56px;
+  }
+  .section-title i { font-style: italic; color: var(--brick); }
+
+  /* Step rows */
+  .step-row {
+    display: grid; grid-template-columns: 80px 1fr 1fr;
+    gap: 0 48px; padding: 48px 0; border-top: 1px solid var(--rule);
+    align-items: start;
+  }
+  .step-row:last-child { border-bottom: 1px solid var(--rule); }
+  .step-num {
+    font-family: var(--serif); font-style: italic; font-size: 80px;
+    line-height: 1; color: var(--brick); opacity: 0.3;
+    padding-top: 4px;
+  }
+  .step-content h3 {
+    font-family: var(--serif); font-size: 40px; line-height: 1;
+    letter-spacing: -0.02em; margin-bottom: 16px;
+  }
+  .step-content h3 i { font-style: italic; color: var(--brick); }
+  .step-content p { font-size: 15px; color: var(--ink-2); line-height: 1.65; max-width: 400px; }
+  .step-content p + p { margin-top: 12px; }
+
+  .step-detail { background: var(--surface); border: 1px solid var(--rule); border-radius: 18px; padding: 28px; }
+  .step-detail .sd-head {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-3); margin-bottom: 14px;
+  }
+
+  /* Mini search UI */
+  .mini-search {
+    background: var(--paper); border: 1px solid var(--rule); border-radius: 12px;
+    padding: 14px; display: flex; gap: 0; margin-bottom: 12px;
+  }
+  .ms-seg { flex: 1; padding: 8px 12px; border-right: 1px solid var(--rule); }
+  .ms-seg:last-of-type { border-right: none; }
+  .ms-seg .l { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-4); margin-bottom: 3px; }
+  .ms-seg .v { font-size: 13px; color: var(--ink); }
+  .ms-go { background: var(--brick); color: white; border: none; border-radius: 9px; padding: 8px 16px; font-family: var(--sans); font-size: 13px; cursor: pointer; }
+
+  .mini-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .mini-tag {
+    padding: 5px 11px; border-radius: 999px; background: var(--paper);
+    border: 1px solid var(--rule); font-size: 12px; color: var(--ink-3);
+    font-family: var(--mono); letter-spacing: 0.04em; cursor: pointer;
+    transition: all .1s;
+  }
+  .mini-tag:hover { border-color: var(--brick); color: var(--brick); }
+  .mini-tag .ct { color: var(--ink-4); margin-left: 3px; }
+
+  /* Mini feed post */
+  .mini-post {
+    background: var(--paper); border: 1px solid var(--rule); border-radius: 12px;
+    padding: 16px; margin-bottom: 10px;
+  }
+  .mp-head { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .mp-av {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--brick); color: white;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: var(--serif); font-style: italic; font-size: 14px; flex-shrink: 0;
+  }
+  .mp-av.guest { background: var(--moss); }
+  .mp-nm { font-size: 13px; font-weight: 500; }
+  .mp-sub { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-top: 1px; }
+  .mp-body { font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
+  .mp-body i { font-style: italic; color: var(--brick); }
+  .mp-foot { margin-top: 10px; display: flex; gap: 12px; }
+  .mp-action { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); display: flex; align-items: center; gap: 4px; cursor: pointer; }
+  .mp-action:hover { color: var(--brick); }
+  .mp-action svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+  /* Mini message thread */
+  .mini-thread { display: flex; flex-direction: column; gap: 10px; }
+  .mt-bubble {
+    max-width: 80%; padding: 12px 16px; border-radius: 14px; font-size: 13px; line-height: 1.5;
+  }
+  .mt-bubble.host { background: var(--ink); color: var(--paper); border-bottom-left-radius: 4px; align-self: flex-start; }
+  .mt-bubble.guest { background: var(--brick-pale); color: var(--ink); border-bottom-right-radius: 4px; align-self: flex-end; }
+  .mt-bubble i { font-style: italic; }
+  .mt-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); }
+  .mt-label.right { text-align: right; }
+
+  /* Mini property card */
+  .mini-prop-card {
+    background: var(--paper); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden;
+    display: flex; gap: 0; margin-bottom: 10px;
+  }
+  .mpc-image { width: 90px; flex-shrink: 0; background: var(--ink); display: flex; align-items: center; justify-content: center; }
+  .mpc-image .ph-sq { width: 90px; height: 90px; }
+  .mpc-body { padding: 12px 14px; flex: 1; }
+  .mpc-title { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--brick); line-height: 1.1; margin-bottom: 4px; }
+  .mpc-meta { font-size: 12px; color: var(--ink-3); margin-bottom: 8px; }
+  .mpc-price { font-family: var(--serif); font-style: italic; font-size: 20px; color: var(--ink); }
+  .mpc-fee { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--moss); }
+
+  /* ── ZERO FEES SECTION ── */
+  .fees-section {
+    background: var(--ink); color: var(--paper);
+    padding: 96px 0; margin: 0;
+  }
+  .fees-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+  .fees-head { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: end; margin-bottom: 56px; }
+  .fees-head h2 { font-family: var(--serif); font-size: 72px; line-height: 0.95; letter-spacing: -0.025em; }
+  .fees-head h2 i { font-style: italic; color: var(--brick-2); }
+  .fees-head p { font-size: 16px; line-height: 1.65; color: rgba(255,255,255,0.65); }
+  .fees-head p strong { color: var(--paper); font-weight: 500; }
+
+  /* Comparison table */
+  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table th, .comp-table td { padding: 14px 18px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 13.5px; }
+  .comp-table th { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.45); padding-bottom: 10px; }
+  .comp-table th.casa-col { color: var(--brick-2); }
+  .comp-table td:first-child { color: rgba(255,255,255,0.55); }
+  .comp-table td.bad { color: rgba(255,255,255,0.4); }
+  .comp-table td.bad .strikethrough { text-decoration: line-through; }
+  .comp-table td.good { color: var(--brick-2); font-weight: 500; }
+  .comp-table td.good svg { width: 14px; height: 14px; stroke: var(--brick-2); fill: none; stroke-width: 2; vertical-align: middle; margin-right: 4px; }
+  .comp-table .total-row td { font-weight: 500; border-bottom: none; padding-top: 18px; }
+  .comp-table .total-row td.good { font-family: var(--serif); font-style: italic; font-size: 22px; }
+  .comp-table .total-row td.bad { font-family: var(--serif); font-size: 20px; }
+  .comp-table .casa-highlight { background: rgba(176,85,51,0.1); border-left: 2px solid var(--brick); }
+
+  /* ── COMMUNITY SECTION ── */
+  .community-section { padding: 96px 0; }
+  .comm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; }
+  .comm-content h2 { font-family: var(--serif); font-size: 64px; line-height: 0.95; letter-spacing: -0.025em; margin-bottom: 24px; }
+  .comm-content h2 i { font-style: italic; color: var(--brick); }
+  .comm-content p { font-size: 15px; color: var(--ink-2); line-height: 1.65; max-width: 460px; margin-bottom: 14px; }
+
+  .post-types { display: flex; flex-direction: column; gap: 8px; margin-top: 28px; }
+  .pt-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 16px; border-radius: 12px;
+    background: var(--surface); border: 1px solid var(--rule);
+  }
+  .pt-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .pt-dot.avail { background: var(--moss); }
+  .pt-dot.look { background: #5B8EE6; }
+  .pt-dot.review { background: var(--brick); }
+  .pt-dot.local { background: #8B6CA0; }
+  .pt-dot.photo { background: var(--ink-3); }
+  .pt-name { font-size: 13.5px; font-weight: 500; flex: 0 0 110px; }
+  .pt-desc { font-size: 12.5px; color: var(--ink-3); }
+
+  /* ── TRUST SECTION ── */
+  .trust-section { background: var(--surface); padding: 80px 0; border-top: 1px solid var(--rule); }
+  .trust-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .trust-card {
+    background: var(--paper); padding: 40px 36px;
+    border-right: 1px solid var(--rule);
+  }
+  .trust-card:last-child { border-right: none; }
+  .trust-icon { width: 48px; height: 48px; background: var(--brick-pale); border-radius: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+  .trust-icon svg { width: 22px; height: 22px; stroke: var(--brick); fill: none; stroke-width: 1.6; }
+  .trust-card h3 { font-family: var(--serif); font-size: 28px; line-height: 1.1; letter-spacing: -0.015em; margin-bottom: 10px; }
+  .trust-card h3 i { font-style: italic; color: var(--brick); }
+  .trust-card p { font-size: 14px; color: var(--ink-2); line-height: 1.6; }
+
+  /* ── FAQ SECTION ── */
+  .faq-section { padding: 96px 0 80px; }
+  .faq-head { text-align: center; margin-bottom: 56px; }
+  .faq-head h2 { font-family: var(--serif); font-size: 56px; line-height: 0.95; letter-spacing: -0.025em; }
+  .faq-head h2 i { font-style: italic; color: var(--brick); }
+
+  .faq-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0 56px; }
+  .faq-item { padding: 24px 0; border-top: 1px solid var(--rule); }
+  .faq-q { font-family: var(--serif); font-size: 20px; line-height: 1.2; margin-bottom: 10px; cursor: pointer; display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+  .faq-q i { font-style: italic; }
+  .faq-q svg { width: 18px; height: 18px; stroke: var(--ink-3); fill: none; stroke-width: 1.6; flex-shrink: 0; margin-top: 2px; transition: transform .2s; }
+  .faq-item.open .faq-q svg { transform: rotate(45deg); stroke: var(--brick); }
+  .faq-a { font-size: 14px; color: var(--ink-2); line-height: 1.65; display: none; }
+  .faq-item.open .faq-a { display: block; }
+
+  /* ── FINAL CTA ── */
+  .final-cta {
+    background: var(--ink); color: var(--paper);
+    padding: 96px 0;
+  }
+  .final-cta-inner {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+    max-width: 1280px; margin: 0 auto; padding: 0 32px;
+  }
+  .cta-side h2 { font-family: var(--serif); font-size: 52px; line-height: 0.95; letter-spacing: -0.025em; margin-bottom: 16px; }
+  .cta-side h2 i { font-style: italic; color: var(--brick-2); }
+  .cta-side p { font-size: 15px; color: rgba(255,255,255,0.65); line-height: 1.6; max-width: 360px; margin-bottom: 28px; }
+  .cta-side .stats { display: flex; flex-direction: column; gap: 8px; margin-bottom: 28px; }
+  .cta-side .st { display: flex; align-items: baseline; gap: 10px; font-size: 13.5px; color: rgba(255,255,255,0.6); }
+  .cta-side .st .nm { font-family: var(--serif); font-style: italic; font-size: 22px; color: var(--paper); }
+  .cta-side .cta-btn {
+    display: inline-flex; align-items: center; justify-content: space-between;
+    background: var(--paper); color: var(--ink);
+    padding: 18px 24px; border-radius: 14px;
+    text-decoration: none; font-size: 15px; font-weight: 500;
+    transition: background .12s; gap: 16px; min-width: 280px;
+  }
+  .cta-side .cta-btn:hover { background: white; }
+  .cta-side .cta-btn svg { stroke: var(--brick); width: 18px; height: 18px; fill: none; stroke-width: 2; }
+  .cta-divider { width: 1px; background: rgba(255,255,255,0.1); align-self: stretch; }
+
+  /* Rise animation */
+  .rise { animation: rise .5s ease both; }
+  .rise-2 { animation: rise .5s .08s ease both; }
+  .rise-3 { animation: rise .5s .16s ease both; }
+  @keyframes rise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+
+  @media (max-width: 1000px) {
+    .hiw-hero h1 { font-size: 64px; }
+    .step-row { grid-template-columns: 48px 1fr; }
+    .step-row .step-detail { grid-column: 2; }
+    .fees-head { grid-template-columns: 1fr; }
+    .comm-grid { grid-template-columns: 1fr; }
+    .faq-cols { grid-template-columns: 1fr; }
+    .final-cta-inner { grid-template-columns: 1fr; }
+    .trust-grid { grid-template-columns: 1fr; }
+    .trust-card { border-right: none; border-bottom: 1px solid var(--rule); }
+    .section-title { font-size: 48px; }
+  }
+
+  @media (max-width: 640px) {
+    .hiw-hero h1 { font-size: 48px; }
+    .step-row { grid-template-columns: 1fr; gap: 24px; }
+    .step-num { font-size: 56px; }
+    .wrap, .narrow { padding: 0 20px; }
+    .fees-head h2, .comm-content h2 { font-size: 48px; }
+    .cta-side h2 { font-size: 40px; }
+    .faq-head h2 { font-size: 40px; }
+  }
+
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="casa-nav">
+  <a class="brand-lockup" href="index.html">
+    <span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span>
+  </a>
+  <div class="nav-right">
+    <a class="nav-link" href="browse.html">Browse</a>
+    <a class="nav-link" href="map.html">Map</a>
+    <a class="nav-link" href="feed.html">Feed</a>
+    <a class="nav-link" href="list.html">Become a host</a>
+    <div style="width:1px;height:20px;background:var(--rule);margin:0 4px"></div>
+    <a class="nav-link" href="saved.html">Saved</a>
+    <a class="nav-link" href="messages.html">Messages</a>
+    <div style="width:1px;height:20px;background:var(--rule);margin:0 4px"></div>
+    <a class="nav-link" href="signup.html">Sign in</a>
+    <a class="nav-link primary" href="signup.html">Join free</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hiw-hero">
+  <div class="wrap">
+    <div class="rise">
+      <div class="eyebrow"><span class="live-dot"></span> How Casa works</div>
+      <h1>Simple.<br><i>Direct.</i> Free.</h1>
+    </div>
+    <p class="lede rise-2">Casa connects guests directly with hosts across the UK. No middlemen, no hidden fees — just a <i>real conversation</i> between real people.</p>
+    <div class="hero-pills rise-3">
+      <a href="#guests" class="hero-pill">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        For guests
+      </a>
+      <a href="#hosts" class="hero-pill">
+        <svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        For hosts
+      </a>
+      <a href="#community" class="hero-pill">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        The community
+      </a>
+      <a href="#fees" class="hero-pill">
+        <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Zero fees — always
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- GUESTS STEPS -->
+<section class="steps-section" id="guests">
+  <div class="wrap">
+    <div class="section-eye">For guests</div>
+    <h2 class="section-title">Find a stay. <i>Book it direct.</i></h2>
+
+    <div class="step-row">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h3><i>Search</i> the whole UK</h3>
+        <p>Search by location, county, or feeling — "off-grid", "sea view", "pet friendly". Filter by type, dates, guests, and amenities. Every result is a real property, listed by its owner.</p>
+        <p>Or browse the community feed by hashtag and county, where hosts post availability directly.</p>
+      </div>
+      <div class="step-detail">
+        <div class="sd-head">Search the UK</div>
+        <div class="mini-search">
+          <div class="ms-seg">
+            <div class="l">Where</div>
+            <div class="v">Lake District</div>
+          </div>
+          <div class="ms-seg">
+            <div class="l">Dates</div>
+            <div class="v">12 – 19 Jul</div>
+          </div>
+          <div class="ms-seg">
+            <div class="l">Guests</div>
+            <div class="v">4 adults</div>
+          </div>
+          <button class="ms-go">Search</button>
+        </div>
+        <div class="mini-tags">
+          <span class="mini-tag">#seaview <span class="ct">156</span></span>
+          <span class="mini-tag">#woodburner <span class="ct">71</span></span>
+          <span class="mini-tag">#offgrid <span class="ct">62</span></span>
+          <span class="mini-tag">#petfriendly <span class="ct">134</span></span>
+          <span class="mini-tag">#cottage <span class="ct">341</span></span>
+          <span class="mini-tag">#hottub <span class="ct">89</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h3><i>Message</i> the host</h3>
+        <p>Found somewhere you like? Enquire directly. Your message goes straight to the host's inbox — not ours, not a call centre's.</p>
+        <p>Ask about the property, confirm availability, request extras. The host replies — usually within a few hours.</p>
+      </div>
+      <div class="step-detail">
+        <div class="sd-head">Direct conversation</div>
+        <div class="mini-thread">
+          <div class="mt-label">Sarah — Host</div>
+          <div class="mt-bubble host">Hi! The cottage is free 12–19 July. Wood burner's just been serviced. Dogs are very welcome — we have two of our own. <i>Shall I send you payment details?</i></div>
+          <div class="mt-label right">You — Guest</div>
+          <div class="mt-bubble guest">Perfect — yes please, and do you have a cot for a toddler?</div>
+          <div class="mt-bubble host" style="margin-top:2px">Of course — it's included, no extra charge. Confirming you now. 🏡</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h3><i>Pay</i> the host directly</h3>
+        <p>No payment platform taking a cut. The host sends you their preferred payment method — bank transfer, PayPal, whatever suits both of you.</p>
+        <p>The price you see on Casa is the price you pay. No booking fees added at checkout. No service charges. No surprises.</p>
+      </div>
+      <div class="step-detail">
+        <div class="sd-head">What you pay</div>
+        <div class="mini-prop-card">
+          <div class="mpc-image">
+            <div class="ph ph-ink mpc-image" style="width:90px;height:90px;"></div>
+          </div>
+          <div class="mpc-body">
+            <div class="mpc-title">Stone Cottage, Windermere</div>
+            <div class="mpc-meta">Sleeps 6 · 3 bed · Pets ok</div>
+            <div class="mpc-price">£175</div>
+            <div class="mpc-fee">£0 booking fee · pay host direct</div>
+          </div>
+        </div>
+        <table style="width:100%;font-size:12.5px;color:var(--ink-2);border-collapse:collapse;">
+          <tr><td style="padding:6px 0;border-bottom:1px solid var(--rule);">£175 × 7 nights</td><td style="text-align:right;padding:6px 0;border-bottom:1px solid var(--rule);">£1,225</td></tr>
+          <tr><td style="padding:6px 0;border-bottom:1px solid var(--rule);">Cleaning (agreed direct)</td><td style="text-align:right;padding:6px 0;border-bottom:1px solid var(--rule);">£60</td></tr>
+          <tr style="color:var(--moss);"><td style="padding:6px 0;border-bottom:1px solid var(--rule);">Casa booking fee</td><td style="text-align:right;padding:6px 0;border-bottom:1px solid var(--rule);font-weight:500;">£0</td></tr>
+          <tr style="font-weight:500;"><td style="padding:10px 0 0;">Total to Sarah</td><td style="text-align:right;padding:10px 0 0;font-family:var(--serif);font-style:italic;font-size:18px;color:var(--brick);">£1,285</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <h3><i>Stay.</i> Then share.</h3>
+        <p>Enjoy your stay. After, leave a review on the property page and share your experience in the community feed — your honest account helps other guests and supports good hosts.</p>
+        <p>You can also post local tips, hidden walks, favourite spots, or just photos. The feed is part travel guide, part community.</p>
+      </div>
+      <div class="step-detail">
+        <div class="sd-head">After your stay</div>
+        <div class="mini-post">
+          <div class="mp-head">
+            <div class="mp-av guest">L</div>
+            <div>
+              <div class="mp-nm">Laura P.</div>
+              <div class="mp-sub">Review · Stayed at Stone Cottage</div>
+            </div>
+          </div>
+          <div class="mp-body">"Wood burner does what wood burners are supposed to do. Walked into Windermere village both nights — the cottage smells like a <i>real home</i>, not a holiday rental." <i>#lakedistrict</i> <i>#cottage</i></div>
+          <div class="mp-foot">
+            <span class="mp-action"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 34</span>
+            <span class="mp-action"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Reply</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ZERO FEES SECTION -->
+<section class="fees-section" id="fees">
+  <div class="fees-inner">
+    <div class="fees-head">
+      <div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--brick-2);margin-bottom:8px;">— Zero fees — always</div>
+        <h2>The same stay.<br><i>£243 less.</i></h2>
+      </div>
+      <div>
+        <p>The big booking platforms charge guests a <strong>service fee</strong> at checkout, then take a <strong>commission</strong> from the host on top. The host ends up with less. The guest pays more. Casa strips all of that out.</p>
+        <p style="margin-top:12px">Casa charges hosts a <strong>flat £19/month</strong> to list — not a percentage of every booking. Guests pay nothing. Ever.</p>
+      </div>
+    </div>
+
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Same stay — £175/night × 7 nights</th>
+          <th>Booking.com</th>
+          <th>Airbnb</th>
+          <th class="casa-col">casa</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Base stay cost</td>
+          <td class="bad">£1,225</td>
+          <td class="bad">£1,225</td>
+          <td class="good casa-highlight">£1,225</td>
+        </tr>
+        <tr>
+          <td>Guest booking fee</td>
+          <td class="bad"><span class="strikethrough">£183 markup</span></td>
+          <td class="bad"><span class="strikethrough">£170 markup</span></td>
+          <td class="good casa-highlight"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>£0 fee</td>
+        </tr>
+        <tr>
+          <td>Host commission</td>
+          <td class="bad"><span class="strikethrough">15% cut</span></td>
+          <td class="bad"><span class="strikethrough">3% cut</span></td>
+          <td class="good casa-highlight"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>0% cut</td>
+        </tr>
+        <tr>
+          <td>Cleaning fee visibility</td>
+          <td class="bad">Hidden at checkout</td>
+          <td class="bad">Hidden at checkout</td>
+          <td class="good casa-highlight">Agreed direct</td>
+        </tr>
+        <tr class="total-row">
+          <td>Total guest pays</td>
+          <td class="bad">£1,468</td>
+          <td class="bad">£1,475</td>
+          <td class="good casa-highlight">£1,225</td>
+        </tr>
+        <tr class="total-row" style="border-top:1px solid rgba(255,255,255,0.08)">
+          <td>Host receives</td>
+          <td class="bad">£1,041</td>
+          <td class="bad">£1,188</td>
+          <td class="good casa-highlight">£1,225</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- HOSTS STEPS -->
+<section class="steps-section" id="hosts">
+  <div class="wrap">
+    <div class="section-eye">For hosts</div>
+    <h2 class="section-title"><i>List</i> your place.<br>Keep everything.</h2>
+
+    <div class="step-row">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h3><i>List</i> your property</h3>
+        <p>Takes about 2 minutes. Add your photos, description, amenities, and pricing. Set your own rates — Casa never touches your pricing.</p>
+        <p>One flat monthly fee of £19. No percentage of each booking taken. No surprise invoices after a busy summer.</p>
+      </div>
+      <div class="step-detail">
+        <div class="sd-head">Flat £19/month — nothing else</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule);">
+            <svg style="width:16px;height:16px;stroke:var(--moss);fill:none;stroke-width:2;flex-shrink:0" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            <span style="font-size:13.5px;color:var(--ink-2)">Unlimited enquiries</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule);">
+            <svg style="width:16px;height:16px;stroke:var(--moss);fill:none;stroke-width:2;flex-shrink:0" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            <span style="font-size:13.5px;color:var(--ink-2)">Appear in all search results & map</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule);">
+            <svg style="width:16px;height:16px;stroke:var(--moss);fill:none;stroke-width:2;flex-shrink:0" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            <span style="font-size:13.5px;color:var(--ink-2)">Community feed access — post availability</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule);">
+            <svg style="width:16px;height:16px;stroke:var(--moss);fill:none;stroke-width:2;flex-shrink:0" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            <span style="font-size:13.5px;color:var(--ink-2)">Host dashboard with calendar & enquiries</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;">
+            <svg style="width:16px;height:16px;stroke:var(--moss);fill:none;stroke-width:2;flex-shrink:0" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            <span style="font-size:13.5px;color:var(--ink-2)">0% commission on every single booking</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h3><i>Post</i> to the feed</h3>
+        <p>Use the community feed the way you'd use a noticeboard — post last-minute availability, mid-week deals, new photos, or just a view from the window. Guests follow hashtags and counties, so your posts reach the right people.</p>
+        <p>Hosts who post regularly get significantly more enquiries than those who don't.</p>
+      </div>
+      <div class="step-detail">
+        <div class="sd-head">Example host post</div>
+        <div class="mini-post">
+          <div class="mp-head">
+            <div class="mp-av">S</div>
+            <div>
+              <div class="mp-nm">Sarah R. · Stone Cottage</div>
+              <div class="mp-sub">Availability · Windermere</div>
+            </div>
+          </div>
+          <div class="mp-body">Just got a cancellation — <strong>12–19 July</strong> is now open at Stone Cottage. Sleeps 6, wood burner, dogs welcome. <strong>£175/night</strong> — pay direct, zero fees. <i>#lakedistrict</i> <i>#cottage</i> <i>#lastminute</i></div>
+          <div class="mp-foot">
+            <span class="mp-action"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 34</span>
+            <span class="mp-action" style="margin-left:auto;color:var(--brick)">Enquire to book →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-row">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h3><i>Talk</i> to guests directly</h3>
+        <p>Enquiries come in through the Casa messaging system. You reply, confirm dates, agree any extras, and send payment details — all within the platform.</p>
+        <p>You set the terms. Cancellation policy, cleaning fee, pet policy — all yours. No platform overriding your decisions.</p>
+      </div>
+      <div class="step-detail">
+        <div class="sd-head">Host dashboard</div>
+        <div style="background:var(--paper);border:1px solid var(--rule);border-radius:10px;padding:16px;">
+          <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:10px;">This month</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+            <div style="background:var(--surface);border-radius:8px;padding:12px;text-align:center;">
+              <div style="font-family:var(--serif);font-style:italic;font-size:28px;color:var(--brick);line-height:1">£4,380</div>
+              <div style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-top:4px">Received</div>
+            </div>
+            <div style="background:var(--surface);border-radius:8px;padding:12px;text-align:center;">
+              <div style="font-family:var(--serif);font-style:italic;font-size:28px;color:var(--ink);line-height:1">14</div>
+              <div style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-top:4px">Nights booked</div>
+            </div>
+            <div style="background:var(--surface);border-radius:8px;padding:12px;text-align:center;">
+              <div style="font-family:var(--serif);font-style:italic;font-size:28px;color:var(--ink);line-height:1">4.9</div>
+              <div style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-top:4px">Avg rating</div>
+            </div>
+          </div>
+          <div style="font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-bottom:6px;">New enquiries</div>
+          <div style="background:var(--brick-pale);border-radius:8px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:13px;color:var(--brick-text)">Laura P. — 27–31 Aug, 4 guests</span>
+            <span style="font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--brick);text-transform:uppercase">Reply →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- COMMUNITY SECTION -->
+<section class="community-section" id="community">
+  <div class="wrap">
+    <div class="comm-grid">
+      <div class="comm-content">
+        <div class="section-eye">The community</div>
+        <h2>More than a<br><i>booking site.</i></h2>
+        <p>The Casa feed is part availability board, part travel guide, part local forum. Hosts and guests post in the same space — connected by the places they love.</p>
+        <p>Follow a county, follow a host, follow a hashtag. When they post, you'll see it. It's how you find the cancellation that just opened, or the host who knows every hidden walk in the Cairngorms.</p>
+        <p>Every post is tied to a real location. Every review is from a real stay. Nothing is algorithmic — everything is chronological and honest.</p>
+
+        <div class="post-types">
+          <div class="pt-row">
+            <div class="pt-dot avail"></div>
+            <div class="pt-name">Availability</div>
+            <div class="pt-desc">Hosts post open dates, last-minute slots, mid-week deals</div>
+          </div>
+          <div class="pt-row">
+            <div class="pt-dot look"></div>
+            <div class="pt-name">Looking for</div>
+            <div class="pt-desc">Guests post requirements — hosts reply with their listings</div>
+          </div>
+          <div class="pt-row">
+            <div class="pt-dot review"></div>
+            <div class="pt-name">Reviews</div>
+            <div class="pt-desc">Honest accounts from real stays — tied to the property</div>
+          </div>
+          <div class="pt-row">
+            <div class="pt-dot local"></div>
+            <div class="pt-name">Local tips</div>
+            <div class="pt-desc">Walks, pubs, beaches, markets — from people who know</div>
+          </div>
+          <div class="pt-row">
+            <div class="pt-dot photo"></div>
+            <div class="pt-name">Photos</div>
+            <div class="pt-desc">Seasonal shots from hosts — the fells in November, the sea in March</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="mini-post" style="margin-bottom:10px">
+          <div class="mp-head">
+            <div class="mp-av">T</div>
+            <div>
+              <div class="mp-nm">Tom &amp; Anna · Shepherd's Hut</div>
+              <div class="mp-sub">Photo · Buttermere</div>
+            </div>
+          </div>
+          <div class="mp-body">Buttermere this morning — the fells in the cloud and not a soul on the lake. <em>June here is the secret time.</em> Hut is open from 15 July. <i>#buttermere</i> <i>#lakedistrict</i> <i>#offgrid</i></div>
+          <div class="mp-foot">
+            <span class="mp-action"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 87</span>
+            <span class="mp-action"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 14</span>
+            <span class="mp-action" style="margin-left:auto">View hut →</span>
+          </div>
+        </div>
+        <div class="mini-post" style="margin-bottom:10px">
+          <div class="mp-head">
+            <div class="mp-av guest">H</div>
+            <div>
+              <div class="mp-nm">Hannah F.</div>
+              <div class="mp-sub">Local tip · Coniston</div>
+            </div>
+          </div>
+          <div class="mp-body">For anyone going to Coniston — if you can get there before 8am, the climb up the <em>Old Man</em> from Walna Scar is magic. Almost empty. Park at the top of Walna Scar Road (free), not the village (£10). <i>#coniston</i> <i>#walks</i></div>
+          <div class="mp-foot">
+            <span class="mp-action"><svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> 128</span>
+            <span class="mp-action"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 31</span>
+          </div>
+        </div>
+        <div class="mini-post">
+          <div class="mp-head">
+            <div class="mp-av guest">L</div>
+            <div>
+              <div class="mp-nm">Laura P. · Looking for</div>
+              <div class="mp-sub">Request · Cumbria · Aug bank holiday</div>
+            </div>
+          </div>
+          <div class="mp-body">Group of 8 looking for the Lakes for the <strong>August bank holiday</strong> (27–31 Aug). Dog-friendly, parking for 3, walking distance to a pub. Budget ~<strong>£250/night</strong>. Hosts — drop your links below 👇 <i>#lakedistrict</i> <i>#groups</i></div>
+          <div class="mp-foot">
+            <span class="mp-action"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> 17 replies</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST SECTION -->
+<section class="trust-section">
+  <div class="wrap">
+    <div style="text-align:center;margin-bottom:48px;">
+      <div class="section-eye" style="justify-content:center;">Why Casa</div>
+      <h2 class="section-title" style="text-align:center;font-size:48px;margin-bottom:0">Built on <i>trust</i> — not fees.</h2>
+    </div>
+    <div class="trust-grid">
+      <div class="trust-card">
+        <div class="trust-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3>Verified <i>hosts</i></h3>
+        <p>Every host is verified before listing. ID checked, property confirmed. You're talking to the person who actually owns the place — not a management company, not a rental agency.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">
+          <svg viewBox="0 0 24 24"><path d="M11.5 2C6.81 2 3 5.81 3 10.5S6.81 19 11.5 19h.5v3c4.86-2.34 8-7 8-11.5C20 5.81 16.19 2 11.5 2zm1 14.5h-2v-6h2v6zm0-8h-2V6.5h2V8.5z"/></svg>
+        </div>
+        <h3>Transparent <i>pricing</i></h3>
+        <p>No fees hidden until checkout. The nightly rate, any cleaning fee, and every charge is agreed between you and the host before any money moves. Nothing added by Casa.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <h3>Real <i>reviews</i></h3>
+        <p>Reviews are tied to confirmed stays. Guests can only review properties they've actually booked through Casa — so every 4.9 is earned, not gamed. Reviews also live publicly in the community feed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ SECTION -->
+<section class="faq-section">
+  <div class="narrow">
+    <div class="faq-head">
+      <div class="section-eye" style="justify-content:center;">Questions</div>
+      <h2>Things people <i>ask.</i></h2>
+    </div>
+    <div class="faq-cols">
+      <div>
+        <div class="faq-item open">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+            <span>Is Casa really <i>free</i> for guests?</span>
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <div class="faq-a">Yes — completely. Casa charges hosts a flat monthly fee to list their property. Guests pay nothing to Casa — not at search, not at checkout, not ever. The price you see is the price you pay the host directly.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+            <span>How do I <i>pay</i> the host?</span>
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <div class="faq-a">Directly. Once you enquire and the host confirms your dates, they'll send you their preferred payment method — bank transfer, PayPal, or similar. Casa is not involved in the payment. This keeps things simple and means no extra fees.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+            <span>What if something goes <i>wrong</i>?</span>
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <div class="faq-a">Because you're dealing directly with the host, any issues are resolved between you — the same way you'd sort things with a landlord or a hotel. Most hosts on Casa are experienced and responsive. Reviews are verified and public, so you can read real accounts before you book.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+            <span>Is the property <i>verified</i>?</span>
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <div class="faq-a">All hosts are ID-verified before their listing goes live. Property descriptions are submitted by the owner and are their responsibility — reviews from previous guests are the best way to verify the listing matches reality.</div>
+        </div>
+      </div>
+      <div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+            <span>How much does it cost to <i>list</i>?</span>
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <div class="faq-a">£19 per month, flat. No commission on bookings, no percentage of nightly rate, no hidden charges. Cancel any time. If you have more than one property, each property has its own listing fee.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+            <span>Can I list if I'm already on <i>Airbnb</i>?</span>
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <div class="faq-a">Yes — many hosts use Casa alongside other platforms. Some hosts migrate fully once they build up a direct booking base on Casa. Others use Casa as a way to fill gaps without paying Airbnb's commission on those nights.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+            <span>What is the <i>community feed</i>?</span>
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <div class="faq-a">The feed is a public forum where hosts and guests post. Hosts use it to announce availability. Guests post "looking for" requests. Both sides share reviews, local tips, and photos. Posts are organised by county and searchable by hashtag — it's designed to feel like a community, not a marketplace.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+            <span>Is Casa only for the <i>UK</i>?</span>
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <div class="faq-a">For now, yes — Casa is focused entirely on UK holiday rentals. England, Scotland, Wales, and Northern Ireland. Doing one thing well matters more to us than doing everything everywhere. International expansion may come later.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="final-cta-inner">
+    <div class="cta-side">
+      <h2>Start as a <i>guest.</i></h2>
+      <p>Browse 4,202 UK stays — from stone cottages to shepherd's huts, highland blackhouses to Norfolk houseboats. All direct. All fee-free.</p>
+      <div class="stats">
+        <div class="st"><span class="nm">4,202</span> &mdash; stays across the UK</div>
+        <div class="st"><span class="nm">£0</span> &mdash; added to your checkout</div>
+        <div class="st"><span class="nm">4.9</span> &mdash; average property rating</div>
+      </div>
+      <a href="browse.html" class="cta-btn">
+        Browse all stays
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+    <div class="cta-divider"></div>
+    <div class="cta-side">
+      <h2>Have a place? <i>List it.</i></h2>
+      <p>£19/month. 0% commission. Keep 100% of every booking. Join thousands of hosts who've left the big platforms behind.</p>
+      <div class="stats">
+        <div class="st"><span class="nm">£19</span> &mdash; flat monthly fee</div>
+        <div class="st"><span class="nm">0%</span> &mdash; commission on bookings</div>
+        <div class="st"><span class="nm">2 min</span> &mdash; to set up your listing</div>
+      </div>
+      <a href="list.html" class="cta-btn">
+        List your property
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="casa-foot">
+  <div class="inner">
+    <div class="top">
+      <div>
+        <div class="casa-mark-lg">casa</div>
+        <div class="pitch">A quieter place to find a holiday stay &mdash; <em>fee-free</em>, and direct with the host.</div>
+      </div>
+      <div><h5>Find a stay</h5><a href="browse.html">Browse all stays</a><a href="map.html">Map view</a><a href="feed.html">Community feed</a><a href="how-it-works.html">How it works</a></div>
+      <div><h5>For hosts</h5><a href="list.html">List a property</a><a href="host.html">Host dashboard</a><a href="how-it-works.html#hosts">How it works</a></div>
+      <div><h5>Account</h5><a href="signup.html">Sign in</a><a href="signup.html">Join free</a><a href="saved.html">Saved stays</a><a href="messages.html">Messages</a><a href="profile.html">Profile</a></div>
+      <div><h5>Casa</h5><a href="#">Our story</a><a href="how-it-works.html">How it works</a><a href="#">Help centre</a><a href="#">Privacy policy</a></div>
+    </div>
+    <div class="bot"><div>&copy; 2026 Casa.co.uk &mdash; <em style="font-family:var(--serif);font-style:italic">fee-free, always.</em></div><div><a href="#">Privacy</a> · <a href="#">Terms</a> · <a href="#">Cookies</a></div></div>
+  </div>
+</footer>
+
+<script src="casa.js"></script>
+<script>
+  // FAQ accordion
+  document.querySelectorAll('.faq-q').forEach(q => {
+    q.addEventListener('click', () => {
+      const item = q.closest('.faq-item');
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+
+  // Smooth scroll for anchor links
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join Casa</title><link rel="stylesheet" href="../css/casa.css">
+</head><body style="display:flex;flex-direction:column;min-height:100vh;">
+<nav class="casa-nav"><a class="logo" href="../index.html">Casa<em>.co.uk</em></a></nav>
+<div style="flex:1;display:flex;align-items:center;justify-content:center;padding:2rem;">
+  <div class="card" style="width:100%;max-width:420px;padding:2.5rem;">
+    <div class="serif" style="font-size:1.75rem;font-weight:600;color:var(--terracotta);text-align:center;margin-bottom:.25rem;">Casa<em style="font-style:italic;font-weight:400;">.co.uk</em></div>
+    <h1 class="serif" style="font-size:1.3rem;text-align:center;margin-bottom:.3rem;">Create your account</h1>
+    <p style="font-size:.82rem;color:var(--ink-light);text-align:center;margin-bottom:1.5rem;">Free to join. Zero booking fees. Always.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1.5rem;">
+      <button id="btnHost" onclick="setRole('host')" style="padding:.65rem;border:1.5px solid var(--border);border-radius:9px;background:var(--sand);font-family:'DM Sans',sans-serif;font-size:.875rem;color:var(--ink-mid);cursor:pointer;">🏡 I am a Host</button>
+      <button id="btnGuest" onclick="setRole('guest')" style="padding:.65rem;border:1.5px solid var(--terracotta);border-radius:9px;background:var(--tc-pale);font-family:'DM Sans',sans-serif;font-size:.875rem;color:var(--terracotta);font-weight:500;cursor:pointer;">🧳 I am a Guest</button>
+    </div>
+    <div class="form-field"><label>Full name <span class="req">*</span></label><input type="text" id="signupName" placeholder="Your name"></div>
+    <div class="form-field"><label>Email <span class="req">*</span></label><input type="email" id="signupEmail" placeholder="you@example.com"></div>
+    <div class="form-field"><label>Password <span class="req">*</span></label><input type="password" id="signupPass" placeholder="Min 6 characters"></div>
+    <button onclick="handleSignup()" style="width:100%;background:var(--terracotta);color:#fff;border:none;border-radius:10px;padding:.75rem;font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;cursor:pointer;margin-bottom:.875rem;">Create account →</button>
+    <p style="text-align:center;font-size:.82rem;color:var(--ink-light);">Already have an account? <a href="signin.html">Sign in →</a></p>
+  </div>
+</div>
+<script src="../js/casa.js"></script>
+<script>
+let selectedRole='guest';
+function setRole(r){
+  selectedRole=r;
+  document.getElementById('btnHost').style.cssText='padding:.65rem;border:1.5px solid '+(r==='host'?'var(--terracotta)':'var(--border)')+';border-radius:9px;background:'+(r==='host'?'var(--tc-pale)':'var(--sand)')+';font-family:"DM Sans",sans-serif;font-size:.875rem;color:'+(r==='host'?'var(--terracotta)':'var(--ink-mid)')+';font-weight:'+(r==='host'?'500':'400')+';cursor:pointer;';
+  document.getElementById('btnGuest').style.cssText='padding:.65rem;border:1.5px solid '+(r==='guest'?'var(--terracotta)':'var(--border)')+';border-radius:9px;background:'+(r==='guest'?'var(--tc-pale)':'var(--sand)')+';font-family:"DM Sans",sans-serif;font-size:.875rem;color:'+(r==='guest'?'var(--terracotta)':'var(--ink-mid)')+';font-weight:'+(r==='guest'?'500':'400')+';cursor:pointer;';
+}
+function handleSignup(){
+  const name=document.getElementById('signupName').value.trim();
+  const email=document.getElementById('signupEmail').value.trim();
+  const pass=document.getElementById('signupPass').value;
+  if(!name||!email||!pass){showToast('Please fill in all fields.');return;}
+  if(pass.length<6){showToast('Password must be at least 6 characters.');return;}
+  signIn(name,email,selectedRole);
+  setTimeout(()=>window.location.href='../index.html',800);
+}
+</script></body></html>

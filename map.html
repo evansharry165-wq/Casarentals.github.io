@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Map — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+  html,body{height:100vh;overflow:hidden}
+  .map-page{display:grid;grid-template-columns:380px 1fr;height:calc(100vh - 64px);overflow:hidden}
+
+  /* ── LEFT PANEL ── */
+  .left-panel{display:flex;flex-direction:column;border-right:1px solid var(--rule);background:var(--paper);overflow:hidden}
+  .lp-head{padding:18px 20px 14px;border-bottom:1px solid var(--rule);flex-shrink:0}
+  .lp-head h1{font-family:var(--serif);font-size:28px;line-height:1;letter-spacing:-.015em;margin-bottom:10px}
+  .lp-head h1 i{font-style:italic;color:var(--brick)}
+
+  /* Layer toggle */
+  .layer-toggle{display:flex;gap:4px;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:3px;margin-bottom:12px}
+  .lt-btn{flex:1;padding:7px 0;border:none;background:transparent;border-radius:8px;font-family:var(--sans);font-size:12px;color:var(--ink-3);cursor:pointer;transition:all .12s;display:flex;align-items:center;justify-content:center;gap:5px}
+  .lt-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.7}
+  .lt-btn.active{background:var(--paper);color:var(--ink);font-weight:500;box-shadow:0 1px 4px rgba(22,20,15,.08)}
+  .lt-btn.prop.active{color:var(--brick)}
+  .lt-btn.feed.active{color:var(--moss)}
+  .lt-btn.both.active{color:var(--ink)}
+
+  /* Search */
+  .map-search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--rule);border-radius:10px;padding:9px 12px;transition:border-color .12s}
+  .map-search:focus-within{border-color:var(--brick)}
+  .map-search svg{width:13px;height:13px;stroke:var(--ink-3);fill:none;stroke-width:1.8;flex-shrink:0}
+  .map-search input{flex:1;border:none;background:transparent;outline:none;font-family:var(--sans);font-size:13px;color:var(--ink)}
+  .map-search input::placeholder{color:var(--ink-4)}
+
+  /* County pills */
+  .county-strip{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;padding:10px 20px;border-bottom:1px solid var(--rule);flex-shrink:0}
+  .county-strip::-webkit-scrollbar{display:none}
+  .cty-pill{flex-shrink:0;padding:6px 12px;border-radius:999px;background:var(--surface);border:1px solid var(--rule);font-size:12px;color:var(--ink-2);cursor:pointer;white-space:nowrap;transition:all .12s;font-family:var(--sans)}
+  .cty-pill:hover{border-color:var(--ink);color:var(--ink)}
+  .cty-pill.active{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:500}
+  .cty-pill .ct{font-family:var(--mono);font-size:9px;opacity:.55;margin-left:2px}
+
+  /* Results */
+  .lp-results{flex:1;overflow-y:auto}
+  .lp-results::-webkit-scrollbar{width:3px}
+  .lp-results::-webkit-scrollbar-thumb{background:var(--rule);border-radius:2px}
+  .results-head{display:flex;align-items:center;justify-content:space-between;padding:12px 20px 8px;position:sticky;top:0;background:var(--paper);z-index:2;border-bottom:1px solid var(--rule-2)}
+  .results-head .rh-count{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+  .results-head select{border:none;background:transparent;font-family:var(--sans);font-size:12px;color:var(--ink-2);outline:none;cursor:pointer}
+
+  /* Property card */
+  .map-pc{display:flex;gap:12px;padding:12px 20px;border-bottom:1px solid var(--rule-2);cursor:pointer;transition:background .1s;text-decoration:none;color:inherit}
+  .map-pc:hover{background:var(--surface)}
+  .map-pc.active{background:var(--brick-pale);border-left:3px solid var(--brick)}
+  .pc-img{width:88px;height:72px;border-radius:10px;overflow:hidden;flex-shrink:0}
+  .pc-img .ph{width:100%;height:100%}
+  .pc-info{flex:1;min-width:0}
+  .pc-name{font-family:var(--serif);font-size:15px;line-height:1.1;margin-bottom:2px}
+  .pc-name i{font-style:italic;color:var(--brick)}
+  .pc-loc{font-size:11.5px;color:var(--ink-3);margin-bottom:5px}
+  .pc-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:5px}
+  .pc-tag{font-size:10.5px;background:var(--surface);border:1px solid var(--rule);padding:1px 7px;border-radius:4px;color:var(--ink-3)}
+  .pc-foot{display:flex;align-items:center;justify-content:space-between}
+  .pc-price{font-family:var(--serif);font-size:15px}
+  .pc-price i{font-style:italic;color:var(--brick)}
+  .pc-price span{font-family:var(--sans);font-size:10px;color:var(--ink-4)}
+  .pc-rating{font-size:11.5px;color:var(--ink-3);display:flex;align-items:center;gap:3px}
+  .pc-rating svg{width:10px;height:10px;fill:var(--brick);stroke:none}
+  .pc-enquire{font-size:11px;color:var(--brick);font-weight:500}
+
+  /* Feed activity card */
+  .map-ac{display:flex;gap:11px;padding:12px 20px;border-bottom:1px solid var(--rule-2);cursor:pointer;transition:background .1s}
+  .map-ac:hover{background:var(--surface)}
+  .map-ac.active{background:var(--moss-pale);border-left:3px solid var(--moss)}
+  .ac-icon{width:34px;height:34px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+  .ac-icon svg{width:15px;height:15px;stroke:white;fill:none;stroke-width:1.8}
+  .ac-icon.tip{background:#8A6848}
+  .ac-icon.avail{background:var(--brick)}
+  .ac-icon.review{background:#7C6432}
+  .ac-icon.photo{background:#5A6078}
+  .ac-body{flex:1;min-width:0}
+  .ac-meta{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+  .ac-name{font-size:12.5px;font-weight:500;color:var(--ink)}
+  .ac-name i{font-style:italic;color:var(--brick)}
+  .ac-type{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:1px 6px;border-radius:3px}
+  .ac-type.tip{background:rgba(138,104,72,.15);color:#8A6848}
+  .ac-type.avail{background:var(--brick-pale);color:var(--brick-text)}
+  .ac-type.review{background:rgba(124,100,50,.15);color:#7C6432}
+  .ac-type.photo{background:rgba(90,96,120,.12);color:#5A6078}
+  .ac-when{font-family:var(--mono);font-size:9.5px;color:var(--ink-4);margin-left:auto}
+  .ac-text{font-size:12.5px;color:var(--ink-2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .ac-loc{font-size:11px;color:var(--ink-4);margin-top:4px;display:flex;align-items:center;gap:3px}
+  .ac-loc svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:1.8}
+
+  .section-head{padding:10px 20px 6px;font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);background:var(--paper-2);border-bottom:1px solid var(--rule-2);display:flex;align-items:center;gap:6px;position:sticky;top:41px;z-index:1}
+  .section-head .sh-dot{width:7px;height:7px;border-radius:50%}
+
+  .no-results{padding:40px 20px;text-align:center}
+  .no-results h3{font-family:var(--serif);font-style:italic;font-size:22px;margin-bottom:8px}
+  .no-results p{font-size:13px;color:var(--ink-3)}
+
+  /* ── MAP PANEL ── */
+  .map-panel{position:relative;background:#E8E4DA;overflow:hidden}
+
+  /* County fill zones */
+  .county-zone{fill:rgba(176,85,51,0.06);stroke:rgba(176,85,51,0.15);stroke-width:1;cursor:pointer;transition:fill .2s}
+  .county-zone:hover{fill:rgba(176,85,51,0.16)}
+  .county-zone.active{fill:rgba(176,85,51,0.22);stroke:var(--brick);stroke-width:2}
+  .county-zone.hot{fill:rgba(176,85,51,0.12);animation:heatPulse 3s ease-in-out infinite}
+  .county-zone.warm{fill:rgba(176,85,51,0.08)}
+  @keyframes heatPulse{0%,100%{fill:rgba(176,85,51,0.12)}50%{fill:rgba(176,85,51,0.2)}}
+
+  /* Map grid */
+  .map-panel::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(22,20,15,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(22,20,15,.03) 1px,transparent 1px);background-size:32px 32px;pointer-events:none}
+
+  /* Property pins */
+  .prop-pin{cursor:pointer;transition:transform .15s;transform-origin:center;filter:drop-shadow(0 2px 4px rgba(22,20,15,0.2))}
+  .prop-pin:hover{transform:scale(1.15);filter:drop-shadow(0 4px 8px rgba(22,20,15,0.3))}
+  .prop-pin.active{transform:scale(1.2)}
+  .prop-pin .pp-circle{fill:var(--brick);stroke:white;stroke-width:2;transition:fill .15s}
+  .prop-pin.active .pp-circle{fill:var(--ink)}
+  .prop-pin .pp-pulse{fill:rgba(176,85,51,0.25);display:none;animation:pinPulse 1.5s ease-out infinite}
+  .prop-pin.active .pp-pulse{display:block}
+  @keyframes pinPulse{0%{r:18;opacity:.8}100%{r:30;opacity:0}}
+
+  /* Activity pins */
+  .act-pin{cursor:pointer;transition:transform .15s;transform-origin:center;filter:drop-shadow(0 1px 3px rgba(22,20,15,0.15))}
+  .act-pin:hover{transform:scale(1.2)}
+  .act-pin .ap-bg{transition:fill .15s}
+  .act-pin.tip .ap-bg{fill:#8A6848}
+  .act-pin.avail .ap-bg{fill:var(--brick)}
+  .act-pin.review .ap-bg{fill:#7C6432}
+  .act-pin.photo .ap-bg{fill:#5A6078}
+
+  /* County labels on map */
+  .county-label{font-family:'Instrument Serif',serif;font-style:italic;font-size:10px;fill:rgba(58,50,38,0.7);pointer-events:none;transition:fill .2s}
+  .county-zone.active + text, .county-zone:hover + text{fill:var(--brick)}
+
+  /* Map overlays */
+  .map-overlay-card{position:absolute;background:var(--paper);border:1px solid var(--rule);border-radius:14px;box-shadow:0 8px 28px rgba(22,20,15,.12);z-index:20;min-width:260px;max-width:300px;animation:popIn .2s ease}
+  @keyframes popIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+  .moc-head{padding:13px 16px 10px;border-bottom:1px solid var(--rule-2)}
+  .moc-title{font-family:var(--serif);font-size:18px;line-height:1;margin-bottom:2px}
+  .moc-title i{font-style:italic;color:var(--brick)}
+  .moc-meta{font-size:11.5px;color:var(--ink-3)}
+  .moc-body{padding:10px 16px 13px}
+  .moc-stat-row{display:flex;gap:14px;margin-bottom:10px}
+  .moc-stat .n{font-family:var(--serif);font-style:italic;font-size:20px;color:var(--brick);line-height:1}
+  .moc-stat .l{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);margin-top:2px}
+  .moc-activity{font-size:12px;color:var(--ink-2);line-height:1.5;padding:8px 10px;background:var(--surface);border-radius:8px;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .moc-actions{display:flex;gap:6px}
+  .moc-btn{flex:1;padding:8px 0;border-radius:8px;font-size:12.5px;font-weight:500;text-align:center;text-decoration:none;font-family:var(--sans);cursor:pointer;border:none;transition:all .12s}
+  .moc-btn.primary{background:var(--brick);color:white}
+  .moc-btn.primary:hover{background:var(--brick-2)}
+  .moc-btn.outline{background:transparent;border:1px solid var(--rule);color:var(--ink-2)}
+  .moc-btn.outline:hover{border-color:var(--ink);color:var(--ink)}
+
+  /* Hover tooltip */
+  .map-tooltip{display:none;position:absolute;background:var(--ink);color:var(--paper);border-radius:10px;padding:10px 13px;pointer-events:none;z-index:30;max-width:240px;box-shadow:0 4px 16px rgba(22,20,15,.2)}
+  .map-tooltip.show{display:block}
+  .tt-head{font-family:var(--serif);font-size:13px;margin-bottom:3px}
+  .tt-head i{font-style:italic;color:var(--brick-2)}
+  .tt-type{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:5px}
+  .tt-body{font-size:12px;color:rgba(255,255,255,.75);line-height:1.45}
+  .tt-price{font-family:var(--serif);font-style:italic;font-size:15px;color:var(--brick-2);margin-top:5px}
+
+  /* Map controls */
+  .map-controls{position:absolute;bottom:20px;right:20px;display:flex;flex-direction:column;gap:4px;z-index:10}
+  .mc-btn{width:36px;height:36px;background:var(--paper);border:1px solid var(--rule);border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink);transition:all .12s;font-size:18px;font-weight:300}
+  .mc-btn:hover{background:var(--surface);border-color:var(--ink)}
+
+  /* Legend */
+  .map-legend{position:absolute;bottom:20px;left:20px;background:var(--paper);border:1px solid var(--rule);border-radius:12px;padding:10px 14px;z-index:10}
+  .ml-title{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-bottom:7px}
+  .ml-item{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--ink-2);margin-bottom:4px}
+  .ml-item:last-child{margin-bottom:0}
+  .ml-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .ml-sq{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+
+  /* Feed/browse toggle at top of map */
+  .map-top-bar{position:absolute;top:14px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:10}
+  .mtb-btn{padding:8px 16px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);font-family:var(--sans);font-size:13px;color:var(--ink-2);cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px rgba(22,20,15,.08)}
+  .mtb-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.7}
+  .mtb-btn:hover{border-color:var(--ink);color:var(--ink)}
+  .mtb-btn.active{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:500}
+
+  @media(max-width:900px){.map-page{grid-template-columns:1fr}.left-panel{height:40vh}.map-panel{height:60vh}}
+</style>
+</head>
+<body>
+<nav class="casa-nav solid">
+  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
+  <div class="nav-right">
+    <a class="nav-link" href="browse.html">Browse</a>
+    <a class="nav-link" href="map.html" style="color:var(--brick);font-weight:500">Map</a>
+    <a class="nav-link" href="feed.html">Feed</a>
+    <a class="nav-link" href="list.html">Become a host</a>
+    <div style="width:1px;height:20px;background:var(--rule);margin:0 4px"></div>
+    <a class="nav-link" href="saved.html">Saved</a>
+    <a class="nav-link" href="messages.html">Messages</a>
+    <a class="nav-link" href="signup.html">Sign in</a>
+    <a class="nav-link primary" href="signup.html">Join free</a>
+  </div>
+</nav>
+
+<div class="map-page">
+
+  <!-- LEFT PANEL -->
+  <aside class="left-panel">
+    <div class="lp-head">
+      <h1>Casa <i>live map</i></h1>
+
+      <!-- Layer toggle -->
+      <div class="layer-toggle">
+        <button class="lt-btn both active" onclick="setLayer('both',this)">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          All activity
+        </button>
+        <button class="lt-btn prop" onclick="setLayer('props',this)">
+          <svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/></svg>
+          Stays only
+        </button>
+        <button class="lt-btn feed" onclick="setLayer('feed',this)">
+          <svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg>
+          Feed only
+        </button>
+      </div>
+
+      <!-- Search -->
+      <div class="map-search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="text" id="mapSearch" placeholder="Search region, place, or #hashtag…" oninput="filterSearch(this.value)" onkeydown="if(event.key==='Enter')runSearch()">
+      </div>
+    </div>
+
+    <!-- County strip -->
+    <div class="county-strip" id="countyStrip">
+      <button class="cty-pill active" data-county="all" onclick="selectCounty(this,'all')">All UK <span class="ct">4,202</span></button>
+      <button class="cty-pill" data-county="lake-district" onclick="selectCounty(this,'lake-district')">🏔️ Lake District <span class="ct">214</span></button>
+      <button class="cty-pill" data-county="cornwall" onclick="selectCounty(this,'cornwall')">🌊 Cornwall <span class="ct">198</span></button>
+      <button class="cty-pill" data-county="highlands" onclick="selectCounty(this,'highlands')">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Highlands <span class="ct">145</span></button>
+      <button class="cty-pill" data-county="norfolk" onclick="selectCounty(this,'norfolk')">🌾 Norfolk <span class="ct">112</span></button>
+      <button class="cty-pill" data-county="yorkshire" onclick="selectCounty(this,'yorkshire')">🐑 Yorkshire <span class="ct">98</span></button>
+      <button class="cty-pill" data-county="cotswolds" onclick="selectCounty(this,'cotswolds')">🌿 Cotswolds <span class="ct">87</span></button>
+      <button class="cty-pill" data-county="skye" onclick="selectCounty(this,'skye')">⛵ Isle of Skye <span class="ct">67</span></button>
+      <button class="cty-pill" data-county="snowdonia" onclick="selectCounty(this,'snowdonia')">🏴󠁧󠁢󠁷󠁬󠁳󠁿 Snowdonia <span class="ct">54</span></button>
+      <button class="cty-pill" data-county="pembrokeshire" onclick="selectCounty(this,'pembrokeshire')">🌊 Pembrokeshire <span class="ct">48</span></button>
+      <button class="cty-pill" data-county="causeway" onclick="selectCounty(this,'causeway')">🇬🇧 Causeway Coast <span class="ct">29</span></button>
+    </div>
+
+    <!-- Results list -->
+    <div class="lp-results" id="resultsList">
+      <div class="results-head">
+        <span class="rh-count" id="resultsCount">Loading…</span>
+        <select onchange="sortResults(this.value)">
+          <option value="curated">Curated</option>
+          <option value="price-asc">Price ↑</option>
+          <option value="price-desc">Price ↓</option>
+          <option value="rating">Top rated</option>
+          <option value="recent">Most recent</option>
+        </select>
+      </div>
+      <div id="listItems"></div>
+    </div>
+  </aside>
+
+  <!-- MAP PANEL -->
+  <div class="map-panel" id="mapPanel" onclick="closeOverlay()">
+
+    <!-- Layer buttons at top -->
+    <div class="map-top-bar">
+      <button class="mtb-btn active" id="btnBrowse" onclick="event.stopPropagation();setMapView('browse',this)">
+        <svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/></svg>
+        Properties
+      </button>
+      <button class="mtb-btn" id="btnFeed" onclick="event.stopPropagation();setMapView('feed',this)">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg>
+        Feed activity
+      </button>
+      <button class="mtb-btn" id="btnBoth" onclick="event.stopPropagation();setMapView('both',this)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Both layers
+      </button>
+    </div>
+
+    <!-- UK SVG MAP -->
+    <svg id="ukMap" viewBox="0 0 480 680" style="width:100%;height:100%;display:block" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <filter id="mapShadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(22,20,15,0.15)"/></filter>
+      </defs>
+
+      <!-- Background -->
+      <rect width="480" height="680" fill="#E8E4DA"/>
+      <!-- Grid -->
+      <defs>
+        <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+          <path d="M 32 0 L 0 0 0 32" fill="none" stroke="rgba(22,20,15,0.04)" stroke-width="1"/>
+        </pattern>
+      </defs>
+      <rect width="480" height="680" fill="url(#grid)"/>
+
+      <!-- ── COUNTY ZONES (clickable fill regions) ── -->
+
+      <!-- Scottish Highlands -->
+      <path class="county-zone hot" id="zone-highlands" data-county="highlands"
+        d="M 95 30 L 170 20 L 200 45 L 190 80 L 175 100 L 155 95 L 145 80 L 125 85 L 105 70 L 90 50 Z"
+        onclick="zoneClick(event,'highlands')"/>
+      <text x="148" y="65" class="county-label" text-anchor="middle">Highlands</text>
+
+      <!-- Isle of Skye -->
+      <path class="county-zone warm" id="zone-skye" data-county="skye"
+        d="M 78 68 L 100 58 L 108 75 L 95 85 L 78 82 Z"
+        onclick="zoneClick(event,'skye')"/>
+      <text x="93" y="76" class="county-label" text-anchor="middle" font-size="8">Skye</text>
+
+      <!-- N.Ireland -->
+      <path class="county-zone warm" id="zone-causeway" data-county="causeway"
+        d="M 70 145 L 110 138 L 115 158 L 100 170 L 72 168 L 65 155 Z"
+        onclick="zoneClick(event,'causeway')"/>
+      <text x="90" y="158" class="county-label" text-anchor="middle" font-size="8">N.Ireland</text>
+
+      <!-- Lake District -->
+      <path class="county-zone hot" id="zone-lake-district" data-county="lake-district"
+        d="M 118 210 L 152 202 L 165 215 L 160 238 L 148 248 L 130 245 L 115 232 Z"
+        onclick="zoneClick(event,'lake-district')"/>
+      <text x="140" y="228" class="county-label" text-anchor="middle" font-size="8.5">Lake District</text>
+
+      <!-- Yorkshire -->
+      <path class="county-zone warm" id="zone-yorkshire" data-county="yorkshire"
+        d="M 160 230 L 200 224 L 210 248 L 198 268 L 175 272 L 162 258 Z"
+        onclick="zoneClick(event,'yorkshire')"/>
+      <text x="183" y="252" class="county-label" text-anchor="middle" font-size="8.5">Yorkshire</text>
+
+      <!-- Norfolk -->
+      <path class="county-zone warm" id="zone-norfolk" data-county="norfolk"
+        d="M 202 278 L 240 272 L 248 290 L 232 302 L 208 300 L 198 290 Z"
+        onclick="zoneClick(event,'norfolk')"/>
+      <text x="220" y="291" class="county-label" text-anchor="middle" font-size="8.5">Norfolk</text>
+
+      <!-- Cotswolds -->
+      <path class="county-zone warm" id="zone-cotswolds" data-county="cotswolds"
+        d="M 158 330 L 195 324 L 200 345 L 185 358 L 162 355 L 152 342 Z"
+        onclick="zoneClick(event,'cotswolds')"/>
+      <text x="177" y="343" class="county-label" text-anchor="middle" font-size="8.5">Cotswolds</text>
+
+      <!-- Snowdonia -->
+      <path class="county-zone warm" id="zone-snowdonia" data-county="snowdonia"
+        d="M 110 282 L 140 276 L 148 296 L 135 310 L 112 308 L 103 295 Z"
+        onclick="zoneClick(event,'snowdonia')"/>
+      <text x="125" y="296" class="county-label" text-anchor="middle" font-size="8">Snowdonia</text>
+
+      <!-- Pembrokeshire -->
+      <path class="county-zone warm" id="zone-pembrokeshire" data-county="pembrokeshire"
+        d="M 88 332 L 115 328 L 120 348 L 105 360 L 85 355 L 80 342 Z"
+        onclick="zoneClick(event,'pembrokeshire')"/>
+      <text x="100" y="347" class="county-label" text-anchor="middle" font-size="8">Pembs.</text>
+
+      <!-- Cornwall -->
+      <path class="county-zone hot" id="zone-cornwall" data-county="cornwall"
+        d="M 90 415 L 130 408 L 138 430 L 118 452 L 95 448 L 82 433 Z"
+        onclick="zoneClick(event,'cornwall')"/>
+      <text x="110" y="435" class="county-label" text-anchor="middle" font-size="8.5">Cornwall</text>
+
+      <!-- England body (non-interactive background) -->
+      <path fill="rgba(200,194,178,0.35)" stroke="rgba(138,120,88,0.3)" stroke-width="1" pointer-events="none"
+        d="M 108 138 L 165 130 L 198 148 L 215 168 L 220 200 L 205 225 L 178 240 L 185 268 L 200 290 L 205 320 L 192 358 L 172 400 L 150 430 L 132 455 L 108 440 L 90 415 L 78 385 L 82 355 L 75 332 L 85 302 L 112 285 L 118 260 L 115 235 L 108 210 L 100 185 L 108 165 Z"/>
+
+      <!-- Scotland body -->
+      <path fill="rgba(188,185,172,0.3)" stroke="rgba(138,120,88,0.25)" stroke-width="1" pointer-events="none"
+        d="M 88 138 L 108 138 L 108 165 L 100 185 L 108 210 L 118 210 L 118 202 L 138 195 L 155 200 L 165 215 L 165 130 L 190 82 L 200 45 L 170 20 L 95 30 L 80 50 L 78 82 L 70 100 L 65 125 Z"/>
+
+      <!-- Wales body -->
+      <path fill="rgba(188,192,178,0.3)" stroke="rgba(138,120,88,0.25)" stroke-width="1" pointer-events="none"
+        d="M 85 260 L 118 255 L 118 280 L 110 282 L 103 295 L 112 308 L 120 328 L 115 350 L 100 362 L 82 355 L 75 332 L 82 302 L 88 280 Z"/>
+
+      <!-- ══ PROPERTY PINS ══ -->
+      <g id="propPins"></g>
+
+      <!-- ══ ACTIVITY PINS ══ -->
+      <g id="actPins"></g>
+
+    </svg>
+
+    <!-- Hover tooltip -->
+    <div class="map-tooltip" id="mapTooltip">
+      <div class="tt-type" id="ttType"></div>
+      <div class="tt-head" id="ttHead"></div>
+      <div class="tt-body" id="ttBody"></div>
+      <div class="tt-price" id="ttPrice"></div>
+    </div>
+
+    <!-- County overlay card (shows when county clicked) -->
+    <div class="map-overlay-card" id="countyCard" style="display:none;top:60px;right:20px" onclick="event.stopPropagation()">
+      <div class="moc-head">
+        <div class="moc-title" id="mocTitle">Lake <i>District</i></div>
+        <div class="moc-meta" id="mocMeta">214 stays · Cumbria</div>
+      </div>
+      <div class="moc-body">
+        <div class="moc-stat-row">
+          <div class="moc-stat"><div class="n" id="mocStays">214</div><div class="l">Stays</div></div>
+          <div class="moc-stat"><div class="n" id="mocPosts">18</div><div class="l">Posts today</div></div>
+          <div class="moc-stat"><div class="n" id="mocActive">312</div><div class="l">Members</div></div>
+        </div>
+        <div class="moc-activity" id="mocActivity">Latest from the feed: Sarah R. just posted a last-minute opening at Stone Cottage, Windermere — 12–19 July, sleeps 6.</div>
+        <div class="moc-actions">
+          <a class="moc-btn primary" id="mocBrowse" href="browse.html">View stays</a>
+          <a class="moc-btn outline" id="mocFeed" href="feed.html">Open feed</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map legend -->
+    <div class="map-legend">
+      <div class="ml-title">Map key</div>
+      <div class="ml-item"><div class="ml-dot" style="background:var(--brick)"></div> Listed stay</div>
+      <div class="ml-item"><div class="ml-dot" style="background:#8A6848"></div> Walk / local tip</div>
+      <div class="ml-item"><div class="ml-dot" style="background:#7C6432"></div> Review posted</div>
+      <div class="ml-item"><div class="ml-dot" style="background:var(--moss)"></div> Availability</div>
+      <div class="ml-item"><div class="ml-sq" style="background:rgba(176,85,51,0.2);border:1px solid var(--brick)"></div> Active county</div>
+    </div>
+
+    <!-- Controls -->
+    <div class="map-controls">
+      <button class="mc-btn" onclick="mapZoom(1.2)" title="Zoom in">+</button>
+      <button class="mc-btn" onclick="mapZoom(0.8)" title="Zoom out">−</button>
+      <button class="mc-btn" title="Reset view" onclick="resetView()" style="font-size:13px">⌂</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════
+
+// Properties — each has x/y coords on the SVG map
+const PROPS = [
+  {id:1,title:'Stone Cottage',loc:'Windermere',county:'lake-district',type:'cottage',price:175,rating:4.9,reviews:23,sleeps:6,beds:3,tags:['woodburner','pets'],badge:'verified',col:'warm',x:132,y:222},
+  {id:2,title:'Slate Barn',loc:'Ambleside',county:'lake-district',type:'barn',price:215,rating:4.8,reviews:11,sleeps:4,beds:2,tags:['hottub'],badge:'new',col:'sage',x:142,y:232},
+  {id:3,title:'Lakeside Cabin',loc:'Coniston',county:'lake-district',type:'cabin',price:145,rating:5.0,reviews:34,sleeps:2,beds:1,tags:[],col:'cool',x:128,y:238},
+  {id:4,title:'Georgian House',loc:'Keswick',county:'lake-district',type:'cottage',price:240,rating:4.9,reviews:47,sleeps:8,beds:4,tags:['parking'],badge:'verified',col:'fog',x:138,y:214},
+  {id:5,title:"Shepherd's Hut",loc:'Buttermere',county:'lake-district',type:'glamping',price:95,rating:4.7,reviews:8,sleeps:2,beds:1,tags:['offgrid'],col:'dusk',x:122,y:225},
+  {id:6,title:"Miller's Cottage",loc:'Grasmere',county:'lake-district',type:'cottage',price:165,rating:4.8,reviews:19,sleeps:4,beds:2,tags:['woodburner'],col:'ink',x:135,y:228},
+  {id:7,title:'The Granary',loc:'Hawkshead',county:'lake-district',type:'farmhouse',price:195,rating:4.9,reviews:56,sleeps:5,beds:3,tags:['pets','woodburner'],badge:'editors',col:'brick',x:138,y:234},
+  {id:8,title:'Hillside Farmhouse',loc:'Grizedale',county:'lake-district',type:'farmhouse',price:385,rating:4.6,reviews:14,sleeps:10,beds:5,tags:['hottub'],col:'warm',x:144,y:238},
+  {id:9,title:'Cliffside Cottage',loc:'Porthcurno',county:'cornwall',type:'cottage',price:210,rating:4.9,reviews:41,sleeps:4,beds:2,tags:['seaview','woodburner'],badge:'verified',col:'cool',x:94,y:445},
+  {id:10,title:'Tregothnan Lodge',loc:'Truro',county:'cornwall',type:'cabin',price:320,rating:4.8,reviews:22,sleeps:8,beds:4,tags:['hottub','pets'],col:'sage',x:108,y:434},
+  {id:11,title:'Harbour Cottage',loc:'Mousehole',county:'cornwall',type:'cottage',price:155,rating:4.9,reviews:63,sleeps:3,beds:2,tags:['seaview'],badge:'editors',col:'dusk',x:92,y:443},
+  {id:12,title:'St Agnes Farmhouse',loc:'St Agnes',county:'cornwall',type:'farmhouse',price:185,rating:4.7,reviews:18,sleeps:6,beds:3,tags:['woodburner','pets'],col:'warm',x:100,y:438},
+  {id:13,title:'The Boathouse',loc:'Fowey',county:'cornwall',type:'houseboat',price:175,rating:5.0,reviews:29,sleeps:2,beds:1,tags:['seaview'],badge:'verified',col:'cool',x:113,y:437},
+  {id:14,title:'Mizen Shepherd Hut',loc:'Zennor',county:'cornwall',type:'glamping',price:115,rating:4.8,reviews:12,sleeps:2,beds:1,tags:['offgrid','seaview'],col:'fog',x:88,y:440},
+  {id:15,title:'Restored Blackhouse',loc:'Trotternish',county:'highlands',type:'cottage',price:195,rating:4.9,reviews:31,sleeps:4,beds:2,tags:['offgrid','hottub','seaview'],badge:'verified',col:'cool',x:98,y:72},
+  {id:16,title:'Glen Coe Bothy',loc:'Glencoe',county:'highlands',type:'cabin',price:130,rating:4.7,reviews:15,sleeps:3,beds:2,tags:['woodburner','offgrid'],col:'fog',x:132,y:88},
+  {id:17,title:'Loch Ness Lodge',loc:'Drumnadrochit',county:'highlands',type:'cabin',price:280,rating:4.8,reviews:44,sleeps:6,beds:3,tags:['seaview','hottub'],col:'sage',x:148,y:62},
+  {id:18,title:'Croft House',loc:'Torridon',county:'highlands',type:'farmhouse',price:165,rating:4.9,reviews:27,sleeps:4,beds:2,tags:['woodburner','pets'],badge:'verified',col:'warm',x:118,y:55},
+  {id:19,title:'Isle of Skye Hideaway',loc:'Portree',county:'skye',type:'cottage',price:220,rating:5.0,reviews:38,sleeps:2,beds:1,tags:['seaview','offgrid'],badge:'editors',col:'cool',x:93,y:73},
+  {id:20,title:'Burnham Overy Barn',loc:'Burnham Overy',county:'norfolk',type:'barn',price:195,rating:4.8,reviews:33,sleeps:6,beds:3,tags:['seaview','pets'],badge:'verified',col:'warm',x:218,y:282},
+  {id:21,title:'The Granary',loc:'Wells-next-the-Sea',county:'norfolk',type:'farmhouse',price:145,rating:4.7,reviews:21,sleeps:4,beds:2,tags:['woodburner'],col:'sage',x:224,y:278},
+  {id:22,title:'Saltmarsh Cabin',loc:'Blakeney',county:'norfolk',type:'cabin',price:110,rating:4.6,reviews:9,sleeps:2,beds:1,tags:['seaview','offgrid'],col:'cool',x:230,y:284},
+  {id:23,title:'Brancaster Hall',loc:'Brancaster',county:'norfolk',type:'manor',price:450,rating:4.9,reviews:17,sleeps:12,beds:6,tags:['hottub'],badge:'editors',col:'ink',x:215,y:277},
+  {id:24,title:'Moorland Cottage',loc:'Goathland',county:'yorkshire',type:'cottage',price:160,rating:4.8,reviews:28,sleeps:4,beds:2,tags:['woodburner','pets'],badge:'verified',col:'warm',x:185,y:248},
+  {id:25,title:'Dales Farmhouse',loc:'Wharfedale',county:'yorkshire',type:'farmhouse',price:225,rating:4.9,reviews:52,sleeps:8,beds:4,tags:['hottub','pets'],badge:'editors',col:'cool',x:175,y:244},
+  {id:26,title:'The Old Forge',loc:'Whitby',county:'yorkshire',type:'cottage',price:135,rating:4.7,reviews:14,sleeps:3,beds:2,tags:['seaview','woodburner'],col:'fog',x:195,y:240},
+  {id:27,title:'Honeysuckle Cottage',loc:'Bourton-on-the-Water',county:'cotswolds',type:'cottage',price:195,rating:4.9,reviews:44,sleeps:4,beds:2,tags:['woodburner'],badge:'verified',col:'warm',x:172,y:338},
+  {id:28,title:'Chipping Manor',loc:'Chipping Campden',county:'cotswolds',type:'manor',price:550,rating:5.0,reviews:19,sleeps:14,beds:7,tags:['hottub'],badge:'editors',col:'sage',x:180,y:333},
+  {id:29,title:'The Old Mill',loc:'Bourton-on-the-Hill',county:'cotswolds',type:'farmhouse',price:175,rating:4.8,reviews:31,sleeps:5,beds:3,tags:['woodburner','pets'],col:'dusk',x:178,y:344},
+  {id:30,title:'Pembroke Cliffside',loc:'St Davids',county:'pembrokeshire',type:'cottage',price:175,rating:4.9,reviews:36,sleeps:4,beds:2,tags:['seaview','woodburner'],badge:'verified',col:'cool',x:87,y:342},
+  {id:31,title:'The Boathouse',loc:'Solva',county:'pembrokeshire',type:'houseboat',price:155,rating:4.8,reviews:18,sleeps:2,beds:1,tags:['seaview'],col:'dusk',x:94,y:345},
+  {id:32,title:'Coast Path Glamping',loc:'Marloes',county:'pembrokeshire',type:'glamping',price:90,rating:4.7,reviews:11,sleeps:2,beds:1,tags:['seaview','offgrid'],col:'sage',x:82,y:348},
+  {id:33,title:'Hafod Cottage',loc:'Betws-y-Coed',county:'snowdonia',type:'cottage',price:145,rating:4.8,reviews:24,sleeps:4,beds:2,tags:['woodburner','pets'],badge:'verified',col:'warm',x:122,y:294},
+  {id:34,title:'Llyn Padarn Cabin',loc:'Llanberis',county:'snowdonia',type:'cabin',price:185,rating:4.9,reviews:39,sleeps:4,beds:2,tags:['seaview','hottub'],badge:'editors',col:'cool',x:115,y:298},
+  {id:35,title:"Giant's Causeway Cottage",loc:'Bushmills',county:'causeway',type:'cottage',price:165,rating:4.9,reviews:22,sleeps:4,beds:2,tags:['seaview','woodburner'],badge:'verified',col:'fog',x:82,y:148},
+  {id:36,title:'Dark Hedges Farmhouse',loc:'Armoy',county:'causeway',type:'farmhouse',price:190,rating:4.8,reviews:15,sleeps:6,beds:3,tags:['woodburner','pets'],col:'warm',x:92,y:155},
+];
+
+// Feed activity with map coordinates
+const FEED_ACTS = [
+  {id:'f1',type:'tip',county:'lake-district',name:'Hannah F.',text:"If you can get there before 8am, the climb up the Old Man of Coniston from Walna Scar is magic — completely empty.",loc:'Coniston, Cumbria',when:'2 days ago',x:126,y:242,emoji:'🥾'},
+  {id:'f2',type:'avail',county:'lake-district',name:'Sarah R.',text:"Just got a cancellation — 12–19 July now open at Stone Cottage. Sleeps 6, wood burner, dogs welcome.",loc:'Windermere, Cumbria',when:'2 hrs ago',x:134,y:220,emoji:'🏡'},
+  {id:'f3',type:'review',county:'lake-district',name:'Marcus J.',text:"Just back from a week at The Granary. Hannah was the easiest host we've ever booked with. Cannot recommend enough.",loc:'Hawkshead, Cumbria',when:'Yesterday',x:140,y:232,emoji:'⭐'},
+  {id:'f4',type:'tip',county:'lake-district',name:'Tom & Anna',text:"Buttermere this morning — the fells in the cloud and not a soul on the lake. June here is the secret time.",loc:'Buttermere, Cumbria',when:'Yesterday',x:120,y:227,emoji:'📸'},
+  {id:'f5',type:'tip',county:'cornwall',name:'Alice M.',text:"Zennor is one of those Cornish places that still hasn't been discovered. The walk to St Ives is 3 hours each way — utterly empty.",loc:'Zennor, Cornwall',when:'Yesterday',x:88,y:442,emoji:'🌊'},
+  {id:'f6',type:'avail',county:'cornwall',name:'Rachel B.',text:"Late cancellation — 20–27 July free at Harbour Cottage. Sea views, two minutes from the harbour wall.",loc:'Mousehole, Cornwall',when:'4 hrs ago',x:91,y:445,emoji:'⚓'},
+  {id:'f7',type:'review',county:'cornwall',name:'James T.',text:"Cliffside Cottage is everything the photos promised — the sea view from the bedroom is extraordinary.",loc:'Porthcurno, Cornwall',when:'1 hr ago',x:96,y:447,emoji:'⭐'},
+  {id:'f8',type:'tip',county:'highlands',name:'Neil F.',text:"The Lairig Ghru is Scotland's most dramatic mountain pass and 90% of tourists have never heard of it. 27 miles, camp wild.",loc:'Cairngorms, Scotland',when:'Yesterday',x:158,y:62,emoji:'🏔️'},
+  {id:'f9',type:'avail',county:'highlands',name:'Callum D.',text:"Two weeks free in August at Glen Coe Bothy. Off-grid, wood burner, the best walking in Scotland.",loc:'Glencoe, Highlands',when:'3 hrs ago',x:133,y:88,emoji:'🏕️'},
+  {id:'f10',type:'tip',county:'norfolk',name:'Charlie R.',text:"Wells at 7am in October — beach completely empty, boats coming in, bacon rolls at the Quayside Cafe are £3.50.",loc:'Wells-next-the-Sea, Norfolk',when:'Yesterday',x:226,y:280,emoji:'🌅'},
+  {id:'f11',type:'tip',county:'yorkshire',name:'Graham',text:"The Dales at their finest this morning — buttercups and the sound of nothing.",loc:'Wharfedale, Yorkshire',when:'2 hrs ago',x:177,y:244,emoji:'🌿'},
+  {id:'f12',type:'avail',county:'cornwall',name:'Martin & Sue',text:"The lodge garden this morning — roses in full bloom. August still has availability at Tregothnan.",loc:'Truro, Cornwall',when:'2 days ago',x:109,y:433,emoji:'🌹'},
+  {id:'f13',type:'tip',county:'causeway',name:'Fiona',text:"The Giant's Causeway at sunrise — completely alone for the first 20 minutes. Arrive by 6:30am.",loc:'Bushmills, Antrim',when:'3 days ago',x:85,y:150,emoji:'🪨'},
+  {id:'f14',type:'review',county:'highlands',name:'Sophie W.',text:"Croft House is the most remote and beautiful place we've ever stayed. Callum was exceptional.",loc:'Torridon, Highlands',when:'2 days ago',x:120,y:56,emoji:'⭐'},
+];
+
+const COUNTY_META = {
+  all:{title:'All <i>UK</i>',meta:'4,202 stays across the UK',stays:'4,202',posts:'94',active:'1,847',activity:'The most active feed today: Lake District with 18 new posts, Cornwall with 14.', browseLink:'browse.html',feedLink:'feed.html'},
+  'lake-district':{title:'Lake <i>District</i>',meta:'214 stays · Cumbria, England',stays:'214',posts:'18',active:'312',activity:"Sarah R. just posted a last-minute opening at Stone Cottage, Windermere. Hannah F. shared a Coniston walk tip that's been liked 128 times.",browseLink:'browse.html?region=lake-district',feedLink:'feed.html?county=cumbria'},
+  cornwall:{title:'<i>Cornwall</i>',meta:'198 stays · South West England',stays:'198',posts:'22',active:'287',activity:"Rachel B. just posted a last-minute cancellation at Harbour Cottage, Mousehole. James T. left a 5-star review for Cliffside Cottage.",browseLink:'browse.html?region=cornwall',feedLink:'feed.html?county=cornwall'},
+  highlands:{title:'Scottish <i>Highlands</i>',meta:'145 stays · Scotland',stays:'145',posts:'14',active:'198',activity:"Callum D. has two weeks free at Glen Coe Bothy in August. Neil F.'s Lairig Ghru tip has 88 likes and 34 replies.",browseLink:'browse.html?region=highlands',feedLink:'feed.html?county=highlands'},
+  norfolk:{title:'<i>Norfolk</i>',meta:'112 stays · East Anglia',stays:'112',posts:'11',active:'167',activity:"Bridget H. at Burnham Overy Barn has September wide open. Charlie R.'s Wells sunrise post is trending today.",browseLink:'browse.html?region=norfolk',feedLink:'feed.html?county=norfolk'},
+  yorkshire:{title:'<i>Yorkshire</i>',meta:'98 stays · Northern England',stays:'98',posts:'9',active:'143',activity:"Graham & Kate posted a beautiful Dales photo this morning — already 56 likes. August availability still open at Dales Farmhouse.",browseLink:'browse.html?region=yorkshire',feedLink:'feed.html?county=yorkshire'},
+  cotswolds:{title:'The <i>Cotswolds</i>',meta:'87 stays · Gloucestershire',stays:'87',posts:'8',active:'121',activity:"Honeysuckle Cottage and Chipping Manor both have summer availability. Quiet week on the feed — a good time to post.",browseLink:'browse.html?region=cotswolds',feedLink:'feed.html?county=cotswolds'},
+  skye:{title:'Isle of <i>Skye</i>',meta:'67 stays · Scotland',stays:'67',posts:'6',active:'89',activity:"Fiona M.'s Storr sunrise photo from the Blackhouse is the most liked post this week — 112 likes.",browseLink:'browse.html?region=skye',feedLink:'feed.html?county=highlands'},
+  snowdonia:{title:'<i>Snowdonia</i>',meta:'54 stays · Wales',stays:'54',posts:'6',active:'89',activity:"Llyn Padarn Cabin has late July availability. Hafod Cottage just received a 5-star review from a returning guest.",browseLink:'browse.html?region=snowdonia',feedLink:'feed.html?county=snowdonia'},
+  pembrokeshire:{title:'<i>Pembrokeshire</i>',meta:'48 stays · Wales',stays:'48',posts:'5',active:'78',activity:"Pembroke Cliffside just dropped their September price. Three new reviews posted this week.",browseLink:'browse.html?region=pembrokeshire',feedLink:'feed.html?county=pembrokeshire'},
+  causeway:{title:'Causeway <i>Coast</i>',meta:'29 stays · N. Ireland',stays:'29',posts:'3',active:'44',activity:"Fiona's sunrise tip at the Causeway is getting traction — 3 new bookings this week.",browseLink:'browse.html?region=causeway',feedLink:'feed.html?county=causeway'},
+};
+
+const TAG_LABELS = {woodburner:'Wood burner',hottub:'Hot tub',pets:'Pets ok',seaview:'Sea view',offgrid:'Off-grid'};
+const BADGE_CFG  = {verified:{cls:'moss',text:'✓ Verified'},editors:{cls:'',text:"Editor's pick"},new:{cls:'ink',text:'New'}};
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let state = {county:'all', layer:'both', sort:'curated', search:''};
+let activeCard = null;
+
+// ══════════════════════════════════════════
+// RENDER MAP PINS
+// ══════════════════════════════════════════
+function renderMapPins() {
+  const propLayer  = document.getElementById('propPins');
+  const actLayer   = document.getElementById('actPins');
+  const showProps  = state.layer === 'both' || state.layer === 'props';
+  const showFeed   = state.layer === 'both' || state.layer === 'feed';
+
+  // Property pins
+  const props = state.county === 'all' ? PROPS : PROPS.filter(p => p.county === state.county);
+  propLayer.innerHTML = showProps ? props.map(p => `
+    <g class="prop-pin" id="pp-${p.id}" onclick="event.stopPropagation();propPinClick(${p.id})"
+       onmouseenter="showPropTip(event,${p.id})" onmouseleave="hideTip()">
+      <circle class="pp-pulse" cx="${p.x}" cy="${p.y}" r="0"/>
+      <circle class="pp-circle" cx="${p.x}" cy="${p.y}" r="${p.sleeps > 6 ? 10 : p.sleeps > 3 ? 8 : 6}"/>
+      <text x="${p.x}" y="${p.y+3.5}" font-size="7" fill="white" text-anchor="middle" font-family="JetBrains Mono,monospace" font-weight="500" pointer-events="none">£${p.price}</text>
+    </g>`).join('') : '';
+
+  // Activity pins
+  const acts = state.county === 'all' ? FEED_ACTS : FEED_ACTS.filter(a => a.county === state.county);
+  const typeColors = {tip:'#8A6848', avail:'var(--brick)', review:'#7C6432', photo:'#5A6078'};
+  actLayer.innerHTML = showFeed ? acts.map(a => `
+    <g class="act-pin ${a.type}" id="ap-${a.id}" onclick="event.stopPropagation();actPinClick('${a.id}')"
+       onmouseenter="showActTip(event,'${a.id}')" onmouseleave="hideTip()">
+      <rect class="ap-bg" x="${a.x-7}" y="${a.y-7}" width="14" height="14" rx="4"/>
+      <text x="${a.x}" y="${a.y+4}" font-size="8" text-anchor="middle" pointer-events="none">${a.emoji}</text>
+    </g>`).join('') : '';
+}
+
+// ══════════════════════════════════════════
+// RENDER LEFT LIST
+// ══════════════════════════════════════════
+function renderList() {
+  const container = document.getElementById('listItems');
+  const showProps = state.layer === 'both' || state.layer === 'props';
+  const showFeed  = state.layer === 'both' || state.layer === 'feed';
+
+  let props = state.county === 'all' ? PROPS : PROPS.filter(p => p.county === state.county);
+  let acts  = state.county === 'all' ? FEED_ACTS : FEED_ACTS.filter(a => a.county === state.county);
+
+  if (state.search) {
+    const q = state.search.toLowerCase();
+    props = props.filter(p => p.title.toLowerCase().includes(q) || p.loc.toLowerCase().includes(q));
+    acts  = acts.filter(a => a.text.toLowerCase().includes(q) || a.loc.toLowerCase().includes(q) || a.name.toLowerCase().includes(q));
+  }
+
+  if (state.sort === 'price-asc')  props = [...props].sort((a,b) => a.price-b.price);
+  if (state.sort === 'price-desc') props = [...props].sort((a,b) => b.price-a.price);
+  if (state.sort === 'rating')     props = [...props].sort((a,b) => b.rating-a.rating);
+
+  const total = (showProps ? props.length : 0) + (showFeed ? acts.length : 0);
+  document.getElementById('resultsCount').textContent = total + ' result' + (total !== 1 ? 's' : '');
+
+  let html = '';
+
+  if (showProps && props.length) {
+    html += `<div class="section-head"><span class="sh-dot" style="background:var(--brick)"></span> Stays (${props.length})</div>`;
+    html += props.map(p => {
+      const tags = p.tags.slice(0,2).map(t => `<span class="pc-tag">${TAG_LABELS[t]||t}</span>`).join('');
+      const bdg = p.badge ? `<span class="badge ${BADGE_CFG[p.badge].cls}" style="font-size:9px;padding:1px 5px">${BADGE_CFG[p.badge].text}</span>` : '';
+      return `<a class="map-pc" id="lc-${p.id}" href="property.html" onclick="cardClick(event,${p.id})">
+        <div class="pc-img"><div class="ph ${p.col}" style="width:88px;height:72px"></div></div>
+        <div class="pc-info">
+          <div class="pc-name">${p.title}, <i>${p.loc}</i> ${bdg}</div>
+          <div class="pc-loc">${p.county.replace(/-/g,' ')} · Sleeps ${p.sleeps}</div>
+          <div class="pc-tags">${tags}</div>
+          <div class="pc-foot">
+            <div class="pc-price"><i>£${p.price}</i><span> /night</span></div>
+            <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>${p.rating}</div>
+            <span class="pc-enquire">View →</span>
+          </div>
+        </div>
+      </a>`;
+    }).join('');
+  }
+
+  if (showFeed && acts.length) {
+    html += `<div class="section-head"><span class="sh-dot" style="background:var(--moss)"></span> Feed activity (${acts.length})</div>`;
+    html += acts.map(a => {
+      const icons = {tip:'<path d="M3 20 9 10l4 6 2-3 6 7z"/>',avail:'<path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/>',review:'<path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/>',photo:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/>'};
+      const typeLabel = {tip:'Local tip',avail:'Availability',review:'Review',photo:'Photo'}[a.type] || a.type;
+      return `<div class="map-ac" id="lac-${a.id}" onclick="actCardClick('${a.id}')">
+        <div class="ac-icon ${a.type}"><svg viewBox="0 0 24 24">${icons[a.type]||''}</svg></div>
+        <div class="ac-body">
+          <div class="ac-meta">
+            <span class="ac-name"><i>${a.name}</i></span>
+            <span class="ac-type ${a.type}">${typeLabel}</span>
+            <span class="ac-when">${a.when}</span>
+          </div>
+          <div class="ac-text">${a.text}</div>
+          <div class="ac-loc"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>${a.loc}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  if (!html) {
+    html = `<div class="no-results"><h3>Nothing here yet.</h3><p>Try changing the county or layer filter.</p></div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function render() { renderMapPins(); renderList(); }
+
+// ══════════════════════════════════════════
+// INTERACTIONS
+// ══════════════════════════════════════════
+function selectCounty(btn, county) {
+  document.querySelectorAll('.cty-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  state.county = county;
+  // Activate zone
+  document.querySelectorAll('.county-zone').forEach(z => z.classList.remove('active'));
+  if (county !== 'all') {
+    document.getElementById('zone-' + county)?.classList.add('active');
+    showCountyCard(county);
+  } else {
+    closeOverlay();
+  }
+  render();
+}
+
+function zoneClick(e, county) {
+  e.stopPropagation();
+  // Select the pill
+  document.querySelectorAll('.cty-pill').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.cty-pill[data-county="${county}"]`)?.classList.add('active');
+  // Activate zone
+  document.querySelectorAll('.county-zone').forEach(z => z.classList.remove('active'));
+  e.target.classList.add('active');
+  state.county = county;
+  showCountyCard(county);
+  render();
+  // Scroll county pill into view
+  document.querySelector(`.cty-pill[data-county="${county}"]`)?.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+}
+
+function showCountyCard(county) {
+  const m = COUNTY_META[county];
+  if (!m) return;
+  const card = document.getElementById('countyCard');
+  document.getElementById('mocTitle').innerHTML = m.title;
+  document.getElementById('mocMeta').textContent = m.meta;
+  document.getElementById('mocStays').textContent = m.stays;
+  document.getElementById('mocPosts').textContent = m.posts;
+  document.getElementById('mocActive').textContent = m.active;
+  document.getElementById('mocActivity').textContent = m.activity;
+  document.getElementById('mocBrowse').href = m.browseLink;
+  document.getElementById('mocFeed').href = m.feedLink;
+  card.style.display = 'block';
+}
+
+function closeOverlay() {
+  document.getElementById('countyCard').style.display = 'none';
+}
+
+function setLayer(layer, btn) {
+  state.layer = layer;
+  document.querySelectorAll('.lt-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Sync map top bar
+  const mapBtnMap = {both:'btnBoth', props:'btnBrowse', feed:'btnFeed'};
+  document.querySelectorAll('.mtb-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(mapBtnMap[layer])?.classList.add('active');
+  render();
+}
+
+function setMapView(view, btn) {
+  const layerMap = {browse:'props', feed:'feed', both:'both'};
+  state.layer = layerMap[view];
+  document.querySelectorAll('.mtb-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Sync left toggle
+  document.querySelectorAll('.lt-btn').forEach(b => b.classList.remove('active'));
+  const ltBtnMap = {props:'.lt-btn.prop', feed:'.lt-btn.feed', both:'.lt-btn.both'};
+  document.querySelector(ltBtnMap[state.layer])?.classList.add('active');
+  render();
+}
+
+function sortResults(val) { state.sort = val; renderList(); }
+
+function filterSearch(val) {
+  state.search = val;
+  renderList();
+  if (!val) return;
+  // Try to match to a county
+  const lc = val.toLowerCase();
+  const match = PROPS.find(p => p.loc.toLowerCase().includes(lc) || p.title.toLowerCase().includes(lc));
+  if (match) {
+    document.querySelectorAll('.county-zone').forEach(z => z.classList.remove('active'));
+    document.getElementById('zone-' + match.county)?.classList.add('active');
+  }
+}
+
+function runSearch() { filterSearch(document.getElementById('mapSearch').value); }
+
+// Property pin clicked
+function propPinClick(id) {
+  document.querySelectorAll('.prop-pin').forEach(p => p.classList.remove('active'));
+  document.getElementById('pp-' + id)?.classList.add('active');
+  document.querySelectorAll('.map-pc').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById('lc-' + id);
+  if (card) { card.classList.add('active'); card.scrollIntoView({behavior:'smooth', block:'nearest'}); }
+}
+
+// Property card clicked
+function cardClick(e, id) {
+  e.preventDefault();
+  propPinClick(id);
+  // Brief flash then navigate
+  setTimeout(() => window.location.href = 'property.html', 400);
+}
+
+// Activity pin clicked
+function actPinClick(id) {
+  document.querySelectorAll('.act-pin').forEach(p => p.classList.remove('active'));
+  document.getElementById('ap-' + id)?.classList.add('active');
+  document.querySelectorAll('.map-ac').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById('lac-' + id);
+  if (card) { card.classList.add('active'); card.scrollIntoView({behavior:'smooth', block:'nearest'}); }
+}
+
+function actCardClick(id) {
+  actPinClick(id);
+  const act = FEED_ACTS.find(a => a.id === id);
+  if (act) {
+    // Zoom map to that area
+    document.querySelectorAll('.county-zone').forEach(z => z.classList.remove('active'));
+    document.getElementById('zone-' + act.county)?.classList.add('active');
+    showCountyCard(act.county);
+  }
+}
+
+// ══════════════════════════════════════════
+// TOOLTIPS
+// ══════════════════════════════════════════
+function showPropTip(e, id) {
+  const p = PROPS.find(x => x.id === id);
+  if (!p) return;
+  const bdg = p.badge ? ` · ${BADGE_CFG[p.badge].text}` : '';
+  document.getElementById('ttType').textContent = p.type.charAt(0).toUpperCase() + p.type.slice(1) + bdg;
+  document.getElementById('ttHead').innerHTML = `${p.title}, <i>${p.loc}</i>`;
+  document.getElementById('ttBody').textContent = `Sleeps ${p.sleeps} · ${p.beds} bed · ★ ${p.rating} (${p.reviews} reviews)`;
+  document.getElementById('ttPrice').textContent = `£${p.price} / night · £0 booking fee`;
+  positionTip(e);
+}
+
+function showActTip(e, id) {
+  const a = FEED_ACTS.find(x => x.id === id);
+  if (!a) return;
+  const typeLabel = {tip:'Local tip',avail:'Availability posted',review:'Review',photo:'Photo'}[a.type]||a.type;
+  document.getElementById('ttType').textContent = `${a.emoji} ${typeLabel} · ${a.when}`;
+  document.getElementById('ttHead').innerHTML = `<i>${a.name}</i>`;
+  document.getElementById('ttBody').textContent = a.text.length > 100 ? a.text.slice(0,100)+'…' : a.text;
+  document.getElementById('ttPrice').textContent = a.loc;
+  positionTip(e);
+}
+
+function positionTip(e) {
+  const tip = document.getElementById('mapTooltip');
+  const panel = document.getElementById('mapPanel').getBoundingClientRect();
+  tip.classList.add('show');
+  let left = e.clientX - panel.left + 16;
+  let top = e.clientY - panel.top - 70;
+  if (left + 260 > panel.width) left = e.clientX - panel.left - 260;
+  if (top < 10) top = e.clientY - panel.top + 20;
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+}
+
+function hideTip() { document.getElementById('mapTooltip').classList.remove('show'); }
+
+// Redraw tooltip position on move
+document.getElementById('mapPanel').addEventListener('mousemove', e => {
+  const tip = document.getElementById('mapTooltip');
+  if (!tip.classList.contains('show')) return;
+  const panel = document.getElementById('mapPanel').getBoundingClientRect();
+  let left = e.clientX - panel.left + 16;
+  let top = e.clientY - panel.top - 70;
+  if (left + 260 > panel.width) left = e.clientX - panel.left - 260;
+  if (top < 10) top = e.clientY - panel.top + 20;
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+});
+
+// ══════════════════════════════════════════
+// MAP ZOOM (CSS transform)
+// ══════════════════════════════════════════
+let mapScale = 1;
+let mapTX = 0, mapTY = 0;
+
+function mapZoom(factor) {
+  mapScale = Math.min(3, Math.max(0.8, mapScale * factor));
+  document.getElementById('ukMap').style.transform = `scale(${mapScale}) translate(${mapTX}px,${mapTY}px)`;
+  document.getElementById('ukMap').style.transformOrigin = 'center center';
+}
+
+function resetView() {
+  mapScale = 1; mapTX = 0; mapTY = 0;
+  document.getElementById('ukMap').style.transform = '';
+  state.county = 'all';
+  document.querySelectorAll('.cty-pill').forEach(p => p.classList.remove('active'));
+  document.querySelector('.cty-pill[data-county="all"]').classList.add('active');
+  document.querySelectorAll('.county-zone').forEach(z => z.classList.remove('active'));
+  closeOverlay();
+  render();
+}
+
+// Read URL param
+const qp = new URLSearchParams(location.search);
+if (qp.get('county')) {
+  const btn = document.querySelector(`.cty-pill[data-county="${qp.get('county')}"]`);
+  if (btn) { selectCounty(btn, qp.get('county')); }
+}
+
+render();
+</script>
+<script src="casa.js"></script>
+</body>
+</html>
