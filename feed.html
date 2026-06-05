@@ -429,6 +429,7 @@
   </div>
 </footer>
 
+<script src="casa-properties.js"></script>
 <script>
 // ═══════════════════════════════════════
 // DATA
@@ -540,11 +541,12 @@ function renderPost(p, i) {
   const repliesOpen = openReplies.has(p.id);
   const rs = REPLIES[p.id] || [];
 
-  const propH = p.prop ? `<a class="post-prop" href="property.html"><div class="pi"><div class="ph ${p.prop.col}"></div></div><div class="pinfo"><div class="pname">${p.prop.name}, <i>${p.prop.loc}</i></div><div class="pdets"><span>★ ${p.prop.rating}</span><span>·</span><span>Sleeps ${p.prop.sleeps} · ${p.prop.beds} bed</span>${p.prop.tags?`<span>·</span><span>${p.prop.tags}</span>`:''}</div></div><div class="price">£${p.prop.price}<span>/night</span></div></a>` : '';
+  const propId = p.prop ? (p.propId || getCasaPropertyIdByTitle(p.prop.name)) : null;
+  const propH = p.prop ? `<a class="post-prop" href="property.html?id=${propId}"><div class="pi"><div class="ph ${p.prop.col}"></div></div><div class="pinfo"><div class="pname">${p.prop.name}, <i>${p.prop.loc}</i></div><div class="pdets"><span>★ ${p.prop.rating}</span><span>·</span><span>Sleeps ${p.prop.sleeps} · ${p.prop.beds} bed</span>${p.prop.tags?`<span>·</span><span>${p.prop.tags}</span>`:''}</div></div><div class="price">£${p.prop.price}<span>/night</span></div></a>` : '';
   const imgH = p.images ? `<div class="post-images ${p.images.length===1?'one':p.images.length===2?'two':'three'}">${p.images.map(c=>`<div class="ph ${c}"></div>`).join('')}</div>` : '';
   const revH = p.review ? `<div class="post-review-card"><div class="review-stars">${renderStars(p.review.stars)}</div><div class="review-text">${p.review.text}</div><div class="review-meta">${p.review.meta}</div></div>` : '';
   const ctaH = p.cta ? `<div class="looking-cta"><p>Are you a host? <i>Reply with your availability below</i> — guests are waiting.</p><a href="messages.html">Message directly</a></div>` : '';
-  const enquireH = p.prop ? `<a class="pa pa-enquire" href="booking.html">Enquire →</a>` : '';
+  const enquireH = p.prop ? `<a class="pa pa-enquire" href="booking.html?id=${propId}&prop=${encodeURIComponent(p.prop.name + ', ' + p.prop.loc)}&price=${p.prop.price}">Enquire →</a>` : '';
 
   // Replies HTML
   const repliesH = rs.length ? `

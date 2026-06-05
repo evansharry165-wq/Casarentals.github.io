@@ -214,18 +214,18 @@
   <div class="crumb">
     <a href="index.html">Casa</a><span class="sep">/</span>
     <a href="browse.html">Browse</a><span class="sep">/</span>
-    <a href="#">Lake District</a><span class="sep">/</span>
-    <span class="now">Stone Cottage, Windermere</span>
+    <a href="browse.html" id="propCrumbRegion">Lake District</a><span class="sep">/</span>
+    <span class="now" id="propCrumbName">Stone Cottage, Windermere</span>
   </div>
 
   <!-- TITLE ROW -->
   <div class="title-row">
     <div>
-      <h1>Stone Cottage, <i>Windermere</i></h1>
+      <h1 id="propH1">Stone Cottage, <i>Windermere</i></h1>
       <div class="meta">
-        <span class="rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 4.9 · 23 reviews</span>
+        <span class="rating" id="propRating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 4.9 · 23 reviews</span>
         <span class="dot"></span>
-        <span>Windermere, Lake District</span>
+        <span id="propLocation">Windermere, Lake District</span>
         <span class="dot"></span>
         <span class="badge moss"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> Verified host</span>
         <span class="badge">Top 5% in Lake District</span>
@@ -239,7 +239,7 @@
 
   <!-- GALLERY -->
   <div class="gallery">
-    <div class="ph warm g1" data-label="EXTERIOR · DUSK"></div>
+    <div class="ph warm g1" id="propGalleryMain" data-label="EXTERIOR · DUSK"></div>
     <div class="ph fog" data-label="LIVING ROOM · WOOD BURNER"></div>
     <div class="ph dusk" data-label="MASTER BEDROOM"></div>
     <div class="ph sage" data-label="KITCHEN · OAK BEAMS"></div>
@@ -277,12 +277,12 @@
         <div class="fact">
           <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M21 19c0-2.2-1.8-4-4-4"/></svg>
           <div class="lbl">Sleeps</div>
-          <div class="val">6</div>
+          <div class="val" id="propSleeps">6</div>
         </div>
         <div class="fact">
           <svg viewBox="0 0 24 24"><path d="M3 17v-7h13a4 4 0 0 1 4 4v3"/><path d="M3 21v-4M21 21v-4"/></svg>
           <div class="lbl">Bedrooms</div>
-          <div class="val">3</div>
+          <div class="val" id="propBeds">3</div>
         </div>
         <div class="fact">
           <svg viewBox="0 0 24 24"><path d="M3 12h18v4a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M5 12V6a2 2 0 0 1 2-2h2v3"/></svg>
@@ -292,7 +292,7 @@
         <div class="fact">
           <svg viewBox="0 0 24 24"><path d="M5 21V8l7-5 7 5v13"/><path d="M5 21h14"/><path d="M9 21v-6h6v6"/></svg>
           <div class="lbl">Type</div>
-          <div class="val" style="font-size:20px">Cottage</div>
+          <div class="val" id="propType" style="font-size:20px">Cottage</div>
         </div>
       </div>
 
@@ -361,11 +361,11 @@
       <!-- MAP -->
       <div class="map-block">
         <h2>Where <i>you'll be</i></h2>
-        <div class="sub">Windermere, Lake District &mdash; exact location shared after enquiry.</div>
+        <div class="sub" id="propMapSub">Windermere, Lake District &mdash; exact location shared after enquiry.</div>
         <div class="map-box">
           <div class="pin">
             <div class="pulse"></div>
-            <div class="lbl">Stone Cottage</div>
+            <div class="lbl" id="propMapLabel">Stone Cottage</div>
             <div class="core"></div>
           </div>
         </div>
@@ -450,7 +450,7 @@
     <aside class="pd-side">
       <div class="book-card">
         <div class="price-row">
-          <div class="price"><i>£175</i></div><div class="per"> / night</div>
+          <div class="price"><i id="propPrice">£175</i></div><div class="per"> / night</div>
         </div>
         <div class="fee-note">£0 booking fee · pay host direct</div>
 
@@ -503,7 +503,7 @@
 
         <div class="breakdown" id="breakdown">
           <div class="row"><span id="nightsLabel">£175 / night</span><span id="nightsTotal">—</span></div>
-          <div class="row"><span>Cleaning (set by Sarah)</span><span>£60</span></div>
+          <div class="row"><span>Cleaning (set by host)</span><span id="propCleaning">£60</span></div>
           <div class="row fee"><span>Casa booking fee</span><span class="v">£0</span></div>
           <div class="row save" id="saveRow" style="display:none"><span>You save vs Booking.com</span><span id="saveAmt">—</span></div>
           <div class="row total"><span>Total to Sarah</span><span id="grandTotal">—</span></div>
@@ -531,11 +531,56 @@
   </div>
 </footer>
 
+<script src="casa-properties.js"></script>
 <script src="casa.js"></script>
 <script>
-// ── Property data (replace with Supabase fetch in production) ──
-const PROP = { title: 'Stone Cottage, Windermere', price: 175, cleaning: 60, maxGuests: 6 };
-let guests = 2;
+const listing = getCasaProperty(new URLSearchParams(location.search).get('id'));
+let PROP = {
+  id: listing.id,
+  title: `${listing.title}, ${listing.loc}`,
+  price: listing.price,
+  cleaning: Math.max(40, Math.round(listing.price * 0.34)),
+  maxGuests: listing.sleeps,
+};
+
+function applyListingToPage(p) {
+  document.title = `${p.title} — Casa`;
+  const h1 = document.getElementById('propH1');
+  if (h1) h1.innerHTML = `${listing.title}, <i>${listing.loc}</i>`;
+  const rating = document.getElementById('propRating');
+  if (rating) rating.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> ${listing.rating} · ${listing.reviews} reviews`;
+  const loc = document.getElementById('propLocation');
+  if (loc) loc.textContent = `${listing.loc}, ${listing.rLabel}`;
+  const crumbR = document.getElementById('propCrumbRegion');
+  if (crumbR) {
+    crumbR.textContent = listing.rLabel;
+    crumbR.href = `browse.html?region=${listing.region}`;
+  }
+  const crumbN = document.getElementById('propCrumbName');
+  if (crumbN) crumbN.textContent = `${listing.title}, ${listing.loc}`;
+  const sleeps = document.getElementById('propSleeps');
+  if (sleeps) sleeps.textContent = listing.sleeps;
+  const beds = document.getElementById('propBeds');
+  if (beds) beds.textContent = listing.beds;
+  const typeEl = document.getElementById('propType');
+  if (typeEl) typeEl.textContent = CASA_TYPE_LABELS[listing.type] || listing.type;
+  const priceEl = document.getElementById('propPrice');
+  if (priceEl) priceEl.textContent = `£${listing.price}`;
+  const cleanEl = document.getElementById('propCleaning');
+  if (cleanEl) cleanEl.textContent = `£${PROP.cleaning}`;
+  const mapSub = document.getElementById('propMapSub');
+  if (mapSub) mapSub.textContent = `${listing.loc}, ${listing.rLabel} — exact location shared after enquiry.`;
+  const mapLbl = document.getElementById('propMapLabel');
+  if (mapLbl) mapLbl.textContent = listing.title;
+  const gal = document.getElementById('propGalleryMain');
+  if (gal) {
+    gal.style.background = listing.col;
+    gal.setAttribute('data-label', `${listing.title.toUpperCase()} · ${listing.loc.toUpperCase()}`);
+  }
+}
+
+applyListingToPage(listing);
+let guests = Math.min(2, PROP.maxGuests);
 
 // ── Format date for display ──
 function fmtDate(val) {
@@ -597,6 +642,7 @@ function goEnquire() {
   const co = document.getElementById('checkout').value;
   const pets = document.getElementById('petsToggle').checked;
   const params = new URLSearchParams({
+    id: String(PROP.id),
     prop: PROP.title,
     price: PROP.price,
     guests: guests,

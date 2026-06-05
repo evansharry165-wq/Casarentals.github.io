@@ -578,7 +578,7 @@ function renderList() {
     html += props.map(p => {
       const tags = p.tags.slice(0,2).map(t => `<span class="pc-tag">${TAG_LABELS[t]||t}</span>`).join('');
       const bdg = p.badge ? `<span class="badge ${BADGE_CFG[p.badge].cls}" style="font-size:9px;padding:1px 5px">${BADGE_CFG[p.badge].text}</span>` : '';
-      return `<a class="map-pc" id="lc-${p.id}" href="property.html" onclick="cardClick(event,${p.id})">
+      return `<a class="map-pc" id="lc-${p.id}" href="property.html?id=${p.id}" onclick="cardClick(event,${p.id})">
         <div class="pc-img"><div class="ph ${p.col}" style="width:88px;height:72px"></div></div>
         <div class="pc-info">
           <div class="pc-name">${p.title}, <i>${p.loc}</i> ${bdg}</div>

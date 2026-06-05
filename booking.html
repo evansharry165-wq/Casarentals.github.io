@@ -295,7 +295,7 @@
     <span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span>
   </a>
   <div class="nav-right">
-    <a class="nav-back-btn" href="property.html">
+    <a class="nav-back-btn" href="property.html" id="backToProperty">
       <svg viewBox="0 0 24 24"><path d="M19 12H5M11 5l-7 7 7 7"/></svg>
       Back to property
     </a>
@@ -319,7 +319,7 @@
       <div class="crumb">
         <a href="index.html">Casa</a><span class="sep">/</span>
         <a href="browse.html">Browse</a><span class="sep">/</span>
-        <a href="property.html" id="crumbProp">Stone Cottage, Windermere</a><span class="sep">/</span>
+        <a href="property.html" id="crumbPropLink">Stone Cottage, Windermere</a><span class="sep">/</span>
         <span style="color:var(--ink)">Enquire</span>
       </div>
 
@@ -569,31 +569,35 @@
 
 </div>
 
+<script src="casa-properties.js"></script>
 <script>
 // ═══════════════════════════════════════════
-// CONFIGURATION
-// Property data would come from URL params / Supabase in production.
+// READ URL PARAMS
+// e.g. booking.html?id=1&checkin=2026-07-12&checkout=2026-07-19&guests=2
 // ═══════════════════════════════════════════
+const qp = new URLSearchParams(location.search);
+const listing = getCasaProperty(qp.get('id'));
 const PROPERTY = {
-  id: 'stone-cottage-windermere',
-  title: 'Stone Cottage, Windermere',
+  id: listing.id,
+  title: qp.get('prop') || `${listing.title}, ${listing.loc}`,
   host: 'Sarah',
   hostFull: 'Sarah R.',
-  pricePerNight: 175,
-  maxGuests: 6,
+  pricePerNight: parseInt(qp.get('price'), 10) || listing.price,
+  maxGuests: listing.sleeps,
   petsWelcome: true,
 };
 
-// ═══════════════════════════════════════════
-// READ URL PARAMS
-// When navigating from property.html, dates + guests are passed as params.
-// e.g. booking.html?checkin=2026-07-12&checkout=2026-07-19&guests=2
-// ═══════════════════════════════════════════
-const qp = new URLSearchParams(location.search);
+const propUrl = `property.html?id=${listing.id}`;
+document.getElementById('backToProperty').href = propUrl;
+const crumbLink = document.getElementById('crumbPropLink');
+if (crumbLink) {
+  crumbLink.href = propUrl;
+  crumbLink.textContent = PROPERTY.title;
+}
+
 if (qp.get('checkin'))  document.getElementById('checkin').value  = qp.get('checkin');
 if (qp.get('checkout')) document.getElementById('checkout').value = qp.get('checkout');
 if (qp.get('guests'))   setGuests(parseInt(qp.get('guests')) || 2);
-if (qp.get('prop'))     document.getElementById('crumbProp').textContent = qp.get('prop');
 
 // Host first name
 document.getElementById('hostFirstName').textContent = PROPERTY.host;
