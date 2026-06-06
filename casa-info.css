@@ -82,7 +82,7 @@
   background: var(--surface); transition: transform .15s, box-shadow .15s;
 }
 .info-stay:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(22,20,15,.08); }
-.info-stay .is-img { aspect-ratio: 4/3; background-size: cover; background-position: center; }
+.info-stay .is-img { aspect-ratio: 4/3; object-fit: cover; width: 100%; display: block; }
 .info-stay .is-body { padding: 12px 14px; }
 .info-stay .is-title { font-family: var(--serif); font-size: 16px; line-height: 1.1; }
 .info-stay .is-title i { font-style: italic; color: var(--brick); }

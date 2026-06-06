@@ -117,7 +117,7 @@
   .post-prop{margin:0 18px 12px;display:flex;gap:11px;background:var(--paper);border:1px solid var(--rule);border-radius:12px;padding:10px;text-decoration:none;color:inherit;cursor:pointer;transition:border-color .12s;align-items:center}
   .post-prop:hover{border-color:var(--ink)}
   .post-prop .pi{width:76px;height:60px;border-radius:8px;overflow:hidden;flex-shrink:0}
-  .post-prop .pi .ph{width:100%;height:100%}
+  .post-prop .pi .ph,.post-prop .pi img.casa-photo-img{width:100%;height:100%;object-fit:cover;display:block}
   .post-prop .pinfo{flex:1;min-width:0}
   .post-prop .pname{font-family:var(--serif);font-size:15px;line-height:1.1;margin-bottom:3px}
   .post-prop .pname i{font-style:italic;color:var(--brick)}
@@ -125,12 +125,12 @@
   .post-prop .price{font-family:var(--serif);font-style:italic;font-size:17px;color:var(--brick);white-space:nowrap;flex-shrink:0}
   .post-prop .price span{font-family:var(--sans);font-style:normal;font-size:10px;color:var(--ink-3)}
   .post-images{display:grid;gap:3px;margin:0 18px 12px;border-radius:12px;overflow:hidden}
-  .post-images.one .ph{aspect-ratio:16/9}
+  .post-images.one .ph,.post-images.one img.casa-photo-img{aspect-ratio:16/9}
   .post-images.two{grid-template-columns:1fr 1fr}
-  .post-images.two .ph{aspect-ratio:4/3}
+  .post-images.two .ph,.post-images.two img.casa-photo-img{aspect-ratio:4/3;width:100%;object-fit:cover;display:block}
   .post-images.three{grid-template-columns:2fr 1fr}
-  .post-images.three .ph:first-child{aspect-ratio:4/3;grid-row:span 2}
-  .post-images.three .ph:not(:first-child){aspect-ratio:1}
+  .post-images.three .ph:first-child,.post-images.three img.casa-photo-img:first-child{aspect-ratio:4/3;grid-row:span 2;width:100%;object-fit:cover;display:block}
+  .post-images.three .ph:not(:first-child),.post-images.three img.casa-photo-img:not(:first-child){aspect-ratio:1;width:100%;object-fit:cover;display:block}
   .post-review-card{margin:0 18px 12px;padding:13px 16px;background:var(--paper);border-left:3px solid var(--brick);border-radius:0 12px 12px 0}
   .review-stars{display:flex;gap:2px;margin-bottom:6px}
   .review-stars svg{width:13px;height:13px;fill:var(--brick);stroke:none}
@@ -546,19 +546,20 @@ function renderPost(p, i) {
   const rs = REPLIES[p.id] || [];
 
   const propId = p.prop ? (p.propId || getCasaPropertyIdByTitle(p.prop.name)) : null;
-  let propPhClass = `ph ${p.prop.col}`;
-  let propPhStyle = '';
+  let propImg = '';
   if (propId && typeof getCasaProperty === 'function' && typeof casaGetPropertyPhoto === 'function') {
     const listing = getCasaProperty(propId);
     if (listing) {
-      propPhClass = 'ph casa-photo';
-      propPhStyle = ` style="${casaPhotoStyle(listing, 420)}"`;
+      const url = casaGetPropertyPhoto(listing, 420);
+      propImg = `<img class="casa-photo-img" src="${url}" alt="${p.prop.name}, ${p.prop.loc}" loading="lazy">`;
     }
   }
-  const propH = p.prop ? `<a class="post-prop" href="property.html?id=${propId}"><div class="pi"><div class="${propPhClass}"${propPhStyle}></div></div><div class="pinfo"><div class="pname">${p.prop.name}, <i>${p.prop.loc}</i></div><div class="pdets"><span>★ ${p.prop.rating}</span><span>·</span><span>Sleeps ${p.prop.sleeps} · ${p.prop.beds} bed</span>${p.prop.tags?`<span>·</span><span>${p.prop.tags}</span>`:''}</div></div><div class="price">£${p.prop.price}<span>/night</span></div></a>` : '';
+  if (!propImg) propImg = `<div class="ph ${p.prop.col}"></div>`;
+  const propH = p.prop ? `<a class="post-prop" href="property.html?id=${propId}"><div class="pi">${propImg}</div><div class="pinfo"><div class="pname">${p.prop.name}, <i>${p.prop.loc}</i></div><div class="pdets"><span>★ ${p.prop.rating}</span><span>·</span><span>Sleeps ${p.prop.sleeps} · ${p.prop.beds} bed</span>${p.prop.tags?`<span>·</span><span>${p.prop.tags}</span>`:''}</div></div><div class="price">£${p.prop.price}<span>/night</span></div></a>` : '';
   const imgH = p.images ? `<div class="post-images ${p.images.length===1?'one':p.images.length===2?'two':'three'}">${p.images.map((c,ix)=>{
     if (typeof casaGetRegionPhoto === 'function' && p.county && p.county !== 'all') {
-      return `<div class="ph casa-photo" style="background-image:url('${casaGetRegionPhoto(p.county, 900)}')"></div>`;
+      const url = casaGetRegionPhoto(p.county, 900);
+      return `<img class="casa-photo-img" src="${url}" alt="${p.county.replace(/-/g,' ')} scenery" loading="lazy">`;
     }
     return `<div class="ph ${c}"></div>`;
   }).join('')}</div>` : '';

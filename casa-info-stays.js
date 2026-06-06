@@ -5,7 +5,7 @@ function casaRenderInfoStays(containerId, filterFn, limit) {
   const items = CASA_PROPERTIES.filter(filterFn).slice(0, limit || 4);
   el.innerHTML = items.map(p => `
     <a class="info-stay" href="property.html?id=${p.id}">
-      <div class="is-img casa-photo" style="${casaPhotoStyle(p, 640)}"></div>
+      ${casaPhotoImg(p, { width: 640, className: 'is-img casa-photo-img' })}
       <div class="is-body">
         <div class="is-title">${p.title}, <i>${p.loc}</i></div>
         <div class="is-meta">${p.rLabel} · Sleeps ${p.sleeps} · ★ ${p.rating}</div>

@@ -590,14 +590,17 @@ function applyListingToPage(p) {
   if (mapSub) mapSub.textContent = `${listing.loc}, ${listing.rLabel} — exact location shared after enquiry.`;
   const mapLbl = document.getElementById('propMapLabel');
   if (mapLbl) mapLbl.textContent = listing.title;
-  const photos = listing.photos || (typeof casaGetPropertyGallery === 'function' ? casaGetPropertyGallery(listing, 5) : [listing.col]);
+  const photos = listing.photos || (typeof casaGetPropertyGallery === 'function' ? casaGetPropertyGallery(listing, 5) : []);
   document.querySelectorAll('.gallery .ph').forEach((el, i) => {
-    el.className = 'ph casa-photo';
-    el.style.backgroundImage = `url('${photos[i] || photos[0]}')`;
-    el.style.background = '';
+    const url = photos[i] || photos[0];
+    if (!url) return;
+    const img = document.createElement('img');
+    img.className = 'casa-photo-img';
+    img.src = url;
+    img.alt = `${listing.title}, ${listing.loc} — photo ${i + 1}`;
+    img.loading = i === 0 ? 'eager' : 'lazy';
+    el.replaceWith(img);
   });
-  const showAll = document.querySelector('.gallery .show-all');
-  if (showAll) showAll.innerHTML = showAll.innerHTML.replace('12', String(Math.max(photos.length, 5)));
   if (host) {
     const hostUrl = casaHostProfileUrl(host.id);
     document.getElementById('hostAvLink').href = hostUrl;
@@ -617,7 +620,7 @@ function applyListingToPage(p) {
   const similar = getSimilarProperties(listing.id, 4);
   document.getElementById('similarStays').innerHTML = similar.map(s => `
     <a class="similar-card" href="property.html?id=${s.id}">
-      <div class="sc-img casa-photo" style="${typeof casaPhotoStyle==='function'?casaPhotoStyle(s,600):`background:${s.col}`}"></div>
+      <div class="sc-img">${typeof casaPhotoImg==='function'?casaPhotoImg(s,{width:600,className:'casa-photo-img'}):''}</div>
       <div class="sc-body">
         <div class="sc-title">${s.title}, <i>${s.loc}</i></div>
         <div class="sc-meta">★ ${s.rating} · Sleeps ${s.sleeps}</div>

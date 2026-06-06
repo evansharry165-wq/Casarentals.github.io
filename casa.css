@@ -248,29 +248,41 @@ html, body {
   background-position: center;
   background-repeat: no-repeat;
 }
-.ph.casa-photo::before { display: none; }
-.ph.casa-photo::after {
-  background: linear-gradient(to top, rgba(22,20,15,.72) 0%, rgba(22,20,15,.08) 55%, transparent 100%);
-  color: rgba(255,255,255,.92);
-  width: 100%;
-  padding: 14px 12px 10px;
-}
+.ph.casa-photo::before { display: none !important; }
+.ph.casa-photo::after { display: none; }
+.pc-image .ph.casa-photo::after,
+.gallery .ph.casa-photo::after { display: none; }
 .casa-photo-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
+.pc-image > img.casa-photo-img,
+.pc-image > .ph.casa-photo,
+.pc-image > .casa-photo-wrap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
 .pc-image .casa-photo-wrap,
 .sc-img.casa-photo,
-.dest-photo,
+.sc-img img.casa-photo-img,
+.dest-bg-img,
 .hero-photo {
   background-size: cover;
   background-position: center;
   width: 100%;
   height: 100%;
 }
-.dest-photo { min-height: 100%; position: absolute; inset: 0; z-index: 0; }
+.dest-bg-img {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  object-fit: cover;
+}
+.dest-card { position: relative; }
 .dest-card .meta { position: relative; z-index: 2; }
 .hero-photo {
   position: relative;
@@ -280,6 +292,16 @@ html, body {
   text-decoration: none;
   display: block;
   transition: transform .2s, box-shadow .2s;
+}
+.hero-photo > .casa-photo-img {
+  position: absolute;
+  inset: 0;
+}
+.gallery .ph.casa-photo,
+.gallery img.casa-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .hero-photo:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(22,20,15,.12); }
 .hero-photo-cap {
@@ -574,7 +596,8 @@ h1, h2, h3, h4, h5 { font-weight: 400; }
   transition: transform .15s, box-shadow .15s;
 }
 .similar-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(22,20,15,0.08); }
-.similar-card .sc-img { aspect-ratio: 4/3; }
+.similar-card .sc-img { aspect-ratio: 4/3; overflow: hidden; }
+.similar-card .sc-img img.casa-photo-img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .similar-card .sc-body { padding: 10px 12px 12px; }
 .similar-card .sc-title { font-family: var(--serif); font-size: 16px; line-height: 1.1; }
 .similar-card .sc-title i { font-style: italic; color: var(--brick); }

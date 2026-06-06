@@ -437,7 +437,9 @@ function toggleFilterChip(btn, kind) {
 document.getElementById('filterModal')?.addEventListener('click', e => { if (e.target.id === 'filterModal') closeFilterModal(); });
 
 function card(p,i) {
-  const img=`<div class="ph casa-photo" style="${typeof casaPhotoStyle==='function'?casaPhotoStyle(p,800):`background:${p.col}`}"></div>`;
+  const img = typeof casaPhotoImg === 'function'
+    ? casaPhotoImg(p, { width: 800, className: 'casa-photo-img' })
+    : `<div class="ph" style="background:${p.col}"></div>`;
   const bdg=p.badge?`<div class="badge-row"><span class="badge ${BADGE_CFG[p.badge].cls}">${BADGE_CFG[p.badge].text}</span></div>`:'';
   const tags=p.tags.slice(0,3).map(t=>TAG_LABELS[t]||t).join(' · ');
   const heartSaved = typeof casaIsSaved === 'function' && casaIsSaved(p.id);
