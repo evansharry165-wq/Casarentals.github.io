@@ -10,6 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="casa.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="">
 <style>
   html, body { height: 100vh; overflow: hidden; }
   .map-shell {
@@ -110,6 +112,22 @@
     padding: 3px 7px; border-radius: 999px; background: var(--surface); border: 1px solid var(--rule);
     color: var(--ink-3); white-space: nowrap;
   }
+  .tree-region .chev-sm {
+    width: 14px; height: 14px; stroke: var(--ink-4); fill: none; stroke-width: 2;
+    transition: transform .15s; flex-shrink: 0; margin-left: auto;
+  }
+  .tree-region.has-sub.open .chev-sm { transform: rotate(90deg); }
+  .tree-subareas { display: none; padding: 2px 8px 6px 36px; }
+  .tree-region-wrap.open .tree-subareas { display: block; }
+  .tree-subarea {
+    display: flex; align-items: center; gap: 8px; width: 100%; margin: 2px 0;
+    padding: 8px 12px 8px 14px; border: none; border-radius: 8px; background: transparent;
+    cursor: pointer; text-align: left; font-family: var(--sans); font-size: 12.5px;
+    color: var(--ink-2); transition: background .1s;
+  }
+  .tree-subarea:hover { background: var(--surface); }
+  .tree-subarea.active { background: var(--moss-pale); color: var(--moss); font-weight: 500; }
+  .tree-subarea .ts-count { margin-left: auto; font-family: var(--mono); font-size: 9px; color: var(--ink-4); }
 
   /* Results list */
   .map-results { flex: 1; overflow-y: auto; min-height: 0; }
@@ -268,6 +286,12 @@
   .casa-pin-region i { font-style: italic; color: var(--brick-2); display: block; font-size: 13px; }
   .casa-pin-region .sub { font-family: var(--mono); font-size: 9px; letter-spacing: .06em; opacity: .75; margin-top: 3px; }
 
+  .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large { background: rgba(176,85,51,.18); }
+  .marker-cluster-small div, .marker-cluster-medium div, .marker-cluster-large div {
+    background: var(--brick); color: white; font-family: var(--sans); font-weight: 600; font-size: 12px;
+  }
+  .casa-subarea-poly { pointer-events: none; }
+
   @media (max-width: 960px) {
     .map-shell { grid-template-columns: 1fr; grid-template-rows: 45vh 55vh; }
     .county-tree { max-height: 28vh; }
@@ -373,6 +397,7 @@
       <div class="leg"><span class="leg-dot" style="background:var(--brick)"></span> Listed stay</div>
       <div class="leg"><span class="leg-sq" style="background:#8A6848"></span> Local tip</div>
       <div class="leg"><span class="leg-sq" style="background:var(--brick)"></span> Availability posted</div>
+      <div class="leg"><span class="leg-sq" style="background:#8DA88A;border-radius:4px"></span> Sub-area (drill down)</div>
       <div class="leg"><span class="leg-sq" style="background:#7C6432"></span> Review</div>
       <div class="leg"><span class="leg-sq" style="background:var(--ink);border-radius:4px"></span> Region (zoom out)</div>
     </div>
@@ -382,14 +407,20 @@
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
 <script src="casa-properties.js"></script>
+<script src="casa-map-geo.js"></script>
 <script src="casa-map-data.js"></script>
+<script src="casa-map-live.js"></script>
 <script src="casa.js"></script>
 <script>
 const TAG_LABELS = { woodburner: 'Wood burner', hottub: 'Hot tub', pets: 'Pets ok', seaview: 'Sea view', offgrid: 'Off-grid' };
 
-let map, polygonLayer, markerLayer;
-let state = { region: 'all', layer: 'both', sort: 'curated', search: '', expandedCountries: new Set(['england']), activePin: null };
+let map, polygonLayer, subareaLayer, markerLayer, clusterGroup;
+let state = {
+  region: 'all', subarea: null, layer: 'both', sort: 'curated', search: '',
+  expandedCountries: new Set(['england']), expandedRegions: new Set(), activePin: null,
+};
 
 function polygonCentroid(coords) {
   let lat = 0, lng = 0;
@@ -417,7 +448,14 @@ function initMap() {
   L.control.zoom({ position: 'bottomright' }).addTo(map);
 
   polygonLayer = L.layerGroup().addTo(map);
+  subareaLayer = L.layerGroup().addTo(map);
   markerLayer = L.layerGroup().addTo(map);
+  clusterGroup = L.markerClusterGroup({
+    maxClusterRadius: 42,
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+    disableClusteringAtZoom: 12,
+  });
 
   Object.values(CASA_MAP_REGIONS).forEach(region => {
     const poly = L.polygon(region.polygon, {
@@ -437,6 +475,43 @@ function initMap() {
   });
 
   map.on('click', () => { if (state.region !== 'all') return; });
+}
+
+function getMapProperties() {
+  return typeof casaMapGetProperties === 'function' ? casaMapGetProperties() : CASA_PROPERTIES;
+}
+
+function getMapFeed() {
+  return typeof casaMapGetFeed === 'function' ? casaMapGetFeed() : CASA_MAP_FEED;
+}
+
+function filterByRegionAndSubarea(items, regionKey) {
+  let list = items.filter(x => x.region === state.region);
+  if (state.subarea) {
+    list = list.filter(x => casaMapItemInSubarea(x, state.region, state.subarea));
+  }
+  if (state.search) {
+    const q = state.search.toLowerCase();
+    list = list.filter(x =>
+      (x.title && x.title.toLowerCase().includes(q)) ||
+      (x.loc && x.loc.toLowerCase().includes(q)) ||
+      (x.text && x.text.toLowerCase().includes(q)) ||
+      (x.name && x.name.toLowerCase().includes(q))
+    );
+  }
+  return list;
+}
+
+function syncMapUrl() {
+  const opts = {};
+  if (state.region !== 'all') opts.region = state.region;
+  if (state.subarea) opts.subarea = state.subarea;
+  if (state.activePin) {
+    if (state.activePin.startsWith('p-')) opts.property = state.activePin.slice(2);
+    else if (state.activePin.startsWith('f-')) opts.pin = state.activePin.slice(2);
+  }
+  const url = typeof casaMapUrl === 'function' ? casaMapUrl(opts) : `map.html`;
+  history.replaceState(null, '', url);
 }
 
 function renderTree() {
@@ -464,21 +539,47 @@ function renderTree() {
     country.regions.forEach(rid => {
       const r = CASA_MAP_REGIONS[rid];
       const c = casaMapCountForRegion(rid);
+      const subareas = r.subareas ? Object.entries(r.subareas) : [];
+      const regionOpen = state.expandedRegions.has(rid);
+      const isActive = state.region === rid;
       html += `
-        <button type="button" class="tree-region${state.region === rid ? ' active' : ''}" onclick="selectRegion('${rid}')">
+        <div class="tree-region-wrap${regionOpen ? ' open' : ''}">
+        <button type="button" class="tree-region${isActive ? ' active' : ''}${subareas.length ? ' has-sub' : ''}"
+                onclick="selectRegion('${rid}')">
           <span class="tr-emoji">${r.emoji}</span>
           <span class="tr-body">
             <div class="tr-name">${formatRegionName(r.label)}</div>
             <div class="tr-sub">${r.county} · ${c.stays} stays · ${c.feed} posts</div>
           </span>
-          <span class="tr-badge">Explore</span>
+          ${subareas.length ? `<svg class="chev-sm" viewBox="0 0 24 24" onclick="event.stopPropagation();toggleRegionTree('${rid}')"><path d="M9 6l6 6-6 6"/></svg>` : '<span class="tr-badge">Explore</span>'}
         </button>`;
+      if (subareas.length) {
+        html += `<div class="tree-subareas">`;
+        subareas.forEach(([sid, sa]) => {
+          const sc = typeof casaMapCountForSubarea === 'function' ? casaMapCountForSubarea(rid, sid) : { stays: 0, feed: 0 };
+          html += `
+            <button type="button" class="tree-subarea${state.region === rid && state.subarea === sid ? ' active' : ''}"
+                    onclick="selectSubarea('${rid}','${sid}')">
+              ${sa.label}
+              <span class="ts-count">${sc.stays + sc.feed}</span>
+            </button>`;
+        });
+        html += `</div></div>`;
+      } else {
+        html += `</div>`;
+      }
     });
 
     html += `</div></div>`;
   });
 
   tree.innerHTML = html;
+}
+
+function toggleRegionTree(id) {
+  if (state.expandedRegions.has(id)) state.expandedRegions.delete(id);
+  else state.expandedRegions.add(id);
+  renderTree();
 }
 
 function toggleCountry(id) {
@@ -495,12 +596,20 @@ function updateBreadcrumb() {
   }
   const r = CASA_MAP_REGIONS[state.region];
   const country = CASA_MAP_TREE.find(c => c.regions.includes(state.region));
-  el.innerHTML = `
+  const sa = state.subarea && r.subareas?.[state.subarea];
+  let html = `
     <a href="#" onclick="selectRegion('all');return false">UK</a>
     <span class="sep">/</span>
     <span>${country?.label || ''}</span>
     <span class="sep">/</span>
-    <span class="now">${r.label}</span>`;
+    <a href="#" onclick="selectRegion('${state.region}');return false">${r.label}</a>`;
+  if (sa) {
+    html += `<span class="sep">/</span><span class="now">${sa.label}</span>`;
+  } else {
+    html = html.replace(/<a href="#" onclick="selectRegion\('${state.region}'\);return false">${r.label}<\/a>/,
+      `<span class="now">${r.label}</span>`);
+  }
+  el.innerHTML = html;
 }
 
 function updateRegionCard() {
@@ -511,16 +620,27 @@ function updateRegionCard() {
     return;
   }
   const r = CASA_MAP_REGIONS[state.region];
-  const c = casaMapCountForRegion(state.region);
+  const sa = state.subarea && r.subareas?.[state.subarea];
+  const c = state.subarea && typeof casaMapCountForSubarea === 'function'
+    ? casaMapCountForSubarea(state.region, state.subarea)
+    : casaMapCountForRegion(state.region);
   card.classList.remove('hidden');
-  document.getElementById('rcTitle').innerHTML = formatRegionName(r.label);
-  document.getElementById('rcMeta').textContent = `${r.county} · ${CASA_MAP_TREE.find(x => x.regions.includes(state.region))?.label || 'UK'}`;
+  document.getElementById('rcTitle').innerHTML = sa
+    ? formatRegionName(sa.label)
+    : formatRegionName(r.label);
+  document.getElementById('rcMeta').textContent = sa
+    ? `${sa.label} · ${r.county} · ${CASA_MAP_TREE.find(x => x.regions.includes(state.region))?.label || 'UK'}`
+    : `${r.county} · ${CASA_MAP_TREE.find(x => x.regions.includes(state.region))?.label || 'UK'}`;
   document.getElementById('rcStays').textContent = c.stays;
   document.getElementById('rcFeed').textContent = c.feed;
-  document.getElementById('rcBlurb').textContent = r.activity || r.blurb;
-  document.getElementById('rcBrowse').href = r.browseUrl;
+  document.getElementById('rcBlurb').textContent = sa
+    ? `${c.stays} stays and ${c.feed} feed posts in ${sa.label}. ${r.activity || r.blurb}`
+    : (r.activity || r.blurb);
+  document.getElementById('rcBrowse').href = r.browseUrl + (state.subarea ? `&subarea=${state.subarea}` : '');
   document.getElementById('rcFeedLink').href = r.feedUrl;
-  document.getElementById('mapHint').textContent = 'Scroll to zoom · drag to pan';
+  document.getElementById('mapHint').textContent = state.subarea
+    ? 'Sub-area selected · pins clustered until you zoom in'
+    : 'Expand sub-areas in the tree · scroll to zoom';
 }
 
 function highlightPolygons() {
@@ -529,20 +649,43 @@ function highlightPolygons() {
     if (state.region === 'all') {
       layer.setStyle({ fillOpacity: 0.07, weight: 1.5, color: '#B05533' });
     } else if (rid === state.region) {
-      layer.setStyle({ fillOpacity: 0.22, weight: 2.5, color: '#8E4326' });
+      layer.setStyle({ fillOpacity: state.subarea ? 0.10 : 0.22, weight: 2.5, color: '#8E4326' });
       layer.bringToFront();
     } else {
       layer.setStyle({ fillOpacity: 0.02, weight: 1, color: '#A39A88' });
     }
   });
+
+  subareaLayer.clearLayers();
+  if (state.region === 'all' || !CASA_MAP_REGIONS[state.region]?.subareas) return;
+
+  Object.entries(CASA_MAP_REGIONS[state.region].subareas).forEach(([sid, sa]) => {
+    if (!sa.polygon?.length) return;
+    const active = state.subarea === sid;
+    const poly = L.polygon(sa.polygon, {
+      color: active ? '#4D5C40' : '#8DA88A',
+      weight: active ? 2.5 : 1.2,
+      fillColor: active ? '#4D5C40' : '#8DA88A',
+      fillOpacity: active ? 0.22 : 0.08,
+      className: 'casa-subarea-poly',
+    });
+    poly.on('click', () => selectSubarea(state.region, sid));
+    subareaLayer.addLayer(poly);
+  });
 }
 
 function renderMarkers() {
   markerLayer.clearLayers();
+  if (clusterGroup) {
+    map.removeLayer(clusterGroup);
+    clusterGroup.clearLayers();
+  }
+
   const showProps = state.layer === 'both' || state.layer === 'props';
   const showFeed = state.layer === 'both' || state.layer === 'feed';
 
   if (state.region === 'all') {
+    if (clusterGroup) map.removeLayer(clusterGroup);
     Object.values(CASA_MAP_REGIONS).forEach(region => {
       const c = casaMapCountForRegion(region.id);
       const center = polygonCentroid(region.polygon);
@@ -558,13 +701,15 @@ function renderMarkers() {
     return;
   }
 
-  let props = CASA_PROPERTIES.filter(p => p.region === state.region);
-  let feed = CASA_MAP_FEED.filter(f => f.region === state.region);
+  const props = filterByRegionAndSubarea(getMapProperties(), 'prop');
+  const feed = filterByRegionAndSubarea(getMapFeed(), 'feed');
+  const useCluster = clusterGroup && (props.length + feed.length) > 2;
 
-  if (state.search) {
-    const q = state.search.toLowerCase();
-    props = props.filter(p => p.title.toLowerCase().includes(q) || p.loc.toLowerCase().includes(q));
-    feed = feed.filter(f => f.text.toLowerCase().includes(q) || f.name.toLowerCase().includes(q) || f.loc.toLowerCase().includes(q));
+  if (useCluster) clusterGroup.addTo(map);
+
+  function addMarker(m) {
+    if (useCluster) clusterGroup.addLayer(m);
+    else markerLayer.addLayer(m);
   }
 
   if (showProps) {
@@ -572,14 +717,14 @@ function renderMarkers() {
       if (!p.lat || !p.lng) return;
       const icon = L.divIcon({
         className: '',
-        html: `<div class="casa-pin-stay${state.activePin === 'p-' + p.id ? ' active' : ''}" id="pin-p-${p.id}">£${p.price}</div>`,
-        iconSize: [64, 28],
-        iconAnchor: [32, 14],
+        html: `<div class="casa-pin-stay${state.activePin === 'p-' + p.id ? ' active' : ''}" id="pin-p-${p.id}">£${p.price}${p.draft ? ' · draft' : ''}</div>`,
+        iconSize: [72, 28],
+        iconAnchor: [36, 14],
       });
       const m = L.marker([p.lat, p.lng], { icon });
       m.bindPopup(`<strong>${p.title}</strong>, <em>${p.loc}</em><br>★ ${p.rating} · Sleeps ${p.sleeps}<br>£${p.price}/night · £0 fee<br><a href="property.html?id=${p.id}">View stay →</a>`);
       m.on('click', () => focusProperty(p.id));
-      markerLayer.addLayer(m);
+      addMarker(m);
     });
   }
 
@@ -594,9 +739,12 @@ function renderMarkers() {
       });
       const m = L.marker(coords, { icon });
       const typeLabel = CASA_FEED_TYPE_LABELS[f.type] || f.type;
-      m.bindPopup(`<strong><em>${f.name}</em></strong> · ${typeLabel}<br>${f.text}<br><small>${f.loc} · ${f.when}</small><br><a href="feed.html?county=${CASA_MAP_REGIONS[state.region]?.feedCounty || ''}">View feed →</a>`);
+      const feedLink = f.feedPostId
+        ? `feed.html?county=${CASA_MAP_REGIONS[state.region]?.feedCounty || ''}&post=${f.feedPostId}`
+        : `feed.html?county=${CASA_MAP_REGIONS[state.region]?.feedCounty || ''}`;
+      m.bindPopup(`<strong><em>${f.name}</em></strong> · ${typeLabel}<br>${f.text}<br><small>${f.loc} · ${f.when}</small><br><a href="${feedLink}">View in feed →</a>`);
       m.on('click', () => focusFeed(f.id));
-      markerLayer.addLayer(m);
+      addMarker(m);
     });
   }
 }
@@ -608,25 +756,21 @@ function renderList() {
 
   if (state.region === 'all') {
     document.getElementById('resultsLabel').textContent = 'Pick a county to see listings';
-    container.innerHTML = `<div class="map-empty"><h3>Explore by county</h3><p>Expand England, Scotland, Wales, or Northern Ireland in the tree — or tap a region on the map.</p></div>`;
+    container.innerHTML = `<div class="map-empty"><h3>Explore by county</h3><p>Expand England, Scotland, Wales, or Northern Ireland — drill into sub-areas for Windermere, Mousehole, Glencoe, and more.</p></div>`;
     return;
   }
 
-  let props = CASA_PROPERTIES.filter(p => p.region === state.region);
-  let feed = CASA_MAP_FEED.filter(f => f.region === state.region);
-
-  if (state.search) {
-    const q = state.search.toLowerCase();
-    props = props.filter(p => p.title.toLowerCase().includes(q) || p.loc.toLowerCase().includes(q));
-    feed = feed.filter(f => f.text.toLowerCase().includes(q) || f.name.toLowerCase().includes(q));
-  }
+  const props = filterByRegionAndSubarea(getMapProperties(), 'prop');
+  let feed = filterByRegionAndSubarea(getMapFeed(), 'feed');
 
   if (state.sort === 'price-asc') props = [...props].sort((a, b) => a.price - b.price);
   if (state.sort === 'price-desc') props = [...props].sort((a, b) => b.price - a.price);
   if (state.sort === 'rating') props = [...props].sort((a, b) => b.rating - a.rating);
 
   const total = (showProps ? props.length : 0) + (showFeed ? feed.length : 0);
-  document.getElementById('resultsLabel').textContent = total + ' in ' + CASA_MAP_REGIONS[state.region].label;
+  const r = CASA_MAP_REGIONS[state.region];
+  const sa = state.subarea && r.subareas?.[state.subarea];
+  document.getElementById('resultsLabel').textContent = total + ' in ' + (sa ? sa.label : r.label);
 
   let html = '';
   if (showProps && props.length) {
@@ -645,14 +789,20 @@ function renderList() {
 
   if (showFeed && feed.length) {
     html += `<div class="list-section"><span class="dot" style="background:var(--moss)"></span> Feed (${feed.length})</div>`;
-    html += feed.map(f => `
+    html += feed.map(f => {
+      const feedHref = f.feedPostId
+        ? `feed.html?county=${CASA_MAP_REGIONS[state.region]?.feedCounty || ''}&post=${f.feedPostId}`
+        : `feed.html?county=${CASA_MAP_REGIONS[state.region]?.feedCounty || ''}`;
+      return `
       <div class="map-list-ac${state.activePin === 'f-' + f.id ? ' active' : ''}" id="lac-${f.id}" onclick="focusFeed('${f.id}')">
         <div class="ac-ico ${f.type}">${f.emoji}</div>
         <div>
           <div class="ac-text"><strong>${f.name}</strong> — ${f.text}</div>
-          <div class="ac-meta">${CASA_FEED_TYPE_LABELS[f.type]} · ${f.loc} · ${f.when}</div>
+          <div class="ac-meta">${CASA_FEED_TYPE_LABELS[f.type]} · ${f.loc} · ${f.when}${f.live ? ' · live' : ''}</div>
+          <a href="${feedHref}" style="font-size:11px;color:var(--brick);margin-top:4px;display:inline-block" onclick="event.stopPropagation()">Open in feed →</a>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
   if (!html) {
@@ -662,16 +812,23 @@ function renderList() {
   container.innerHTML = html;
 }
 
-function selectRegion(regionId) {
+function selectRegion(regionId, opts = {}) {
   state.region = regionId;
-  state.activePin = null;
+  if (!opts.keepSubarea) state.subarea = null;
+  if (!opts.keepPin) state.activePin = null;
 
   if (regionId !== 'all') {
     const country = CASA_MAP_TREE.find(c => c.regions.includes(regionId));
     if (country) state.expandedCountries.add(country.id);
+    state.expandedRegions.add(regionId);
     const r = CASA_MAP_REGIONS[regionId];
-    map.fitBounds(r.bounds, { padding: [48, 48], maxZoom: 10, animate: true });
+    if (state.subarea && r.subareas?.[state.subarea]?.bounds) {
+      map.fitBounds(r.subareas[state.subarea].bounds, { padding: [48, 48], maxZoom: 12, animate: true });
+    } else {
+      map.fitBounds(r.bounds, { padding: [48, 48], maxZoom: 10, animate: true });
+    }
   } else {
+    state.subarea = null;
     map.setView(CASA_MAP_COUNTRY_VIEW.center, CASA_MAP_COUNTRY_VIEW.zoom, { animate: true });
   }
 
@@ -681,6 +838,23 @@ function selectRegion(regionId) {
   highlightPolygons();
   renderMarkers();
   renderList();
+  syncMapUrl();
+}
+
+function selectSubarea(regionId, subareaId, opts = {}) {
+  state.region = regionId;
+  state.subarea = subareaId;
+  if (!opts.keepPin) state.activePin = null;
+  state.expandedRegions.add(regionId);
+  const sa = CASA_MAP_REGIONS[regionId]?.subareas?.[subareaId];
+  if (sa?.bounds) map.fitBounds(sa.bounds, { padding: [40, 40], maxZoom: 12, animate: true });
+  renderTree();
+  updateBreadcrumb();
+  updateRegionCard();
+  highlightPolygons();
+  renderMarkers();
+  renderList();
+  syncMapUrl();
 }
 
 function setLayer(layer, btn) {
@@ -698,24 +872,65 @@ function onSearch(val) {
 }
 
 function focusProperty(id) {
+  const p = getMapProperties().find(x => x.id === Number(id)) || getCasaProperty(id);
+  if (!p) return;
+  if (p.region && p.region !== state.region) selectRegion(p.region, { keepPin: true });
+  const sa = typeof casaMapResolveSubarea === 'function' ? casaMapResolveSubarea(p) : null;
+  if (sa && sa !== state.subarea) selectSubarea(p.region, sa, { keepPin: true });
   state.activePin = 'p-' + id;
-  const p = getCasaProperty(id);
-  if (p?.lat) map.panTo([p.lat, p.lng], { animate: true });
+  if (p.lat) map.panTo([p.lat, p.lng], { animate: true });
   renderMarkers();
   renderList();
+  syncMapUrl();
   document.getElementById('lc-' + id)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function focusFeed(id) {
+  const f = getMapFeed().find(x => x.id === id);
+  if (!f) return;
+  if (f.region !== state.region) selectRegion(f.region, { keepPin: true });
+  if (f.subarea && f.subarea !== state.subarea) selectSubarea(f.region, f.subarea, { keepPin: true });
   state.activePin = 'f-' + id;
-  const f = CASA_MAP_FEED.find(x => x.id === id);
-  if (f) {
-    const c = casaMapFeedCoords(f);
-    map.panTo(c, { animate: true });
-  }
+  const c = casaMapFeedCoords(f);
+  map.panTo(c, { animate: true });
   renderMarkers();
   renderList();
+  syncMapUrl();
   document.getElementById('lac-' + id)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function applyDeepLink() {
+  const qp = new URLSearchParams(location.search);
+  const regionParam = qp.get('region') || qp.get('county');
+  const subareaParam = qp.get('subarea');
+  const pinParam = qp.get('pin');
+  const propertyParam = qp.get('property');
+  const postParam = qp.get('post');
+
+  if (regionParam) {
+    const key = typeof casaMapNormalizeRegion === 'function'
+      ? casaMapNormalizeRegion(regionParam)
+      : (regionParam === 'cumbria' ? 'lake-district' : regionParam);
+    if (CASA_MAP_REGIONS[key]) {
+      selectRegion(key, { keepSubarea: !!subareaParam, keepPin: !!(pinParam || propertyParam) });
+      if (subareaParam && CASA_MAP_REGIONS[key].subareas?.[subareaParam]) {
+        selectSubarea(key, subareaParam, { keepPin: !!(pinParam || propertyParam) });
+      }
+    }
+  }
+
+  if (postParam && typeof casaMapFeedByPostId === 'function') {
+    const match = casaMapFeedByPostId(postParam);
+    if (match) {
+      selectRegion(match.region);
+      if (match.subarea) selectSubarea(match.region, match.subarea, { keepPin: true });
+      setTimeout(() => focusFeed(match.id), 400);
+      return;
+    }
+  }
+
+  if (propertyParam) setTimeout(() => focusProperty(propertyParam), 400);
+  else if (pinParam) setTimeout(() => focusFeed(pinParam), 400);
 }
 
 // Init
@@ -725,13 +940,7 @@ document.addEventListener('DOMContentLoaded', () => {
   highlightPolygons();
   renderMarkers();
   renderList();
-
-  const qp = new URLSearchParams(location.search);
-  const regionParam = qp.get('region') || qp.get('county');
-  if (regionParam) {
-    const key = regionParam === 'cumbria' ? 'lake-district' : regionParam;
-    if (CASA_MAP_REGIONS[key]) selectRegion(key);
-  }
+  applyDeepLink();
 });
 </script>
 </body>

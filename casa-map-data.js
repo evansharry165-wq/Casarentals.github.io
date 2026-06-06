@@ -138,24 +138,24 @@ const CASA_MAP_TREE = [
 
 /** Feed pins on the map — lat/lng derived from linked property or region centre */
 const CASA_MAP_FEED = [
-  { id: 'f1', region: 'lake-district', type: 'tip', name: 'Hannah F.', text: 'Old Man of Coniston from Walna Scar — magic before 8am.', loc: 'Coniston', when: '2 days ago', emoji: '🥾', propertyId: 3 },
-  { id: 'f2', region: 'lake-district', type: 'avail', name: 'Sarah R.', text: '12–19 July now open at Stone Cottage. Sleeps 6, dogs welcome.', loc: 'Windermere', when: '2 hrs ago', emoji: '🏡', propertyId: 1 },
-  { id: 'f3', region: 'lake-district', type: 'review', name: 'Marcus J.', text: 'Week at The Granary — easiest host we have booked with.', loc: 'Hawkshead', when: 'Yesterday', emoji: '⭐', propertyId: 7 },
-  { id: 'f4', region: 'lake-district', type: 'photo', name: 'Tom & Anna', text: 'Buttermere this morning — fells in cloud, empty lake.', loc: 'Buttermere', when: 'Yesterday', emoji: '📸', propertyId: 5 },
-  { id: 'f5', region: 'cornwall', type: 'tip', name: 'Alice M.', text: 'Zennor to St Ives coast path — utterly empty mornings.', loc: 'Zennor', when: 'Yesterday', emoji: '🌊', propertyId: 14 },
-  { id: 'f6', region: 'cornwall', type: 'avail', name: 'Rachel B.', text: '20–27 July free at Harbour Cottage, Mousehole.', loc: 'Mousehole', when: '4 hrs ago', emoji: '⚓', propertyId: 11 },
-  { id: 'f7', region: 'cornwall', type: 'review', name: 'James T.', text: 'Cliffside Cottage — sea view from the bedroom is extraordinary.', loc: 'Porthcurno', when: '1 hr ago', emoji: '⭐', propertyId: 9 },
-  { id: 'f8', region: 'highlands', type: 'tip', name: 'Neil F.', text: "Lairig Ghru — Scotland's most dramatic pass. 27 miles wild camp.", loc: 'Cairngorms', when: 'Yesterday', emoji: '🏔️', propertyId: 17 },
-  { id: 'f9', region: 'highlands', type: 'avail', name: 'Callum D.', text: 'Two weeks free in August at Glen Coe Bothy.', loc: 'Glencoe', when: '3 hrs ago', emoji: '🏕️', propertyId: 16 },
-  { id: 'f10', region: 'norfolk', type: 'tip', name: 'Charlie R.', text: 'Wells at 7am — empty beach, £3.50 bacon rolls.', loc: 'Wells-next-the-Sea', when: 'Yesterday', emoji: '🌅', propertyId: 21 },
-  { id: 'f11', region: 'yorkshire', type: 'photo', name: 'Graham & Kate', text: 'Dales at their finest — buttercups and silence.', loc: 'Wharfedale', when: '2 hrs ago', emoji: '🌿', propertyId: 25 },
-  { id: 'f12', region: 'cornwall', type: 'avail', name: 'Martin & Sue', text: 'August availability at Tregothnan Lodge.', loc: 'Truro', when: '2 days ago', emoji: '🌹', propertyId: 10 },
-  { id: 'f13', region: 'causeway', type: 'tip', name: 'Fiona', text: "Giant's Causeway at sunrise — alone for 20 minutes.", loc: 'Bushmills', when: '3 days ago', emoji: '🪨', propertyId: 35 },
-  { id: 'f14', region: 'highlands', type: 'review', name: 'Sophie W.', text: 'Croft House — remote, beautiful, exceptional host.', loc: 'Torridon', when: '2 days ago', emoji: '⭐', propertyId: 18 },
-  { id: 'f15', region: 'skye', type: 'photo', name: 'Fiona M.', text: 'Old Man of Storr at 6am — whole ridge to ourselves.', loc: 'Portree', when: 'Just now', emoji: '📸', propertyId: 19 },
-  { id: 'f16', region: 'snowdonia', type: 'avail', name: 'Host', text: 'Late July at Llyn Padarn Cabin.', loc: 'Llanberis', when: '5 hrs ago', emoji: '🏔️', propertyId: 34 },
-  { id: 'f17', region: 'pembrokeshire', type: 'review', name: 'Guest', text: 'Coast path glamping — stars and silence.', loc: 'Marloes', when: '1 day ago', emoji: '⭐', propertyId: 32 },
-  { id: 'f18', region: 'cotswolds', type: 'tip', name: 'Visitor', text: 'Bourton-on-the-Water before the coaches arrive — 7am.', loc: 'Cotswolds', when: '3 days ago', emoji: '🌿', propertyId: 27 },
+  { id: 'f1', region: 'lake-district', type: 'tip', name: 'Hannah F.', text: 'Old Man of Coniston from Walna Scar — magic before 8am.', loc: 'Coniston', when: '2 days ago', emoji: '🥾', propertyId: 3, feedPostId: 5, subarea: 'coniston' },
+  { id: 'f2', region: 'lake-district', type: 'avail', name: 'Sarah R.', text: '12–19 July now open at Stone Cottage. Sleeps 6, dogs welcome.', loc: 'Windermere', when: '2 hrs ago', emoji: '🏡', propertyId: 1, feedPostId: 1, subarea: 'windermere' },
+  { id: 'f3', region: 'lake-district', type: 'review', name: 'Marcus J.', text: 'Week at The Granary — easiest host we have booked with.', loc: 'Hawkshead', when: 'Yesterday', emoji: '⭐', propertyId: 7, feedPostId: 3, subarea: 'coniston' },
+  { id: 'f4', region: 'lake-district', type: 'photo', name: 'Tom & Anna', text: 'Buttermere this morning — fells in cloud, empty lake.', loc: 'Buttermere', when: 'Yesterday', emoji: '📸', propertyId: 5, feedPostId: 4, subarea: 'buttermere' },
+  { id: 'f5', region: 'cornwall', type: 'tip', name: 'Alice M.', text: 'Zennor to St Ives coast path — utterly empty mornings.', loc: 'Zennor', when: 'Yesterday', emoji: '🌊', propertyId: 14, feedPostId: 9, subarea: 'far-west' },
+  { id: 'f6', region: 'cornwall', type: 'avail', name: 'Rachel B.', text: '20–27 July free at Harbour Cottage, Mousehole.', loc: 'Mousehole', when: '4 hrs ago', emoji: '⚓', propertyId: 11, feedPostId: 8, subarea: 'far-west' },
+  { id: 'f7', region: 'cornwall', type: 'review', name: 'James T.', text: 'Cliffside Cottage — sea view from the bedroom is extraordinary.', loc: 'Porthcurno', when: '1 hr ago', emoji: '⭐', propertyId: 9, feedPostId: 7, subarea: 'far-west' },
+  { id: 'f8', region: 'highlands', type: 'tip', name: 'Neil F.', text: "Lairig Ghru — Scotland's most dramatic pass. 27 miles wild camp.", loc: 'Cairngorms', when: 'Yesterday', emoji: '🏔️', propertyId: 17, feedPostId: 14, subarea: 'cairngorms' },
+  { id: 'f9', region: 'highlands', type: 'avail', name: 'Callum D.', text: 'Two weeks free in August at Glen Coe Bothy.', loc: 'Glencoe', when: '3 hrs ago', emoji: '🏕️', propertyId: 16, feedPostId: 13, subarea: 'glencoe' },
+  { id: 'f10', region: 'norfolk', type: 'tip', name: 'Charlie R.', text: 'Wells at 7am — empty beach, £3.50 bacon rolls.', loc: 'Wells-next-the-Sea', when: 'Yesterday', emoji: '🌅', propertyId: 21, feedPostId: 17, subarea: 'coast' },
+  { id: 'f11', region: 'yorkshire', type: 'photo', name: 'Graham & Kate', text: 'Dales at their finest — buttercups and silence.', loc: 'Wharfedale', when: '2 hrs ago', emoji: '🌿', propertyId: 25, feedPostId: 19, subarea: 'dales' },
+  { id: 'f12', region: 'cornwall', type: 'avail', name: 'Martin & Sue', text: 'August availability at Tregothnan Lodge.', loc: 'Truro', when: '2 days ago', emoji: '🌹', propertyId: 10, feedPostId: 10, subarea: 'truro' },
+  { id: 'f13', region: 'causeway', type: 'tip', name: 'Fiona', text: "Giant's Causeway at sunrise — alone for 20 minutes.", loc: 'Bushmills', when: '3 days ago', emoji: '🪨', propertyId: 35, feedPostId: null, subarea: 'causeway' },
+  { id: 'f14', region: 'highlands', type: 'review', name: 'Sophie W.', text: 'Croft House — remote, beautiful, exceptional host.', loc: 'Torridon', when: '2 days ago', emoji: '⭐', propertyId: 18, feedPostId: 15, subarea: 'torridon' },
+  { id: 'f15', region: 'skye', type: 'photo', name: 'Fiona M.', text: 'Old Man of Storr at 6am — whole ridge to ourselves.', loc: 'Portree', when: 'Just now', emoji: '📸', propertyId: 19, feedPostId: 12, subarea: 'trotternish' },
+  { id: 'f16', region: 'snowdonia', type: 'avail', name: 'Host', text: 'Late July at Llyn Padarn Cabin.', loc: 'Llanberis', when: '5 hrs ago', emoji: '🏔️', propertyId: 34, feedPostId: null, subarea: 'llanberis' },
+  { id: 'f17', region: 'pembrokeshire', type: 'review', name: 'Guest', text: 'Coast path glamping — stars and silence.', loc: 'Marloes', when: '1 day ago', emoji: '⭐', propertyId: 32, feedPostId: null, subarea: 'south' },
+  { id: 'f18', region: 'cotswolds', type: 'tip', name: 'Visitor', text: 'Bourton-on-the-Water before the coaches arrive — 7am.', loc: 'Cotswolds', when: '3 days ago', emoji: '🌿', propertyId: 27, feedPostId: null, subarea: 'central' },
 ];
 
 const CASA_FEED_TYPE_LABELS = {
@@ -163,8 +163,8 @@ const CASA_FEED_TYPE_LABELS = {
 };
 
 function casaMapFeedCoords(item) {
-  const prop = typeof getCasaProperty === 'function' && item.propertyId
-    ? getCasaProperty(item.propertyId) : null;
+  const props = casaMapAllProperties();
+  const prop = item.propertyId ? props.find(p => p.id === item.propertyId) : null;
   if (prop?.lat && prop?.lng) {
     const o = ((item.id.charCodeAt(1) || 0) % 5) * 0.012 - 0.024;
     return [prop.lat + o, prop.lng + o * 1.4];
@@ -175,11 +175,35 @@ function casaMapFeedCoords(item) {
   return [(c[0][0] + c[1][0]) / 2, (c[0][1] + c[1][1]) / 2];
 }
 
+function casaMapAllProperties() {
+  return typeof casaMapGetProperties === 'function' ? casaMapGetProperties() : (typeof CASA_PROPERTIES !== 'undefined' ? CASA_PROPERTIES : []);
+}
+
+function casaMapAllFeed() {
+  return typeof casaMapGetFeed === 'function' ? casaMapGetFeed() : (typeof CASA_MAP_FEED !== 'undefined' ? CASA_MAP_FEED : []);
+}
+
+function casaMapItemInSubarea(item, regionId, subareaId) {
+  if (!subareaId) return true;
+  const sa = typeof casaMapGetSubarea === 'function' ? casaMapGetSubarea(regionId, subareaId) : null;
+  if (!sa?.towns) return false;
+  const loc = String(item.loc || item.where || '').toLowerCase();
+  if (sa.towns.some(t => loc.includes(String(t).toLowerCase()))) return true;
+  if (item.subarea === subareaId) return true;
+  if (item.propertyId) {
+    const prop = casaMapAllProperties().find(p => p.id === item.propertyId);
+    if (prop && sa.towns.some(t => String(prop.loc || '').toLowerCase().includes(String(t).toLowerCase()))) return true;
+  }
+  return typeof casaMapResolveSubarea === 'function' && casaMapResolveSubarea(item) === subareaId;
+}
+
 function casaMapCountForRegion(regionId) {
-  if (typeof CASA_PROPERTIES === 'undefined') return { stays: 0, feed: 0 };
-  const stays = CASA_PROPERTIES.filter(p => p.region === regionId).length;
-  const feed = CASA_MAP_FEED.filter(f => f.region === regionId).length;
-  return { stays, feed };
+  const props = casaMapAllProperties();
+  const feed = casaMapAllFeed();
+  return {
+    stays: props.filter(p => p.region === regionId).length,
+    feed: feed.filter(f => f.region === regionId).length,
+  };
 }
 
 function casaMapCountForCountry(countryId) {
@@ -192,6 +216,13 @@ function casaMapCountForCountry(countryId) {
 }
 
 function casaMapTotalCounts() {
-  if (typeof CASA_PROPERTIES === 'undefined') return { stays: 0, feed: 0 };
-  return { stays: CASA_PROPERTIES.length, feed: CASA_MAP_FEED.length };
+  const props = casaMapAllProperties();
+  const feed = casaMapAllFeed();
+  return { stays: props.length, feed: feed.length };
 }
+
+function casaMapFeedByPostId(postId) {
+  return casaMapAllFeed().find(f => String(f.feedPostId) === String(postId));
+}
+
+if (typeof casaMapApplyGeo === 'function') casaMapApplyGeo();

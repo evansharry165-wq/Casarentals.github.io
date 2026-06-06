@@ -430,6 +430,9 @@
 </footer>
 
 <script src="casa-properties.js"></script>
+<script src="casa-map-geo.js"></script>
+<script src="casa-map-data.js"></script>
+<script src="casa-map-live.js"></script>
 <script>
 // ═══════════════════════════════════════
 // DATA
@@ -547,6 +550,10 @@ function renderPost(p, i) {
   const revH = p.review ? `<div class="post-review-card"><div class="review-stars">${renderStars(p.review.stars)}</div><div class="review-text">${p.review.text}</div><div class="review-meta">${p.review.meta}</div></div>` : '';
   const ctaH = p.cta ? `<div class="looking-cta"><p>Are you a host? <i>Reply with your availability below</i> — guests are waiting.</p><a href="messages.html">Message directly</a></div>` : '';
   const enquireH = p.prop ? `<a class="pa pa-enquire" href="booking.html?id=${propId}&prop=${encodeURIComponent(p.prop.name + ', ' + p.prop.loc)}&price=${p.prop.price}">Enquire →</a>` : '';
+  const mapHref = typeof casaMapUrlForFeedPost === 'function'
+    ? casaMapUrlForFeedPost(p.id, p.county)
+    : `map.html?post=${p.id}`;
+  const mapH = p.county !== 'all' ? `<a class="pa pa-map" href="${mapHref}"><svg viewBox="0 0 24 24"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg> Map</a>` : '';
 
   // Replies HTML
   const repliesH = rs.length ? `
@@ -619,7 +626,7 @@ function renderPost(p, i) {
         <svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg>
         ${saved ? 'Saved' : 'Save'}
       </button>
-      ${enquireH}
+      ${enquireH}${mapH}
     </div>
     ${repliesH}
   </article>`;
@@ -882,6 +889,16 @@ function submitPost() {
   };
 
   POSTS.unshift(newPost);
+  if (typeof casaMapPersistFeedPost === 'function') {
+    casaMapPersistFeedPost({
+      id: newPost.id,
+      county: newPost.county,
+      type: newPost.type,
+      name: newPost.name,
+      body: text,
+      where: newPost.where,
+    });
+  }
   ta.value = '';
   ta.style.height = 'auto';
   document.getElementById('postBtn').disabled = true;
