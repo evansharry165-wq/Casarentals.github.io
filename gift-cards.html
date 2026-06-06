@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gift cards — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://images.unsplash.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<link rel="stylesheet" href="casa-info.css">
+</head>
+<body>
+<nav class="casa-nav">
+  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
+  <div class="nav-right">
+    <a class="nav-link" href="browse.html">Browse</a>
+    <a class="nav-link" href="help.html">Help</a>
+  </div>
+</nav>
+<div class="wrap">
+  <header class="info-hero">
+    <div class="eyebrow">Casa / Gift cards</div>
+    <h1>Give a <i>getaway.</i></h1>
+    <p class="lead">Digital Casa gift cards let someone choose their own cottage, coast path, or bothy — anywhere on the site. Coming in beta; join the waitlist to be first.</p>
+    <div class="info-hero-photo casa-photo" id="gcHero"></div>
+  </header>
+  <div class="info-body">
+    <div class="info-section">
+      <h2>How it will <i>work</i></h2>
+      <ul>
+        <li>Choose £50, £100, £250, or a custom amount — delivered by email instantly.</li>
+        <li>Redeem against any host booking; balances never expire.</li>
+        <li>No fees on top — 100% of the card value goes toward the stay.</li>
+        <li>Physical post option for weddings and birthdays (UK only).</li>
+      </ul>
+      <p style="margin-top:16px">Inspired by how Airbnb and Sykes offer gift experiences — but without a service charge eating into the gift.</p>
+      <div class="info-cta">
+        <a class="primary" href="waitlist.html">Join the waitlist</a>
+        <a class="outline" href="browse.html">Browse stays to gift</a>
+      </div>
+    </div>
+    <div class="info-grid">
+      <div class="info-card"><div class="ic-photo casa-photo" data-region="lake-district"></div><h3>Weekend <i>escape</i></h3><p>From £95/night — shepherd's huts to stone cottages.</p></div>
+      <div class="info-card"><div class="ic-photo casa-photo" data-region="skye"></div><h3>Highland <i>adventure</i></h3><p>Skye, Glencoe, and west-coast bothies from £130/night.</p></div>
+      <div class="info-card"><div class="ic-photo casa-photo" data-region="cornwall"></div><h3>Coastal <i>break</i></h3><p>Cornwall &amp; Devon harbour cottages from £110/night.</p></div>
+    </div>
+  </div>
+</div>
+<footer class="casa-foot"><div class="inner"><div class="bot"><div>© 2026 Casa.co.uk</div></div></div></footer>
+<script src="casa-images.js"></script>
+<script>
+document.getElementById('gcHero').style.backgroundImage=`url('${casaGetRegionPhoto('pembrokeshire',1400)}')`;
+document.querySelectorAll('[data-region]').forEach(el=>{el.style.backgroundImage=`url('${casaGetRegionPhoto(el.dataset.region,600)}')`;});
+</script>
+</body>
+</html>

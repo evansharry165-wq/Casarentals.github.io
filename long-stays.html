@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Long stays — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://images.unsplash.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<link rel="stylesheet" href="casa-info.css">
+</head>
+<body>
+<nav class="casa-nav">
+  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
+  <div class="nav-right">
+    <a class="nav-link" href="browse.html">Browse</a>
+    <a class="nav-link" href="how-it-works.html">How it works</a>
+    <a class="nav-link primary" href="browse.html">Find a stay</a>
+  </div>
+</nav>
+<div class="wrap">
+  <header class="info-hero">
+    <div class="eyebrow">Casa / Long stays</div>
+    <h1>Stay a month — or a <i>season.</i></h1>
+    <p class="lead">Remote workers, sabbaticals, and between-homes guests often need 28+ nights. Many Casa hosts offer reduced monthly rates when you message direct.</p>
+    <div class="info-hero-photo casa-photo" id="lsHero"></div>
+  </header>
+  <div class="info-body">
+    <div class="info-grid">
+      <div class="info-card"><h3>28+ <i>nights</i></h3><p>Ask the host for a monthly rate — typical discounts of 15–30% vs nightly pricing. No platform markup on either side.</p></div>
+      <div class="info-card"><h3>Work-ready <i>wifi</i></h3><p>Filter for parking, desk space, and reliable broadband. Many barn conversions and farmhouses suit long-form remote work.</p></div>
+      <div class="info-card"><h3>Seasonal <i>lets</i></h3><p>Off-season windows (Oct–Mar in many regions) mean quieter roads, cosier pubs, and better availability for extended stays.</p></div>
+    </div>
+    <div class="info-section">
+      <h2>Stays suited to <i>longer trips</i></h2>
+      <p>Larger properties with workspace, washing machines, and pet-friendly gardens — message the host with your dates for a custom quote.</p>
+    </div>
+    <div class="info-stays-row" id="longStayStays"></div>
+    <div class="info-cta" style="margin-top:32px"><a class="primary" href="browse.html">Browse all stays</a><a class="outline" href="messages.html">Message a host</a></div>
+  </div>
+</div>
+<footer class="casa-foot"><div class="inner"><div class="bot"><div>© 2026 Casa.co.uk · <a href="help.html">Help</a></div></div></div></footer>
+<script src="casa-properties.js"></script>
+<script src="casa-images.js"></script>
+<script src="casa-info-stays.js"></script>
+<script>
+document.getElementById('lsHero').style.backgroundImage=`url('${casaGetRegionPhoto('norfolk',1400)}')`;
+casaRenderInfoStays('longStayStays', p => p.sleeps >= 4, 4);
+</script>
+</body>
+</html>

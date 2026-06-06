@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Community — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://images.unsplash.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<link rel="stylesheet" href="casa-info.css">
+</head>
+<body>
+<nav class="casa-nav">
+  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
+  <div class="nav-right">
+    <a class="nav-link" href="feed.html">Open feed</a>
+    <a class="nav-link" href="map.html">Map</a>
+    <a class="nav-link primary" href="signup.html">Join free</a>
+  </div>
+</nav>
+<div class="wrap">
+  <header class="info-hero">
+    <div class="eyebrow">Casa / Community</div>
+    <h1>Ask before you <i>book.</i></h1>
+    <p class="lead">The Casa feed is county-organised social discovery — hosts post gaps, guests ask about dogs and pubs, travellers share photos from last week's stay.</p>
+    <div class="info-hero-photo casa-photo" id="commHero"></div>
+  </header>
+  <div class="info-body">
+    <div class="info-section">
+      <h2>What belongs on the <i>feed</i></h2>
+      <ul>
+        <li><strong>Availability</strong> — "Easter week just opened at Slate Barn"</li>
+        <li><strong>Looking</strong> — "Family of 5, need Lake District, 12–19 Aug, pet-friendly"</li>
+        <li><strong>Reviews &amp; tips</strong> — honest stay reports and local walks</li>
+        <li><strong>Photos</strong> — sunrise from the deck beats any stock image</li>
+      </ul>
+    </div>
+    <div class="info-grid">
+      <div class="info-card"><h3>County <i>rooms</i></h3><p>Filter by Lake District, Cornwall, Skye, and 12 more — each with local host highlights and trending tags.</p></div>
+      <div class="info-card"><h3>Host <i>badges</i></h3><p>Verified hosts and top responders show on posts — build trust before the first message.</p></div>
+      <div class="info-card"><h3>Map <i>links</i></h3><p>Posts tie to pins on the Casa map — jump from conversation to geography in one click.</p></div>
+    </div>
+    <div class="info-section">
+      <h2>Community <i>guidelines</i></h2>
+      <p>Be specific, be kind, no spam or off-platform payment requests. Report anything off — we respond within one working day.</p>
+      <div class="info-cta">
+        <a class="primary" href="feed.html">Explore the feed</a>
+        <a class="outline" href="help.html#safety">Trust &amp; safety</a>
+        <a class="outline" href="host-resources.html">Host resources</a>
+      </div>
+    </div>
+  </div>
+</div>
+<footer class="casa-foot"><div class="inner"><div class="bot"><div>© 2026 Casa.co.uk · <a href="feed.html">Feed</a></div></div></div></footer>
+<script src="casa-images.js"></script>
+<script>document.getElementById('commHero').style.backgroundImage=`url('${casaGetRegionPhoto('highlands',1400)}')`;</script>
+</body>
+</html>

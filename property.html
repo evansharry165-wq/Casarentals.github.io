@@ -5,6 +5,7 @@
 <title>Stone Cottage, Windermere — Casa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://images.unsplash.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="casa.css">
 <style>
@@ -537,13 +538,15 @@
       <div><h5>Find a stay</h5><a href="browse.html">Browse all stays</a><a href="map.html">Map view</a><a href="feed.html">Community feed</a><a href="how-it-works.html">How it works</a></div>
       <div><h5>For hosts</h5><a href="list.html">List a property</a><a href="host.html">Host dashboard</a><a href="how-it-works.html#hosts">How it works</a></div>
       <div><h5>Account</h5><a href="signup.html">Sign in</a><a href="signup.html">Join free</a><a href="saved.html">Saved stays</a><a href="messages.html">Messages</a><a href="profile.html">Profile</a></div>
-      <div><h5>Casa</h5><a href="#">Our story</a><a href="how-it-works.html">How it works</a><a href="help.html">Help centre</a><a href="privacy.html">Privacy policy</a></div>
+      <div><h5>Casa</h5><a href="about.html">Our story</a><a href="how-it-works.html">How it works</a><a href="help.html">Help centre</a><a href="privacy.html">Privacy policy</a></div>
     </div>
     <div class="bot"><div>&copy; 2026 Casa.co.uk &mdash; <em style="font-family:var(--serif);font-style:italic">fee-free, always.</em></div><div><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="privacy.html#cookies">Cookies</a></div></div>
   </div>
 </footer>
 
+<link rel="preconnect" href="https://images.unsplash.com">
 <script src="casa-properties.js"></script>
+<script src="casa-images.js"></script>
 <script src="casa-hosts.js"></script>
 <script src="casa.js"></script>
 <script>
@@ -588,11 +591,14 @@ function applyListingToPage(p) {
   if (mapSub) mapSub.textContent = `${listing.loc}, ${listing.rLabel} — exact location shared after enquiry.`;
   const mapLbl = document.getElementById('propMapLabel');
   if (mapLbl) mapLbl.textContent = listing.title;
-  const gal = document.getElementById('propGalleryMain');
-  if (gal) {
-    gal.style.background = listing.col;
-    gal.setAttribute('data-label', `${listing.title.toUpperCase()} · ${listing.loc.toUpperCase()}`);
-  }
+  const photos = listing.photos || (typeof casaGetPropertyGallery === 'function' ? casaGetPropertyGallery(listing, 5) : [listing.col]);
+  document.querySelectorAll('.gallery .ph').forEach((el, i) => {
+    el.className = 'ph casa-photo';
+    el.style.backgroundImage = `url('${photos[i] || photos[0]}')`;
+    el.style.background = '';
+  });
+  const showAll = document.querySelector('.gallery .show-all');
+  if (showAll) showAll.innerHTML = showAll.innerHTML.replace('12', String(Math.max(photos.length, 5)));
   if (host) {
     const hostUrl = casaHostProfileUrl(host.id);
     document.getElementById('hostAvLink').href = hostUrl;
@@ -612,7 +618,7 @@ function applyListingToPage(p) {
   const similar = getSimilarProperties(listing.id, 4);
   document.getElementById('similarStays').innerHTML = similar.map(s => `
     <a class="similar-card" href="property.html?id=${s.id}">
-      <div class="sc-img" style="background:${s.col}"></div>
+      <div class="sc-img casa-photo" style="${typeof casaPhotoStyle==='function'?casaPhotoStyle(s,600):`background:${s.col}`}"></div>
       <div class="sc-body">
         <div class="sc-title">${s.title}, <i>${s.loc}</i></div>
         <div class="sc-meta">★ ${s.rating} · Sleeps ${s.sleeps}</div>

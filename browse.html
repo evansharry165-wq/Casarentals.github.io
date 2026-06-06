@@ -6,6 +6,7 @@
 <title>Browse stays — Casa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://images.unsplash.com">
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="casa.css">
 <style>
@@ -295,10 +296,10 @@
         <div class="casa-mark-lg">casa</div>
         <div class="pitch">A quieter place to find a holiday stay — <em>fee-free</em>, and direct with the host.</div>
       </div>
-      <div><h5>Find a stay</h5><a href="browse.html">Browse all stays</a><a href="map.html">Map view</a><a href="feed.html">Community feed</a><a href="#">Last-minute deals</a></div>
-      <div><h5>For hosts</h5><a href="list.html">List a property</a><a href="host.html">Host dashboard</a><a href="how-it-works.html">How it works</a></div>
+      <div><h5>Find a stay</h5><a href="browse.html">Browse all stays</a><a href="map.html">Map view</a><a href="feed.html">Community feed</a><a href="last-minute.html">Last-minute deals</a></div>
+      <div><h5>For hosts</h5><a href="list.html">List a property</a><a href="host.html">Host dashboard</a><a href="host-resources.html">Resources</a><a href="how-it-works.html">How it works</a></div>
       <div><h5>Account</h5><a href="signup.html">Sign in</a><a href="signup.html">Join free</a><a href="saved.html">Saved</a><a href="messages.html">Messages</a></div>
-      <div><h5>Casa</h5><a href="#">Our story</a><a href="how-it-works.html">How it works</a><a href="help.html">Help centre</a></div>
+      <div><h5>Casa</h5><a href="about.html">Our story</a><a href="press.html">Press</a><a href="help.html">Help centre</a></div>
     </div>
     <div class="bot"><div>© 2026 Casa.co.uk — <em style="font-family:var(--serif);font-style:italic">fee-free, always.</em></div><div><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="privacy.html#cookies">Cookies</a></div></div>
   </div>
@@ -353,6 +354,7 @@
 </div>
 
 <script src="casa-properties.js"></script>
+<script src="casa-images.js"></script>
 <script src="casa.js"></script>
 <script>
 const PROPS = CASA_PROPERTIES;
@@ -435,7 +437,7 @@ function toggleFilterChip(btn, kind) {
 document.getElementById('filterModal')?.addEventListener('click', e => { if (e.target.id === 'filterModal') closeFilterModal(); });
 
 function card(p,i) {
-  const img=`<div style="width:100%;height:100%;background:${p.col};display:flex;align-items:flex-end;padding:10px"><span style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,0.75)">${p.title.toUpperCase()} · ${p.loc.toUpperCase()}</span></div>`;
+  const img=`<div class="ph casa-photo" style="${typeof casaPhotoStyle==='function'?casaPhotoStyle(p,800):`background:${p.col}`}"></div>`;
   const bdg=p.badge?`<div class="badge-row"><span class="badge ${BADGE_CFG[p.badge].cls}">${BADGE_CFG[p.badge].text}</span></div>`:'';
   const tags=p.tags.slice(0,3).map(t=>TAG_LABELS[t]||t).join(' · ');
   const heartSaved = typeof casaIsSaved === 'function' && casaIsSaved(p.id);

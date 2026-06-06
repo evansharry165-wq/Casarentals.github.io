@@ -242,6 +242,56 @@ html, body {
 .ph.brick{ background: linear-gradient(135deg, #B05533 0%, #C97350 100%); }
 .ph.brick::after { color: rgba(255,255,255,0.7); }
 
+/* Real photography layer */
+.casa-photo, .ph.casa-photo {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+.ph.casa-photo::before { display: none; }
+.ph.casa-photo::after {
+  background: linear-gradient(to top, rgba(22,20,15,.72) 0%, rgba(22,20,15,.08) 55%, transparent 100%);
+  color: rgba(255,255,255,.92);
+  width: 100%;
+  padding: 14px 12px 10px;
+}
+.casa-photo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pc-image .casa-photo-wrap,
+.sc-img.casa-photo,
+.dest-photo,
+.hero-photo {
+  background-size: cover;
+  background-position: center;
+  width: 100%;
+  height: 100%;
+}
+.dest-photo { min-height: 100%; position: absolute; inset: 0; z-index: 0; }
+.dest-card .meta { position: relative; z-index: 2; }
+.hero-photo {
+  position: relative;
+  aspect-ratio: 3/4;
+  border-radius: 14px;
+  overflow: hidden;
+  text-decoration: none;
+  display: block;
+  transition: transform .2s, box-shadow .2s;
+}
+.hero-photo:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(22,20,15,.12); }
+.hero-photo-cap {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 14px 12px;
+  background: linear-gradient(transparent, rgba(22,20,15,.75));
+  font-family: var(--mono); font-size: 9px; letter-spacing: .14em;
+  text-transform: uppercase; color: rgba(255,255,255,.9); line-height: 1.5;
+}
+.hero-photo-cap strong { display: block; font-family: var(--serif); font-style: italic; font-size: 15px; letter-spacing: 0; text-transform: none; color: white; margin-bottom: 2px; }
+.map-list-pc .thumb.casa-photo { background-size: cover; background-position: center; }
+
 /* ─── Cards ─── */
 .card {
   background: var(--surface); border: 1px solid var(--rule);

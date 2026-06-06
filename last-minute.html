@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Last-minute stays — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://images.unsplash.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<link rel="stylesheet" href="casa-info.css">
+</head>
+<body>
+<nav class="casa-nav">
+  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
+  <div class="nav-right">
+    <a class="nav-link" href="browse.html">Browse</a>
+    <a class="nav-link" href="map.html">Map</a>
+    <a class="nav-link" href="feed.html">Feed</a>
+    <a class="nav-link primary" href="browse.html">Find a stay</a>
+  </div>
+</nav>
+<div class="wrap">
+  <header class="info-hero">
+    <div class="eyebrow">Casa / Last minute</div>
+    <h1>Get away <i>this week.</i></h1>
+    <p class="lead">Hosts often drop short-notice gaps on the feed — cottages, cabins, and glamping with space in the next fortnight. Message direct; no booking fees.</p>
+    <div class="info-hero-photo casa-photo" id="lmHero"></div>
+  </header>
+  <div class="info-body">
+    <div class="info-section">
+      <h2>How last-minute works on <i>Casa</i></h2>
+      <p>Unlike auction-style "deals" sites, Casa last-minute stays are normal listings with recent availability posted by hosts. Check the community feed for "#avail" posts, or browse instant-book stays below.</p>
+      <div class="info-cta">
+        <a class="primary" href="feed.html">See feed availability</a>
+        <a class="outline" href="browse.html?instant=1">Instant book stays</a>
+      </div>
+    </div>
+    <h2 style="font-family:var(--serif);font-size:32px;margin-top:48px">Available <i>now</i></h2>
+    <p style="color:var(--ink-2);margin-bottom:8px">Verified &amp; instant-book picks — enquire today for dates within 14 days.</p>
+    <div class="info-stays-row" id="lastMinuteStays"></div>
+  </div>
+</div>
+<footer class="casa-foot"><div class="inner"><div class="top"><div><div class="casa-mark-lg">casa</div></div><div><h5>Stays</h5><a href="browse.html">Browse</a><a href="long-stays.html">Long stays</a><a href="gift-cards.html">Gift cards</a></div><div><h5>Casa</h5><a href="help.html">Help</a></div></div><div class="bot"><div>© 2026 Casa.co.uk</div></div></div></footer>
+<script src="casa-properties.js"></script>
+<script src="casa-images.js"></script>
+<script src="casa-info-stays.js"></script>
+<script>
+document.getElementById('lmHero').style.backgroundImage=`url('${casaGetRegionPhoto('cornwall',1400)}')`;
+casaRenderInfoStays('lastMinuteStays', p => p.badge === 'verified' || p.instantBook, 4);
+</script>
+</body>
+</html>

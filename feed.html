@@ -409,7 +409,7 @@
       <div class="aside-block" style="border-style:dashed">
         <h4 style="font-size:14px;color:var(--ink-3)">Community guidelines</h4>
         <p style="font-size:12px;color:var(--ink-3);line-height:1.55">For hosts and guests — not agencies or bots. Keep it useful, kind, and direct. No spam or off-platform booking links.</p>
-        <a href="#" style="font-size:12px;color:var(--brick);text-decoration:underline;text-underline-offset:2px;display:inline-block;margin-top:8px" onclick="toast('Community guidelines — coming soon');return false">Read in full →</a>
+        <a href="community.html" style="font-size:12px;color:var(--brick);text-decoration:underline;text-underline-offset:2px;display:inline-block;margin-top:8px">Read in full →</a>
       </div>
 
     </aside>
@@ -423,13 +423,14 @@
       <div><h5>Find a stay</h5><a href="browse.html">Browse all stays</a><a href="map.html">Map view</a><a href="feed.html">Community feed</a><a href="how-it-works.html">How it works</a></div>
       <div><h5>For hosts</h5><a href="list.html">List a property</a><a href="host.html">Host dashboard</a></div>
       <div><h5>Account</h5><a href="signup.html">Sign in</a><a href="signup.html">Join free</a><a href="saved.html">Saved stays</a><a href="messages.html">Messages</a></div>
-      <div><h5>Casa</h5><a href="#">Our story</a><a href="how-it-works.html">How it works</a><a href="help.html">Help centre</a></div>
+      <div><h5>Casa</h5><a href="about.html">Our story</a><a href="how-it-works.html">How it works</a><a href="help.html">Help centre</a><a href="community.html">Community</a></div>
     </div>
     <div class="bot"><div>&copy; 2026 Casa.co.uk &mdash; <em style="font-family:var(--serif);font-style:italic">fee-free, always.</em></div><div><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div></div>
   </div>
 </footer>
 
 <script src="casa-properties.js"></script>
+<script src="casa-images.js"></script>
 <script src="casa-map-geo.js"></script>
 <script src="casa-map-data.js"></script>
 <script src="casa-map-live.js"></script>
@@ -545,8 +546,22 @@ function renderPost(p, i) {
   const rs = REPLIES[p.id] || [];
 
   const propId = p.prop ? (p.propId || getCasaPropertyIdByTitle(p.prop.name)) : null;
-  const propH = p.prop ? `<a class="post-prop" href="property.html?id=${propId}"><div class="pi"><div class="ph ${p.prop.col}"></div></div><div class="pinfo"><div class="pname">${p.prop.name}, <i>${p.prop.loc}</i></div><div class="pdets"><span>★ ${p.prop.rating}</span><span>·</span><span>Sleeps ${p.prop.sleeps} · ${p.prop.beds} bed</span>${p.prop.tags?`<span>·</span><span>${p.prop.tags}</span>`:''}</div></div><div class="price">£${p.prop.price}<span>/night</span></div></a>` : '';
-  const imgH = p.images ? `<div class="post-images ${p.images.length===1?'one':p.images.length===2?'two':'three'}">${p.images.map(c=>`<div class="ph ${c}"></div>`).join('')}</div>` : '';
+  let propPhClass = `ph ${p.prop.col}`;
+  let propPhStyle = '';
+  if (propId && typeof getCasaProperty === 'function' && typeof casaGetPropertyPhoto === 'function') {
+    const listing = getCasaProperty(propId);
+    if (listing) {
+      propPhClass = 'ph casa-photo';
+      propPhStyle = ` style="${casaPhotoStyle(listing, 420)}"`;
+    }
+  }
+  const propH = p.prop ? `<a class="post-prop" href="property.html?id=${propId}"><div class="pi"><div class="${propPhClass}"${propPhStyle}></div></div><div class="pinfo"><div class="pname">${p.prop.name}, <i>${p.prop.loc}</i></div><div class="pdets"><span>★ ${p.prop.rating}</span><span>·</span><span>Sleeps ${p.prop.sleeps} · ${p.prop.beds} bed</span>${p.prop.tags?`<span>·</span><span>${p.prop.tags}</span>`:''}</div></div><div class="price">£${p.prop.price}<span>/night</span></div></a>` : '';
+  const imgH = p.images ? `<div class="post-images ${p.images.length===1?'one':p.images.length===2?'two':'three'}">${p.images.map((c,ix)=>{
+    if (typeof casaGetRegionPhoto === 'function' && p.county && p.county !== 'all') {
+      return `<div class="ph casa-photo" style="background-image:url('${casaGetRegionPhoto(p.county, 900)}')"></div>`;
+    }
+    return `<div class="ph ${c}"></div>`;
+  }).join('')}</div>` : '';
   const revH = p.review ? `<div class="post-review-card"><div class="review-stars">${renderStars(p.review.stars)}</div><div class="review-text">${p.review.text}</div><div class="review-meta">${p.review.meta}</div></div>` : '';
   const ctaH = p.cta ? `<div class="looking-cta"><p>Are you a host? <i>Reply with your availability below</i> — guests are waiting.</p><a href="messages.html">Message directly</a></div>` : '';
   const enquireH = p.prop ? `<a class="pa pa-enquire" href="booking.html?id=${propId}&prop=${encodeURIComponent(p.prop.name + ', ' + p.prop.loc)}&price=${p.prop.price}">Enquire →</a>` : '';
