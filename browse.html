@@ -237,7 +237,7 @@
     </div>
 
     <div class="filter-bar">
-      <button class="fb-pill" onclick="this.classList.toggle('active')">
+      <button class="fb-pill" id="openFiltersBtn" onclick="openFilterModal()">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="M4 5h16l-6 8v6l-4-2v-4z"/></svg>
         Filters
       </button>
@@ -298,11 +298,59 @@
       <div><h5>Find a stay</h5><a href="browse.html">Browse all stays</a><a href="map.html">Map view</a><a href="feed.html">Community feed</a><a href="#">Last-minute deals</a></div>
       <div><h5>For hosts</h5><a href="list.html">List a property</a><a href="host.html">Host dashboard</a><a href="how-it-works.html">How it works</a></div>
       <div><h5>Account</h5><a href="signup.html">Sign in</a><a href="signup.html">Join free</a><a href="saved.html">Saved</a><a href="messages.html">Messages</a></div>
-      <div><h5>Casa</h5><a href="#">Our story</a><a href="how-it-works.html">How it works</a><a href="#">Help centre</a></div>
+      <div><h5>Casa</h5><a href="#">Our story</a><a href="how-it-works.html">How it works</a><a href="help.html">Help centre</a></div>
     </div>
     <div class="bot"><div>© 2026 Casa.co.uk — <em style="font-family:var(--serif);font-style:italic">fee-free, always.</em></div><div><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="privacy.html#cookies">Cookies</a></div></div>
   </div>
 </footer>
+
+<div class="casa-modal-overlay" id="filterModal">
+  <div class="casa-modal">
+    <div class="casa-modal-head">
+      <h2>Filter <i>stays</i></h2>
+      <button type="button" class="casa-modal-close" onclick="closeFilterModal()">×</button>
+    </div>
+    <div class="casa-modal-body">
+      <div class="filter-group">
+        <h4>Price per night (£)</h4>
+        <div class="price-range">
+          <input type="number" id="fMinPrice" placeholder="Min" min="0" onchange="applyFilterModal()">
+          <input type="number" id="fMaxPrice" placeholder="Max" min="0" onchange="applyFilterModal()">
+        </div>
+      </div>
+      <div class="filter-group">
+        <h4>Sleeps at least</h4>
+        <div class="filter-chips" id="fSleepsChips">
+          <button type="button" class="filter-chip" data-sleeps="2" onclick="toggleFilterChip(this,'sleeps')">2+</button>
+          <button type="button" class="filter-chip" data-sleeps="4" onclick="toggleFilterChip(this,'sleeps')">4+</button>
+          <button type="button" class="filter-chip" data-sleeps="6" onclick="toggleFilterChip(this,'sleeps')">6+</button>
+          <button type="button" class="filter-chip" data-sleeps="8" onclick="toggleFilterChip(this,'sleeps')">8+</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <h4>Booking type</h4>
+        <div class="filter-chips">
+          <button type="button" class="filter-chip" id="fInstant" onclick="toggleFilterChip(this,'instant')">⚡ Instant book</button>
+          <button type="button" class="filter-chip" id="fVerified" onclick="toggleFilterChip(this,'verified')">✓ Verified only</button>
+        </div>
+      </div>
+      <div class="filter-group">
+        <h4>Amenities</h4>
+        <div class="filter-chips">
+          <button type="button" class="filter-chip" data-amenity="pets" onclick="toggleFilterChip(this,'amenity')">🐾 Pets</button>
+          <button type="button" class="filter-chip" data-amenity="woodburner" onclick="toggleFilterChip(this,'amenity')">🔥 Wood burner</button>
+          <button type="button" class="filter-chip" data-amenity="seaview" onclick="toggleFilterChip(this,'amenity')">🌊 Sea view</button>
+          <button type="button" class="filter-chip" data-amenity="hottub" onclick="toggleFilterChip(this,'amenity')">♨️ Hot tub</button>
+          <button type="button" class="filter-chip" data-amenity="offgrid" onclick="toggleFilterChip(this,'amenity')">🌿 Off-grid</button>
+        </div>
+      </div>
+    </div>
+    <div class="casa-modal-foot">
+      <button type="button" class="btn btn-ghost" onclick="clearFilterModal()">Clear all</button>
+      <button type="button" class="btn btn-primary" onclick="closeFilterModal()">Show results</button>
+    </div>
+  </div>
+</div>
 
 <script src="casa-properties.js"></script>
 <script src="casa.js"></script>
@@ -326,7 +374,7 @@ const REGION_META = {
 const TAG_LABELS = {woodburner:'Wood burner',hottub:'Hot tub',pets:'Pets ok',seaview:'Sea view',offgrid:'Off-grid',garden:'Garden',parking:'Parking',sauna:'Sauna',riverside:'Riverside',romantic:'Romantic',fire:'Open fire'};
 const BADGE_CFG = {verified:{cls:'moss',text:'✓ Verified'},editors:{cls:'',text:"Editor's pick"},new:{cls:'ink',text:'New'}};
 
-let state = {region:'lake-district',type:'all',sort:'curated',filters:new Set()};
+let state = {region:'lake-district',type:'all',sort:'curated',filters:new Set(),minPrice:null,maxPrice:null,minSleeps:null,instantOnly:false,verifiedOnly:false};
 
 function getFiltered() {
   let p = PROPS.slice();
@@ -337,11 +385,54 @@ function getFiltered() {
   if(state.filters.has('sea'))     p=p.filter(x=>x.tags.includes('seaview'));
   if(state.filters.has('tub'))     p=p.filter(x=>x.tags.includes('hottub'));
   if(state.filters.has('offgrid')) p=p.filter(x=>x.tags.includes('offgrid'));
+  if(state.minPrice != null) p = p.filter(x => x.price >= state.minPrice);
+  if(state.maxPrice != null) p = p.filter(x => x.price <= state.maxPrice);
+  if(state.minSleeps != null) p = p.filter(x => x.sleeps >= state.minSleeps);
+  if(state.instantOnly) p = p.filter(x => x.instantBook);
+  if(state.verifiedOnly) p = p.filter(x => x.badge === 'verified');
   if(state.sort==='price-asc')  p=[...p].sort((a,b)=>a.price-b.price);
   if(state.sort==='price-desc') p=[...p].sort((a,b)=>b.price-a.price);
   if(state.sort==='rating')     p=[...p].sort((a,b)=>b.rating-a.rating);
   return p;
 }
+
+function openFilterModal() { document.getElementById('filterModal').classList.add('open'); document.getElementById('openFiltersBtn').classList.add('active'); }
+function closeFilterModal() { document.getElementById('filterModal').classList.remove('open'); render(); }
+function clearFilterModal() {
+  state.minPrice = state.maxPrice = state.minSleeps = null;
+  state.instantOnly = state.verifiedOnly = false;
+  state.filters.clear();
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('on'));
+  document.querySelectorAll('.fb-pill[id^="fp"]').forEach(c => c.classList.remove('active'));
+  document.getElementById('fMinPrice').value = '';
+  document.getElementById('fMaxPrice').value = '';
+  document.getElementById('openFiltersBtn').classList.remove('active');
+  render();
+}
+function applyFilterModal() {
+  const min = document.getElementById('fMinPrice').value;
+  const max = document.getElementById('fMaxPrice').value;
+  state.minPrice = min ? parseInt(min, 10) : null;
+  state.maxPrice = max ? parseInt(max, 10) : null;
+  render();
+}
+function toggleFilterChip(btn, kind) {
+  btn.classList.toggle('on');
+  if (kind === 'sleeps') {
+    document.querySelectorAll('#fSleepsChips .filter-chip').forEach(c => { if (c !== btn) c.classList.remove('on'); });
+    state.minSleeps = btn.classList.contains('on') ? parseInt(btn.dataset.sleeps, 10) : null;
+  } else if (kind === 'instant') {
+    state.instantOnly = btn.classList.contains('on');
+  } else if (kind === 'verified') {
+    state.verifiedOnly = btn.classList.contains('on');
+  } else if (kind === 'amenity') {
+    const map = { pets: 'pets', woodburner: 'fire', seaview: 'sea', hottub: 'tub', offgrid: 'offgrid' };
+    const key = map[btn.dataset.amenity];
+    if (key) state.filters.has(key) ? state.filters.delete(key) : state.filters.add(key);
+  }
+  render();
+}
+document.getElementById('filterModal')?.addEventListener('click', e => { if (e.target.id === 'filterModal') closeFilterModal(); });
 
 function card(p,i) {
   const img=`<div style="width:100%;height:100%;background:${p.col};display:flex;align-items:flex-end;padding:10px"><span style="font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,0.75)">${p.title.toUpperCase()} · ${p.loc.toUpperCase()}</span></div>`;
@@ -353,7 +444,7 @@ function card(p,i) {
 <div class="pc-body"><div class="pc-row1"><div class="pc-title">${p.title}, <i>${p.loc}</i></div><div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>${p.rating} <span class="ct">(${p.reviews})</span></div></div>
 <div class="pc-loc"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>${p.loc}, ${p.rLabel}</div>
 <div class="pc-meta"><span>Sleeps ${p.sleeps}</span><span>${p.beds} bed</span><span>${tags}</span></div>
-<div class="pc-price"><div><span class="p-amt"><i>£${p.price}</i></span><span class="p-per"> / night</span><div class="p-fee">£0 booking fee · pay host direct</div></div></div></div></a>`;
+<div class="pc-price"><div><span class="p-amt"><i>£${p.price}</i></span><span class="p-per"> / night</span><div class="p-fee">£0 booking fee · ${p.instantBook ? 'Instant book' : 'Request to book'}${(() => { const t = casaCalcStayTotal(p, 7); return ` · £${t.total} for 7 nights`; })()}</div></div></div></div></a>`;
 }
 
 function render() {

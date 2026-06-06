@@ -339,6 +339,14 @@
 
     // Store session hint in localStorage (Supabase will handle real sessions)
     localStorage.setItem('casa:user', JSON.stringify({ name: fname, role: currentRole, email }));
+    if (typeof casaAddNotification === 'function') {
+      casaAddNotification({
+        type: 'welcome',
+        title: currentRole === 'host' ? 'Welcome, host' : 'Welcome to Casa',
+        body: currentRole === 'host' ? 'Complete your listing to go live on the map and feed.' : 'Start browsing fee-free stays across the UK.',
+        href: currentRole === 'host' ? 'list.html' : 'browse.html',
+      });
+    }
 
     // Role-aware redirect
     if (currentRole === 'host') {

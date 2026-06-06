@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Host profile — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+  .hp-hero { display: grid; grid-template-columns: auto 1fr auto; gap: 24px; align-items: center; padding: 40px 0 32px; border-bottom: 1px solid var(--rule); }
+  .hp-av { width: 88px; height: 88px; border-radius: 50%; background: var(--brick); color: white; display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-style: italic; font-size: 36px; }
+  .hp-av.ink { background: var(--ink); }
+  .hp-av.guest { background: var(--moss); }
+  .hp-name { font-family: var(--serif); font-size: 44px; line-height: 1; letter-spacing: -.02em; }
+  .hp-name i { font-style: italic; color: var(--brick); }
+  .hp-meta { font-size: 14px; color: var(--ink-3); margin-top: 8px; display: flex; flex-wrap: wrap; gap: 8px 16px; }
+  .hp-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 28px 0; border-bottom: 1px solid var(--rule); }
+  .stat-box { background: var(--surface); border: 1px solid var(--rule); border-radius: 12px; padding: 16px; }
+  .stat-box .n { font-family: var(--serif); font-style: italic; font-size: 28px; color: var(--brick); }
+  .stat-box .l { font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-top: 4px; }
+  .bio { padding: 28px 0; max-width: 640px; font-size: 15px; line-height: 1.7; color: var(--ink-2); border-bottom: 1px solid var(--rule); }
+  .listings { padding: 32px 0 80px; }
+  .listings h2 { font-family: var(--serif); font-size: 32px; margin-bottom: 20px; }
+  .listings h2 i { font-style: italic; color: var(--brick); }
+  .listing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .lc { text-decoration: none; color: inherit; border: 1px solid var(--rule); border-radius: 14px; overflow: hidden; background: var(--surface); transition: transform .15s; }
+  .lc:hover { transform: translateY(-2px); }
+  .lc-img { aspect-ratio: 4/3; }
+  .lc-body { padding: 12px 14px; }
+  .lc-title { font-family: var(--serif); font-size: 20px; }
+  .lc-title i { font-style: italic; color: var(--brick); }
+  @media(max-width:800px){.hp-hero{grid-template-columns:1fr;text-align:left}.stats{grid-template-columns:repeat(2,1fr)}.listing-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav class="casa-nav">
+  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
+  <div class="nav-right">
+    <a class="nav-link" href="browse.html">Browse</a>
+    <a class="nav-link" href="map.html">Map</a>
+    <a class="nav-link" href="feed.html">Feed</a>
+    <a class="nav-link" href="list.html">Become a host</a>
+    <div class="nav-divider"></div>
+    <a class="nav-link" href="saved.html">Saved</a>
+    <a class="nav-link" href="messages.html">Messages</a>
+    <div class="nav-divider"></div>
+    <a class="nav-link" href="signup.html">Sign in</a>
+    <a class="nav-link primary" href="signup.html">Join free</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="eyebrow" style="padding-top:24px"><a href="browse.html">Browse</a> / Host</div>
+
+  <div class="hp-hero">
+    <div class="hp-av" id="hpAv">S</div>
+    <div>
+      <h1 class="hp-name" id="hpName">Sarah <i>R.</i></h1>
+      <div class="hp-meta" id="hpMeta"></div>
+    </div>
+    <div class="hp-actions">
+      <a class="btn btn-primary" href="messages.html" id="hpMessage">Message</a>
+      <button class="btn btn-outline follow-btn" type="button" onclick="this.classList.toggle('following');this.textContent=this.classList.contains('following')?'Following':'Follow'">Follow</button>
+    </div>
+  </div>
+
+  <div class="trust-strip" id="hpTrust"></div>
+
+  <div class="stats" id="hpStats"></div>
+  <div class="bio" id="hpBio"></div>
+
+  <section class="listings">
+    <h2>Listings by <i id="hpListName">this host</i></h2>
+    <div class="listing-grid" id="hpListings"></div>
+  </section>
+</div>
+
+<footer class="casa-foot">
+  <div class="inner"><div class="bot"><div>© 2026 Casa.co.uk</div></div></div>
+</footer>
+
+<script src="casa-properties.js"></script>
+<script src="casa-hosts.js"></script>
+<script src="casa.js"></script>
+<script>
+const hostId = new URLSearchParams(location.search).get('id') || 'sarah-r';
+const host = getCasaHost(hostId) || getCasaHost('sarah-r');
+
+document.title = `${host.name} — Casa host`;
+document.getElementById('hpAv').textContent = host.avatar;
+document.getElementById('hpAv').className = 'hp-av ' + (host.avatarClass || '');
+document.getElementById('hpName').innerHTML = host.name.replace('.', ' <i>.</i>');
+document.getElementById('hpListName').textContent = host.name.split('.')[0];
+
+const badges = [];
+if (host.verified) badges.push('<span class="badge moss">✓ Verified host</span>');
+if (host.superhost) badges.push('<span class="badge">★ Superhost</span>');
+document.getElementById('hpMeta').innerHTML = `
+  ${badges.join(' ')}
+  <span>${host.location}</span>
+  <span>Joined ${host.joined}</span>
+  ${host.responseRate ? `<span>${host.responseRate}% response rate</span>` : ''}
+  ${host.responseTime ? `<span>Replies ${host.responseTime}</span>` : ''}`;
+
+document.getElementById('hpTrust').innerHTML = `
+  <div class="ts-item"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Identity verified</div>
+  <div class="ts-item"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> £0 Casa booking fees</div>
+  <div class="ts-item"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Direct host contact</div>`;
+
+document.getElementById('hpBio').textContent = host.bio;
+document.getElementById('hpStats').innerHTML = `
+  <div class="stat-box"><div class="n">${host.rating}</div><div class="l">Rating</div></div>
+  <div class="stat-box"><div class="n">${host.reviews}</div><div class="l">Reviews</div></div>
+  <div class="stat-box"><div class="n">${host.listings}</div><div class="l">Listings</div></div>
+  <div class="stat-box"><div class="n">${host.languages.length}</div><div class="l">Languages</div></div>`;
+
+const listings = (host.propertyIds || []).map(id => getCasaProperty(id)).filter(Boolean);
+document.getElementById('hpListings').innerHTML = listings.length ? listings.map(p => `
+  <a class="lc" href="property.html?id=${p.id}">
+    <div class="lc-img" style="background:${p.col}"></div>
+    <div class="lc-body">
+      <div class="lc-title">${p.title}, <i>${p.loc}</i></div>
+      <div class="pc-meta">★ ${p.rating} · Sleeps ${p.sleeps}</div>
+      <div class="pc-price"><i>£${p.price}</i> / night</div>
+    </div>
+  </a>`).join('') : '<p class="muted">No public listings yet.</p>';
+</script>
+</body>
+</html>

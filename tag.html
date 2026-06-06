@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tag — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+  .tag-hero { padding: 40px 0 28px; border-bottom: 1px solid var(--rule); }
+  .tag-hero h1 { font-family: var(--serif); font-size: 56px; line-height: .95; letter-spacing: -.025em; }
+  .tag-hero h1 i { font-style: italic; color: var(--brick); }
+  .tag-hero p { margin-top: 12px; font-size: 15px; color: var(--ink-3); max-width: 560px; }
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--rule); margin: 24px 0; }
+  .tab { padding: 12px 18px; font-size: 13px; color: var(--ink-3); cursor: pointer; border: none; background: none; border-bottom: 2px solid transparent; margin-bottom: -1px; font-family: var(--sans); }
+  .tab.active { color: var(--brick); border-bottom-color: var(--brick); font-weight: 500; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding-bottom: 80px; }
+  .pc { text-decoration: none; color: inherit; border-radius: 14px; overflow: hidden; border: 1px solid var(--rule); background: var(--surface); transition: transform .15s; }
+  .pc:hover { transform: translateY(-2px); }
+  .pc-img { aspect-ratio: 4/3; display: flex; align-items: flex-end; padding: 10px; }
+  .pc-body { padding: 12px 14px 14px; }
+  .pc-title { font-family: var(--serif); font-size: 20px; }
+  .pc-title i { font-style: italic; color: var(--brick); }
+  .pc-meta { font-size: 12px; color: var(--ink-3); margin-top: 4px; }
+  .pc-price { font-family: var(--serif); font-size: 22px; margin-top: 8px; }
+  .pc-price i { font-style: italic; color: var(--brick); }
+  .feed-snippet { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 16px 18px; margin-bottom: 12px; }
+  .feed-snippet .fs-head { font-size: 13px; color: var(--ink-3); margin-bottom: 8px; }
+  .feed-snippet .fs-body { font-size: 14px; line-height: 1.55; color: var(--ink-2); }
+  .feed-snippet .tag { color: var(--brick); font-family: var(--serif); font-style: italic; cursor: pointer; }
+  .empty { padding: 48px 0; text-align: center; color: var(--ink-3); }
+  @media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}.tag-hero h1{font-size:40px}}
+</style>
+</head>
+<body>
+<nav class="casa-nav">
+  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
+  <div class="nav-right">
+    <a class="nav-link" href="browse.html">Browse</a>
+    <a class="nav-link" href="map.html">Map</a>
+    <a class="nav-link" href="feed.html">Feed</a>
+    <a class="nav-link" href="list.html">Become a host</a>
+    <div class="nav-divider"></div>
+    <a class="nav-link" href="saved.html">Saved</a>
+    <a class="nav-link" href="messages.html">Messages</a>
+    <div class="nav-divider"></div>
+    <a class="nav-link" href="signup.html">Sign in</a>
+    <a class="nav-link primary" href="signup.html">Join free</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="tag-hero">
+    <div class="eyebrow"><a href="feed.html">Feed</a> / Tag</div>
+    <h1 id="tagTitle"><i>#lakedistrict</i></h1>
+    <p id="tagDesc">Stays, tips, and community posts tagged with this topic across the UK.</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="stays" onclick="setTab(this)">Stays <span id="stayCount"></span></button>
+    <button class="tab" data-tab="posts" onclick="setTab(this)">Community posts</button>
+    <button class="tab" data-tab="hosts" onclick="setTab(this)">Hosts</button>
+  </div>
+
+  <div id="tabStays" class="grid"></div>
+  <div id="tabPosts" style="display:none; padding-bottom:80px"></div>
+  <div id="tabHosts" style="display:none; padding-bottom:80px"></div>
+</div>
+
+<footer class="casa-foot">
+  <div class="inner">
+    <div class="bot"><div>© 2026 Casa.co.uk</div><div><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div></div>
+  </div>
+</footer>
+
+<script src="casa-properties.js"></script>
+<script src="casa-hosts.js"></script>
+<script src="casa.js"></script>
+<script>
+const TAG_MAP = {
+  lakedistrict: { label: 'Lake District', regions: ['lake-district'], tags: ['woodburner'], posts: ['Perfect week in #lakedistrict — Stone Cottage delivered on every promise.', 'Anyone know a dog-friendly cottage near Keswick? #lakedistrict #petfriendly'] },
+  cornwall: { label: 'Cornwall', regions: ['cornwall'], tags: ['seaview'], posts: ['Mousehole at dawn — worth the early start. #cornwall #seaview', 'Last-minute Cornwall availability for August? #cornwall'] },
+  highlands: { label: 'Scottish Highlands', regions: ['highlands', 'skye'], tags: ['offgrid'], posts: ['Glencoe bothy weekend — utterly silent. #highlands #offgrid'] },
+  petfriendly: { label: 'Pet friendly', regions: [], tags: ['pets'], posts: ['Travelling with a lab — which regions are most welcoming? #petfriendly'] },
+  woodburner: { label: 'Wood burner', regions: [], tags: ['woodburner'], posts: ['Nothing beats a fire after a long walk. #woodburner #lakedistrict'] },
+  seaview: { label: 'Sea view', regions: [], tags: ['seaview'], posts: ['Woke up to the harbour — #seaview #cornwall'] },
+  lastminute: { label: 'Last minute', regions: [], tags: [], posts: ['Two nights free next week in Ambleside — DM me. #lastminute #lakedistrict'] },
+  hottub: { label: 'Hot tub', regions: [], tags: ['hottub'], posts: ['Hot tub under the stars in Skye. #hottub #highlands'] },
+};
+
+const qp = new URLSearchParams(location.search);
+const rawTag = (qp.get('tag') || 'lakedistrict').toLowerCase().replace(/[^a-z0-9-]/g, '');
+const meta = TAG_MAP[rawTag] || { label: rawTag, regions: [], tags: [rawTag], posts: [] };
+
+document.getElementById('tagTitle').innerHTML = `<i>#${rawTag}</i>`;
+document.getElementById('tagDesc').textContent = `Explore ${meta.label} on Casa — fee-free stays and community tips.`;
+document.title = `#${rawTag} — Casa`;
+
+function matchProps() {
+  return CASA_PROPERTIES.filter(p =>
+    meta.regions.includes(p.region) ||
+    meta.tags.some(t => p.tags.includes(t)) ||
+    p.title.toLowerCase().includes(rawTag) ||
+    p.loc.toLowerCase().includes(rawTag)
+  );
+}
+
+function renderStays() {
+  const props = matchProps();
+  document.getElementById('stayCount').textContent = `(${props.length})`;
+  const grid = document.getElementById('tabStays');
+  if (!props.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1">No stays match this tag yet. <a href="browse.html">Browse all UK</a></div>';
+    return;
+  }
+  grid.innerHTML = props.map(p => `
+    <a class="pc" href="property.html?id=${p.id}">
+      <div class="pc-img" style="background:${p.col}"><span class="mono" style="font-size:9px;color:rgba(255,255,255,.75)">${p.title.toUpperCase()}</span></div>
+      <div class="pc-body">
+        <div class="pc-title">${p.title}, <i>${p.loc}</i></div>
+        <div class="pc-meta">★ ${p.rating} · Sleeps ${p.sleeps} · ${p.rLabel}</div>
+        <div class="pc-price"><i>£${p.price}</i> <span style="font-size:12px;color:var(--ink-3)">/ night · £0 fee</span></div>
+      </div>
+    </a>`).join('');
+}
+
+function renderPosts() {
+  const el = document.getElementById('tabPosts');
+  const posts = meta.posts.length ? meta.posts : [`Be the first to post about #${rawTag} on the <a href="feed.html">community feed</a>.`];
+  el.innerHTML = posts.map(text => `
+    <div class="feed-snippet">
+      <div class="fs-head">Community · <a href="feed.html">View feed</a></div>
+      <div class="fs-body">${text.replace(/(#\w+)/g, '<span class="tag">$1</span>')}</div>
+    </div>`).join('');
+  casaLinkifyHashtags(el);
+}
+
+function renderHosts() {
+  const props = matchProps();
+  const hostIds = [...new Set(props.map(p => getCasaHostForProperty(p.id)?.id).filter(Boolean))];
+  const el = document.getElementById('tabHosts');
+  if (!hostIds.length) {
+    el.innerHTML = '<div class="empty">No hosts tagged here yet.</div>';
+    return;
+  }
+  el.innerHTML = hostIds.map(id => {
+    const h = getCasaHost(id);
+    return `<a href="${casaHostProfileUrl(id)}" class="pc" style="display:block;margin-bottom:12px">
+      <div class="pc-body" style="display:flex;gap:14px;align-items:center">
+        <div class="nav-avatar" style="width:48px;height:48px;font-size:20px">${h.avatar}</div>
+        <div><div class="pc-title">${h.name}</div><div class="pc-meta">${h.location} · ★ ${h.rating} · ${h.listings} listing${h.listings!==1?'s':''}</div></div>
+      </div>
+    </a>`;
+  }).join('');
+}
+
+function setTab(btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const tab = btn.dataset.tab;
+  document.getElementById('tabStays').style.display = tab === 'stays' ? 'grid' : 'none';
+  document.getElementById('tabPosts').style.display = tab === 'posts' ? 'block' : 'none';
+  document.getElementById('tabHosts').style.display = tab === 'hosts' ? 'block' : 'none';
+}
+
+renderStays();
+renderPosts();
+renderHosts();
+</script>
+</body>
+</html>

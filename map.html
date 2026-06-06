@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="casa.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
   html,body{height:100vh;overflow:hidden}
   .map-page{display:grid;grid-template-columns:380px 1fr;height:calc(100vh - 64px);overflow:hidden}
@@ -279,13 +280,14 @@
         <svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg>
         Feed activity
       </button>
-      <button class="mtb-btn" id="btnBoth" onclick="event.stopPropagation();setMapView('both',this)">
-        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        Both layers
+      <button class="mtb-btn" id="btnRealMap" onclick="event.stopPropagation();toggleRealMap(this)">
+        <svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg>
+        Street map
       </button>
     </div>
 
     <!-- UK SVG MAP -->
+    <div id="leafletMap" style="display:none;position:absolute;inset:0;z-index:2"></div>
     <svg id="ukMap" viewBox="0 0 480 680" style="width:100%;height:100%;display:block" preserveAspectRatio="xMidYMid meet">
       <defs>
         <filter id="mapShadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(22,20,15,0.15)"/></filter>
@@ -729,7 +731,7 @@ function cardClick(e, id) {
   e.preventDefault();
   propPinClick(id);
   // Brief flash then navigate
-  setTimeout(() => window.location.href = 'property.html', 400);
+  setTimeout(() => window.location.href = 'property.html?id=' + id, 400);
 }
 
 // Activity pin clicked
@@ -836,6 +838,79 @@ if (qp.get('county')) {
 
 render();
 </script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="casa-properties.js"></script>
 <script src="casa.js"></script>
+<script>
+const REGION_BOUNDS = {
+  'lake-district': [[54.1, -3.4], [54.7, -2.5]],
+  cornwall: [[49.9, -5.8], [50.5, -4.2]],
+  highlands: [[56.8, -5.5], [57.8, -3.8]],
+  skye: [[57.0, -6.8], [57.7, -5.5]],
+  norfolk: [[52.5, 0.3], [53.0, 1.2]],
+  yorkshire: [[53.8, -2.5], [54.5, -0.5]],
+  cotswolds: [[51.7, -2.2], [52.1, -1.4]],
+  pembrokeshire: [[51.6, -5.3], [52.1, -4.5]],
+  snowdonia: [[52.8, -4.3], [53.2, -3.6]],
+  causeway: [[54.8, -6.8], [55.4, -6.0]],
+};
+let leafletMap = null;
+let leafletMarkers = [];
+
+function toggleRealMap(btn) {
+  const svg = document.getElementById('ukMap');
+  const div = document.getElementById('leafletMap');
+  const on = div.style.display !== 'none';
+  if (on) {
+    div.style.display = 'none';
+    svg.style.display = 'block';
+    btn.classList.remove('active');
+  } else {
+    div.style.display = 'block';
+    svg.style.display = 'none';
+    btn.classList.add('active');
+    document.querySelectorAll('.mtb-btn').forEach(b => { if (b !== btn) b.classList.remove('active'); });
+    initLeafletMap();
+  }
+}
+
+function initLeafletMap() {
+  if (leafletMap) { refreshLeafletMarkers(); return; }
+  leafletMap = L.map('leafletMap', { zoomControl: false }).setView([54.5, -3.5], 6);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap',
+    maxZoom: 18,
+  }).addTo(leafletMap);
+  L.control.zoom({ position: 'bottomright' }).addTo(leafletMap);
+  refreshLeafletMarkers();
+  setTimeout(() => leafletMap.invalidateSize(), 100);
+}
+
+function refreshLeafletMarkers() {
+  if (!leafletMap || typeof CASA_PROPERTIES === 'undefined') return;
+  leafletMarkers.forEach(m => leafletMap.removeLayer(m));
+  leafletMarkers = [];
+  let props = state.county === 'all' ? CASA_PROPERTIES : CASA_PROPERTIES.filter(p => p.region === state.county);
+  props.forEach(p => {
+    if (!p.lat || !p.lng) return;
+    const icon = L.divIcon({
+      className: '',
+      html: `<div class="casa-map-pin" id="lp-${p.id}">£${p.price}</div>`,
+      iconSize: [60, 28],
+      iconAnchor: [30, 14],
+    });
+    const marker = L.marker([p.lat, p.lng], { icon }).addTo(leafletMap);
+    marker.bindPopup(`<strong>${p.title}</strong><br>${p.loc}<br>£${p.price}/night · £0 fee<br><a href="property.html?id=${p.id}">View stay →</a>`);
+    marker.on('click', () => propPinClick(p.id));
+    leafletMarkers.push(marker);
+  });
+  if (state.county !== 'all' && REGION_BOUNDS[state.county]) {
+    leafletMap.fitBounds(REGION_BOUNDS[state.county], { padding: [40, 40] });
+  }
+}
+
+const _renderOrig = render;
+render = function() { _renderOrig(); refreshLeafletMarkers(); };
+</script>
 </body>
 </html>

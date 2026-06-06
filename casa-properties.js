@@ -62,3 +62,63 @@ const CASA_TYPE_LABELS = {
   cottage: 'Cottage', barn: 'Barn', cabin: 'Cabin', glamping: 'Glamping',
   farmhouse: 'Farmhouse', houseboat: 'Houseboat', manor: 'Manor',
 };
+
+/** Region centres for map pins (lat, lng) */
+const CASA_REGION_COORDS = {
+  'lake-district': { lat: 54.45, lng: -3.0 },
+  cornwall: { lat: 50.25, lng: -5.1 },
+  highlands: { lat: 57.3, lng: -4.5 },
+  skye: { lat: 57.3, lng: -6.2 },
+  norfolk: { lat: 52.8, lng: 0.9 },
+  yorkshire: { lat: 54.2, lng: -1.8 },
+  cotswolds: { lat: 51.9, lng: -1.7 },
+  pembrokeshire: { lat: 51.8, lng: -5.0 },
+  snowdonia: { lat: 53.0, lng: -4.0 },
+  causeway: { lat: 55.2, lng: -6.5 },
+};
+
+function casaSpreadCoord(base, id, axis) {
+  const spread = ((id * 17 + axis * 31) % 100) / 100 - 0.5;
+  return base + spread * (axis === 0 ? 0.35 : 0.55);
+}
+
+CASA_PROPERTIES.forEach(p => {
+  const centre = CASA_REGION_COORDS[p.region] || CASA_REGION_COORDS['lake-district'];
+  p.lat = casaSpreadCoord(centre.lat, p.id, 0);
+  p.lng = casaSpreadCoord(centre.lng, p.id, 1);
+  p.cleaningFee = Math.max(35, Math.round(p.price * 0.28));
+  p.instantBook = p.rating >= 4.8 && (p.badge === 'verified' || p.reviews >= 20);
+  p.minNights = p.type === 'glamping' ? 2 : p.price > 300 ? 3 : 2;
+});
+
+function casaCalcStayTotal(property, nights, opts = {}) {
+  const n = Math.max(1, nights || 1);
+  const stay = property.price * n;
+  const cleaning = opts.skipCleaning ? 0 : (property.cleaningFee || Math.max(35, Math.round(property.price * 0.28)));
+  const serviceFee = 0;
+  return { nights: n, stay, cleaning, serviceFee, total: stay + cleaning + serviceFee };
+}
+
+function casaAirbnbEquivalent(total) {
+  return Math.round(total * 0.147);
+}
+
+function getSimilarProperties(id, limit = 4) {
+  const current = getCasaProperty(id);
+  return CASA_PROPERTIES
+    .filter(p => p.id !== current.id && (p.region === current.region || p.type === current.type))
+    .sort((a, b) => Math.abs(a.price - current.price) - Math.abs(b.price - current.price))
+    .slice(0, limit);
+}
+
+function searchCasaProperties(query) {
+  const q = (query || '').toLowerCase().replace(/^#/, '');
+  if (!q) return CASA_PROPERTIES.slice();
+  return CASA_PROPERTIES.filter(p =>
+    p.title.toLowerCase().includes(q) ||
+    p.loc.toLowerCase().includes(q) ||
+    p.region.includes(q) ||
+    p.rLabel.toLowerCase().includes(q) ||
+    p.tags.some(t => t.includes(q))
+  );
+}

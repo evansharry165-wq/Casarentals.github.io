@@ -256,20 +256,27 @@
     <div class="pd-main">
 
       <!-- HOST STRIP -->
-      <div class="host-strip">
-        <div class="av">S</div>
+      <div class="host-strip" id="hostStrip">
+        <a class="av" id="hostAvLink" href="host-profile.html?id=sarah-r">S</a>
         <div class="info">
-          <div class="h-name">Hosted by <i style="font-style:italic;color:var(--brick)">Sarah</i> &amp; her family
-            <span class="badge moss"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> Verified</span>
+          <div class="h-name">Hosted by <a id="hostNameLink" href="host-profile.html?id=sarah-r" style="color:inherit;text-decoration:none"><i style="font-style:italic;color:var(--brick)" id="hostDisplayName">Sarah</i></a>
+            <span class="badge moss" id="hostVerifiedBadge"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> Verified</span>
           </div>
-          <div class="h-meta">Host since 2024 · Speaks English, Welsh · Usually replies within 2 hours · 4.9 ★ across all stays</div>
+          <div class="h-meta" id="hostMeta">Host since 2024 · Usually replies within 2 hours</div>
         </div>
         <div class="actions">
-          <a href="messages.html" class="btn btn-outline btn-sm">
+          <a href="messages.html" class="btn btn-outline btn-sm" id="hostMsgBtn">
             <svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg>
-            Message Sarah
+            Message host
           </a>
         </div>
+      </div>
+
+      <div class="trust-strip">
+        <div class="ts-item"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> £0 Casa booking fee</div>
+        <div class="ts-item"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> Pay host direct</div>
+        <div class="ts-item" id="instantBookTrust" style="display:none"><svg viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg> Instant book available</div>
+        <div class="ts-item"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> Transparent total before you enquire</div>
       </div>
 
       <!-- FACTS -->
@@ -444,6 +451,11 @@
         <div style="margin-top: 28px"><button class="btn btn-outline">Show all 23 reviews</button></div>
       </div>
 
+      <section style="padding:32px 0;border-top:1px solid var(--rule)">
+        <h2 class="h-2" style="margin-bottom:20px">Similar <i>stays</i></h2>
+        <div class="similar-row" id="similarStays"></div>
+      </section>
+
     </div>
 
     <!-- SIDE -->
@@ -452,7 +464,7 @@
         <div class="price-row">
           <div class="price"><i id="propPrice">£175</i></div><div class="per"> / night</div>
         </div>
-        <div class="fee-note">£0 booking fee · pay host direct</div>
+        <div class="fee-note" id="feeNote">£0 booking fee · pay host direct</div>
 
         <div class="book-form">
           <div class="row">
@@ -491,7 +503,7 @@
         </div>
 
         <a class="book-cta" href="booking.html" id="enquireBtn" onclick="return goEnquire()">
-          Enquire to book
+          <span id="bookCtaLabel">Enquire to book</span>
           <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
         </a>
         <a class="book-msg" href="messages.html">
@@ -505,7 +517,7 @@
           <div class="row"><span id="nightsLabel">£175 / night</span><span id="nightsTotal">—</span></div>
           <div class="row"><span>Cleaning (set by host)</span><span id="propCleaning">£60</span></div>
           <div class="row fee"><span>Casa booking fee</span><span class="v">£0</span></div>
-          <div class="row save" id="saveRow" style="display:none"><span>You save vs Booking.com</span><span id="saveAmt">—</span></div>
+          <div class="row save" id="saveRow" style="display:none"><span>You save vs Airbnb (~15.5%)</span><span id="saveAmt">—</span></div>
           <div class="row total"><span>Total to Sarah</span><span id="grandTotal">—</span></div>
         </div>
       </div>
@@ -525,22 +537,26 @@
       <div><h5>Find a stay</h5><a href="browse.html">Browse all stays</a><a href="map.html">Map view</a><a href="feed.html">Community feed</a><a href="how-it-works.html">How it works</a></div>
       <div><h5>For hosts</h5><a href="list.html">List a property</a><a href="host.html">Host dashboard</a><a href="how-it-works.html#hosts">How it works</a></div>
       <div><h5>Account</h5><a href="signup.html">Sign in</a><a href="signup.html">Join free</a><a href="saved.html">Saved stays</a><a href="messages.html">Messages</a><a href="profile.html">Profile</a></div>
-      <div><h5>Casa</h5><a href="#">Our story</a><a href="how-it-works.html">How it works</a><a href="#">Help centre</a><a href="privacy.html">Privacy policy</a></div>
+      <div><h5>Casa</h5><a href="#">Our story</a><a href="how-it-works.html">How it works</a><a href="help.html">Help centre</a><a href="privacy.html">Privacy policy</a></div>
     </div>
     <div class="bot"><div>&copy; 2026 Casa.co.uk &mdash; <em style="font-family:var(--serif);font-style:italic">fee-free, always.</em></div><div><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="privacy.html#cookies">Cookies</a></div></div>
   </div>
 </footer>
 
 <script src="casa-properties.js"></script>
+<script src="casa-hosts.js"></script>
 <script src="casa.js"></script>
 <script>
 const listing = getCasaProperty(new URLSearchParams(location.search).get('id'));
+casaTrackView(listing.id);
+const host = getCasaHostForProperty(listing.id);
 let PROP = {
   id: listing.id,
   title: `${listing.title}, ${listing.loc}`,
   price: listing.price,
-  cleaning: Math.max(40, Math.round(listing.price * 0.34)),
+  cleaning: listing.cleaningFee || Math.max(40, Math.round(listing.price * 0.34)),
   maxGuests: listing.sleeps,
+  instantBook: listing.instantBook,
 };
 
 function applyListingToPage(p) {
@@ -577,6 +593,32 @@ function applyListingToPage(p) {
     gal.style.background = listing.col;
     gal.setAttribute('data-label', `${listing.title.toUpperCase()} · ${listing.loc.toUpperCase()}`);
   }
+  if (host) {
+    const hostUrl = casaHostProfileUrl(host.id);
+    document.getElementById('hostAvLink').href = hostUrl;
+    document.getElementById('hostAvLink').textContent = host.avatar;
+    document.getElementById('hostNameLink').href = hostUrl;
+    document.getElementById('hostDisplayName').textContent = host.name.replace('.', '');
+    document.getElementById('hostMeta').textContent = `${host.joined ? 'Host since ' + host.joined.split(' ')[1] : 'Host'} · ${host.languages.join(', ')} · Replies ${host.responseTime || 'promptly'} · ${host.rating} ★`;
+    document.getElementById('hostMsgBtn').innerHTML = `<svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg> Message ${host.name.split('.')[0]}`;
+    document.querySelector('.book-msg').innerHTML = `<svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg> Message ${host.name.split('.')[0]} first`;
+    document.getElementById('hostVerifiedBadge').style.display = host.verified ? '' : 'none';
+  }
+  if (listing.instantBook) {
+    document.getElementById('instantBookTrust').style.display = '';
+    document.getElementById('bookCtaLabel').textContent = 'Instant book';
+    document.getElementById('feeNote').textContent = '£0 booking fee · instant confirmation · pay host direct';
+  }
+  const similar = getSimilarProperties(listing.id, 4);
+  document.getElementById('similarStays').innerHTML = similar.map(s => `
+    <a class="similar-card" href="property.html?id=${s.id}">
+      <div class="sc-img" style="background:${s.col}"></div>
+      <div class="sc-body">
+        <div class="sc-title">${s.title}, <i>${s.loc}</i></div>
+        <div class="sc-meta">★ ${s.rating} · Sleeps ${s.sleeps}</div>
+        <div class="sc-price"><i>£${s.price}</i> <span style="font-size:12px;color:var(--ink-3)">/ night</span></div>
+      </div>
+    </a>`).join('');
 }
 
 applyListingToPage(listing);
@@ -627,7 +669,7 @@ function updateBooking() {
     if (nights > 0) {
       const stay = PROP.price * nights;
       const total = stay + PROP.cleaning;
-      const saving = Math.round(total * 0.147);
+      const saving = casaAirbnbEquivalent(total);
       document.getElementById('nightsLabel').textContent = '£' + PROP.price + ' × ' + nights + ' night' + (nights > 1 ? 's' : '');
       document.getElementById('nightsTotal').textContent = '£' + stay.toLocaleString();
       document.getElementById('grandTotal').textContent = '£' + total.toLocaleString();
