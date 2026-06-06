@@ -3,7 +3,9 @@
  * Used by map.html (Leaflet UK explorer)
  */
 
-const CASA_MAP_COUNTRY_VIEW = { center: [54.2, -3.2], zoom: 6 };
+/** UK overview — full country visible, street-map style */
+const CASA_MAP_COUNTRY_VIEW = { center: [54.55, -3.8], zoom: 6 };
+const CASA_MAP_UK_BOUNDS = [[49.5, -8.85], [60.95, 2.15]];
 
 /** Map region id aligns with casa-properties `region` field */
 const CASA_MAP_REGIONS = {
