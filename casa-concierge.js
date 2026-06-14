@@ -42,11 +42,20 @@ function casaConciergePriceLabel(plan) {
     : '£24/month per listing';
 }
 
-/** Demo: would an enquiry pass host rules? */
-function casaConciergeEvaluate(enquiry) {
+/** Demo: would an enquiry pass host rules? Optional second arg: { propertyId, checkIn, checkOut } */
+function casaConciergeEvaluate(enquiry, opts = {}) {
   const s = casaGetConciergeSettings();
   const reasons = [];
   let action = 'accept';
+
+  if (opts.checkIn && opts.checkOut && opts.propertyId && typeof casaAvailRangeConflict === 'function') {
+    const clash = casaAvailRangeConflict(opts.propertyId, opts.checkIn, opts.checkOut);
+    if (clash.conflict) {
+      action = 'decline';
+      const via = clash.platform ? ` (${clash.platform})` : '';
+      reasons.push(`Dates unavailable on your calendar${via}`);
+    }
+  }
 
   if (enquiry.nights < s.minNights) {
     action = 'decline';

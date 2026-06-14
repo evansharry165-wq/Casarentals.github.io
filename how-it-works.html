@@ -270,7 +270,11 @@
           </div>
           <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule);">
             <svg style="width:16px;height:16px;stroke:var(--moss);fill:none;stroke-width:2;flex-shrink:0" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
-            <span style="font-size:13.5px;color:var(--ink-2)">Community feed access — post availability</span>
+            <span style="font-size:13.5px;color:var(--ink-2)">One calendar — import Airbnb / Booking.com</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule);">
+            <svg style="width:16px;height:16px;stroke:var(--moss);fill:none;stroke-width:2;flex-shrink:0" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+            <span style="font-size:13.5px;color:var(--ink-2)">Optional feed posts from your calendar</span>
           </div>
           <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule);">
             <svg style="width:16px;height:16px;stroke:var(--moss);fill:none;stroke-width:2;flex-shrink:0" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
@@ -287,9 +291,9 @@
     <div class="step-row">
       <div class="step-num">02</div>
       <div class="step-content">
-        <h3><i>Post</i> to the feed</h3>
-        <p>Use the community feed the way you'd use a noticeboard — post last-minute availability, mid-week deals, new photos, or just a view from the window. Guests follow hashtags and counties, so your posts reach the right people.</p>
-        <p>Hosts who post regularly get significantly more enquiries than those who don't.</p>
+        <h3><i>Share</i> openings (optional)</h3>
+        <p>Use the community feed the way you'd use a noticeboard — post a last-minute opening, a mid-week deal, or a new photo when you have something worth sharing. Guests follow hashtags and counties, so your posts reach the right people.</p>
+        <p>Posting is <strong>optional</strong>. Many hosts only share when a cancellation opens dates — one click from the dashboard calendar.</p>
       </div>
       <div class="step-detail">
         <div class="sd-head">Example host post</div>
@@ -488,7 +492,7 @@
 </section>
 
 <!-- FAQ SECTION -->
-<section class="faq-section">
+<section class="faq-section" id="host-faq">
   <div class="narrow">
     <div class="faq-head">
       <div class="section-eye" style="justify-content:center;">Questions</div>
@@ -538,14 +542,21 @@
             <span>Can I list if I'm already on <i>Airbnb</i>?</span>
             <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
           </div>
-          <div class="faq-a">Yes — many hosts use Casa alongside other platforms. Some hosts migrate fully once they build up a direct booking base on Casa. Others use Casa as a way to fill gaps without paying Airbnb's commission on those nights.</div>
+          <div class="faq-a">Yes — many hosts use Casa alongside Airbnb, Booking.com, or Vrbo. Connect your existing calendar export link in the host dashboard and Casa blocks those dates automatically, so you are not maintaining two calendars by hand. Use Casa for direct bookings and gap nights without paying OTA commission on those stays.</div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
+            <span>How do I avoid <i>double bookings</i>?</span>
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+          <div class="faq-a">Import your Airbnb or Booking.com calendar into Casa (read-only). When a guest books on another platform, those dates block here too. When you accept a Casa enquiry, we block the dates on your Casa calendar — and you can export that feed back to your other platforms at launch. Until then, connect external calendars once and manage blocks in one place.</div>
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">
             <span>What is the <i>community feed</i>?</span>
             <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
           </div>
-          <div class="faq-a">The feed is a public forum where hosts and guests post. Hosts use it to announce availability. Guests post "looking for" requests. Both sides share reviews, local tips, and photos. Posts are organised by county and searchable by hashtag — it's designed to feel like a community, not a marketplace.</div>
+          <div class="faq-a">The feed is a public forum where hosts and guests post. Hosts can announce an opening when they have one — it is optional, not a daily obligation. Guests post "looking for" requests. Both sides share reviews, local tips, and photos. Posts are organised by county and searchable by hashtag.</div>
         </div>
         <div class="faq-item">
           <div class="faq-q" onclick="this.parentElement.classList.toggle('open')">

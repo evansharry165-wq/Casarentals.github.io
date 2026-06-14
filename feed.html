@@ -890,16 +890,32 @@ function submitPost() {
   const text = ta.value.trim();
   if (text.length < 10) return;
   const type = document.getElementById('activePill').dataset.ptype || 'tip';
+  let draftProp = null;
+  try {
+    draftProp = JSON.parse(localStorage.getItem('casa:feed-draft') || 'null');
+  } catch { /* ignore */ }
+  const propertyId = draftProp?.propertyId || (qp.get('property') ? Number(qp.get('property')) : null);
+  const propListing = propertyId && typeof getCasaProperty === 'function' ? getCasaProperty(propertyId) : null;
 
   const newPost = {
     id: Date.now(),
-    county: state.county === 'all' ? 'all' : state.county,
+    county: state.county === 'all' ? (draftProp?.county || 'cumbria') : state.county,
     type, role: type==='avail'?'host':'guest',
     av:'J', avC:'guest',
     name:'You', badge: type==='avail'?'Host':'Guest',
     when:'Just now',
-    where: COUNTY_META[state.county]?.title || 'UK',
+    where: draftProp?.where || COUNTY_META[state.county]?.title || 'UK',
     likes:0, replyCount:0,
+    propertyId: propertyId || undefined,
+    prop: propListing ? {
+      name: propListing.title,
+      loc: propListing.loc,
+      rating: propListing.rating,
+      sleeps: propListing.sleeps,
+      beds: propListing.beds,
+      price: propListing.price,
+      col: propListing.col,
+    } : undefined,
     body: text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
               .replace(/(#\w+)/g,'<span class="tag">$1</span>'),
   };
@@ -913,8 +929,10 @@ function submitPost() {
       name: newPost.name,
       body: text,
       where: newPost.where,
+      propertyId: propertyId || undefined,
     });
   }
+  localStorage.removeItem('casa:feed-draft');
   ta.value = '';
   ta.style.height = 'auto';
   document.getElementById('postBtn').disabled = true;
@@ -950,7 +968,7 @@ function toast(msg) {
 // ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
-// URL param: ?county=cumbria or ?post=3
+// URL param: ?county=cumbria or ?post=3 or ?compose=avail
 const qp = new URLSearchParams(location.search);
 if (qp.get('county')) {
   const btn = document.querySelector(`.county-pill[data-county="${qp.get('county')}"]`);
@@ -958,6 +976,28 @@ if (qp.get('county')) {
 }
 updateSidebar();
 renderFeed();
+
+function applyFeedComposeDraft() {
+  let draft = null;
+  try { draft = JSON.parse(localStorage.getItem('casa:feed-draft') || 'null'); } catch { /* ignore */ }
+  if (!draft && qp.get('compose') !== 'avail') return;
+
+  const ta = document.getElementById('composeTA');
+  if (draft?.text) {
+    ta.value = draft.text;
+    onCompose(ta);
+  }
+  if (draft?.type || qp.get('compose') === 'avail') {
+    const availBtn = document.querySelector('.type-pill[data-type="avail"]');
+    if (availBtn) pickType(availBtn, 'avail');
+  }
+  if (draft?.county) {
+    const btn = document.querySelector(`.county-pill[data-county="${draft.county}"]`);
+    if (btn) { document.querySelectorAll('.county-pill').forEach(p=>p.classList.remove('active')); btn.classList.add('active'); state.county = draft.county; updateSidebar(); renderFeed(); }
+  }
+  document.querySelector('.compose-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+applyFeedComposeDraft();
 
 // Deep-link to specific post
 if (qp.get('post')) {

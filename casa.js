@@ -25,7 +25,7 @@ function casaInitPreviewBanner() {
   const bar = document.createElement('div');
   bar.id = 'casaPreviewBanner';
   bar.className = 'casa-preview-banner';
-  bar.innerHTML = '<p>Preview build for <strong>casa.co.uk</strong> — sign-in, saves, and messages are stored on this device until launch.</p>';
+  bar.innerHTML = '<p>Preview build for <strong>casa.co.uk</strong> — sign-in, calendars, and messages are stored on this device until launch.</p>';
   document.body.prepend(bar);
   document.body.classList.add('has-preview-banner');
 }

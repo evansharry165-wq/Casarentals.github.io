@@ -67,6 +67,7 @@
   .cal-day.in-range{background:rgba(22,20,15,.06);border-color:rgba(22,20,15,.12)}
   .cal-day.personal{background:rgba(90,80,160,.06);border-color:rgba(90,80,160,.25)}
   .cal-day.maintenance{background:rgba(77,92,64,.06);border-color:rgba(77,92,64,.25)}
+  .cal-day.synced{background:rgba(255,90,95,.05);border-color:rgba(255,90,95,.22);cursor:default}
 
   .cd-num{font-family:var(--mono);font-size:11px;color:var(--ink-3);letter-spacing:.04em}
   .cal-day.today .cd-num{color:var(--brick);font-weight:600}
@@ -77,6 +78,23 @@
   .cd-ev.personal{background:rgba(90,80,160,.15);color:#4A4080;font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase}
   .cd-ev.maintenance{background:var(--moss-pale);color:var(--moss);font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase}
   .cd-ev.open{background:var(--moss-pale);color:var(--moss);font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase}
+  .cd-ev.synced{background:rgba(255,90,95,.14);color:#B83A3F;font-family:var(--mono);font-size:8px;letter-spacing:.04em;text-transform:uppercase}
+
+  .cal-sync-panel{margin-top:18px;padding-top:16px;border-top:1px solid var(--rule)}
+  .cal-sync-panel h4{font-family:var(--serif);font-size:20px;line-height:1.1;margin-bottom:4px}
+  .cal-sync-panel h4 i{font-style:italic;color:var(--brick)}
+  .cal-sync-panel .sync-lead{font-size:13px;color:var(--ink-3);line-height:1.5;margin-bottom:12px}
+  .sync-sources{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+  .sync-empty{font-size:12.5px;color:var(--ink-4);margin:0}
+  .sync-source-row{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink-2);padding:8px 10px;background:var(--paper);border:1px solid var(--rule-2);border-radius:10px}
+  .sync-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .sync-name{font-weight:500;color:var(--ink)}
+  .sync-meta{margin-left:auto;font-size:10px;color:var(--ink-4);font-family:var(--mono);letter-spacing:.04em}
+  .sync-add{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .sync-add select,.sync-add input{border:1px solid var(--rule);background:var(--paper);border-radius:10px;padding:9px 12px;font-size:13px;font-family:var(--sans)}
+  .sync-add input{flex:1;min-width:180px}
+  .bt-post-feed{background:var(--moss);color:white;border:none;padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:var(--sans)}
+  .bt-post-feed:hover{background:#3d4a34}
 
   /* Block mode toolbar */
   .block-toolbar{display:none;align-items:center;gap:8px;padding:12px 16px;background:var(--ink);border-radius:12px;margin-bottom:14px;flex-wrap:wrap}
@@ -316,9 +334,9 @@
       <!-- ═══ CALENDAR ═══ -->
       <div class="block">
         <div class="b-head">
-          <h2>Availability <i>calendar</i></h2>
+          <h2>One <i>calendar</i></h2>
           <div style="display:flex;gap:8px;align-items:center">
-            <span style="font-size:12.5px;color:var(--ink-3)" id="blockModeHint">Click dates to block · drag to select a range</span>
+            <span style="font-size:12.5px;color:var(--ink-3)" id="blockModeHint">Block dates here — or connect Airbnb / Booking.com below</span>
           </div>
         </div>
 
@@ -344,6 +362,7 @@
           <button class="bt-pill" id="bt-hold" onclick="setBT(this,'hold')">Hold for enquiry</button>
           <span class="bt-sel-count" id="btSelCount">0 dates selected</span>
           <button class="bt-cancel" onclick="cancelSelection()">✕ Cancel</button>
+          <button class="bt-post-feed" onclick="postOpeningToFeed()">Post opening to feed</button>
           <button class="bt-confirm" onclick="openBlockModal()">Block dates</button>
         </div>
 
@@ -357,8 +376,25 @@
           <div class="cl-item"><div class="cl-dot" style="background:var(--paper-2);border:1px solid var(--rule)"></div> Blocked</div>
           <div class="cl-item"><div class="cl-dot" style="background:rgba(90,80,160,.15);border:1px solid rgba(90,80,160,.25)"></div> Personal</div>
           <div class="cl-item"><div class="cl-dot" style="background:var(--moss-pale);border:1px solid rgba(77,92,64,.2)"></div> Maintenance</div>
+          <div class="cl-item"><div class="cl-dot" style="background:rgba(255,90,95,.35);border:1px solid rgba(255,90,95,.4)"></div> Synced (Airbnb etc.)</div>
           <div class="cl-item"><div class="cl-dot" style="background:var(--paper);border:2px solid var(--brick)"></div> Today</div>
           <div class="cl-item" id="unblockHint" style="display:none"><div class="cl-dot" style="background:var(--ink)"></div> Click blocked date to unblock</div>
+        </div>
+
+        <div class="cal-sync-panel">
+          <h4>Connect <i>other calendars</i></h4>
+          <p class="sync-lead">Paste your Airbnb or Booking.com export link once — Casa blocks those dates automatically so you are not managing two calendars by hand.</p>
+          <div class="sync-sources" id="syncSources"></div>
+          <div class="sync-add">
+            <select id="syncPlatform" aria-label="Calendar platform">
+              <option value="airbnb">Airbnb</option>
+              <option value="booking">Booking.com</option>
+              <option value="vrbo">Vrbo</option>
+              <option value="other">Other iCal</option>
+            </select>
+            <input type="url" id="syncUrl" placeholder="https://… calendar export link" autocomplete="off">
+            <button type="button" class="btn btn-primary btn-sm" onclick="connectExternalCalendar()">Connect</button>
+          </div>
         </div>
       </div>
 
@@ -499,20 +535,20 @@
               <div class="tm">Before 4pm · Hannah checking out</div>
             </div>
           </div>
-          <div class="task" id="task-photo">
-            <div class="ti" style="background:var(--paper-2);color:var(--ink-2)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 16-6-6-9 11"/></svg></div>
+          <div class="task" id="task-sync">
+            <div class="ti" style="background:var(--brick-pale);color:var(--brick)"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
             <div class="body">
-              <div class="tt">Upload Spring photos for <i>Slate Barn</i></div>
-              <div class="tm">Listing visibility · improve to 80%</div>
+              <div class="tt">Connect your <i>Airbnb calendar</i></div>
+              <div class="tm">One-time setup · avoids double bookings</div>
             </div>
           </div>
         </div>
       </div>
 
       <div class="side-block tip">
-        <h4>A note from <i>Casa</i></h4>
-        <p>Hosts who add 8+ photos earn ~24% more enquiries. Slate Barn currently has 5 photos.</p>
-        <a href="#" class="tip-cta" onclick="toast('Editing Slate Barn — coming soon');return false">Improve Slate Barn →</a>
+        <h4>Less <i>admin</i>, not more</h4>
+        <p>Casa is built for hosts who already list elsewhere. Connect your existing calendar, turn on Concierge if you want, and only post to the feed when you have a gap to fill.</p>
+        <a href="host-resources.html" class="tip-cta">Host guides →</a>
       </div>
 
       <div class="side-block">
@@ -686,21 +722,30 @@ const CAL_DATA = {
   }
 };
 
+function activePropId() {
+  return typeof casaAvailPropertyId === 'function' ? casaAvailPropertyId(activeProp) : 1;
+}
+
 function switchProp(btn, prop) {
   document.querySelectorAll('.cal-prop-tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
   activeProp = prop;
   cancelSelection();
   renderCal();
+  if (typeof casaAvailRenderSources === 'function') {
+    casaAvailRenderSources(activePropId(), 'syncSources');
+  }
+  const taskSync = document.getElementById('task-sync');
+  if (taskSync && typeof casaAvailGetSources === 'function' && casaAvailGetSources(activePropId()).length) {
+    taskSync.classList.add('done');
+  }
 }
 
 function getDayState(day) {
-  const d = CAL_DATA[activeProp];
-  for (const b of d.booked) { if (b.dates.includes(day)) return {type:'booked', guest:b.guest}; }
-  if (d.maintenance.has(day)) return {type:'maintenance'};
-  if (d.personal.has(day)) return {type:'personal'};
-  if (d.blocked.has(day)) return {type:'blocked'};
-  return {type:'open'};
+  if (typeof casaAvailDayState === 'function') {
+    return casaAvailDayState(activePropId(), calYear, calMonth, day);
+  }
+  return { type: 'open' };
 }
 
 function renderCal() {
@@ -733,6 +778,7 @@ function renderCal() {
     const isSel = selectedDates.has(dayNum);
     let cls = 'cal-day';
     if (state.type === 'booked') cls += ' booked';
+    else if (state.type === 'synced') cls += ' synced';
     else if (state.type === 'blocked') cls += ' blocked';
     else if (state.type === 'personal') cls += ' personal';
     else if (state.type === 'maintenance') cls += ' maintenance';
@@ -741,13 +787,14 @@ function renderCal() {
 
     let evHtml = `<div class="cd-num">${dayNum}</div>`;
     if (state.type === 'booked') evHtml += `<div class="cd-ev booked">${state.guest}</div>`;
+    else if (state.type === 'synced') evHtml += `<div class="cd-ev synced">${state.platform || 'Synced'}</div>`;
     else if (state.type === 'blocked') evHtml += `<div class="cd-ev blocked">Blocked</div>`;
     else if (state.type === 'personal') evHtml += `<div class="cd-ev personal">Personal</div>`;
     else if (state.type === 'maintenance') evHtml += `<div class="cd-ev maintenance">Maint.</div>`;
     else if (!isOther) evHtml += `<div class="cd-ev open">Open</div>`;
 
-    const clickable = state.type !== 'booked';
-    html += `<div class="${cls}" ${clickable?`data-day="${dayNum}" onmousedown="startSel(event,${dayNum})" onmouseenter="extendSel(${dayNum})"`:''} onclick="${state.type!=='booked' ? `clickDay(${dayNum})` : ''}">${evHtml}</div>`;
+    const clickable = state.type !== 'booked' && state.type !== 'synced';
+    html += `<div class="${cls}" ${clickable?`data-day="${dayNum}" onmousedown="startSel(event,${dayNum})" onmouseenter="extendSel(${dayNum})"`:''} onclick="${state.type==='synced' ? `toast('Synced from ${state.platform || 'another platform'} — update there, or disconnect in calendar settings')` : state.type!=='booked' ? `clickDay(${dayNum})` : ''}">${evHtml}</div>`;
   }
   grid.innerHTML = html;
   document.addEventListener('mouseup', endSel);
@@ -755,13 +802,16 @@ function renderCal() {
 
 function clickDay(day) {
   const state = getDayState(day);
-  const d = CAL_DATA[activeProp];
 
-  // If already blocked/personal/maintenance — unblock on single click
+  if (state.type === 'synced') {
+    toast(`Synced from ${state.platform || 'another platform'} — update in that calendar`);
+    return;
+  }
+
   if (state.type === 'blocked' || state.type === 'personal' || state.type === 'maintenance') {
-    d.blocked.delete(day);
-    d.personal.delete(day);
-    d.maintenance.delete(day);
+    if (typeof casaAvailClearDays === 'function') {
+      casaAvailClearDays(activePropId(), calYear, calMonth, [day]);
+    }
     renderCal();
     toast('Date unblocked — now showing as available');
     return;
@@ -778,20 +828,49 @@ function clickDay(day) {
 }
 
 function startSel(e, day) {
-  if (getDayState(day).type === 'booked') return;
+  const st = getDayState(day);
+  if (st.type === 'booked' || st.type === 'synced') return;
   isDragging = true;
   dragStart = day;
 }
 
+function connectExternalCalendar() {
+  const platform = document.getElementById('syncPlatform')?.value || 'airbnb';
+  const url = document.getElementById('syncUrl')?.value || '';
+  if (typeof casaAvailConnectSource !== 'function') return;
+  const result = casaAvailConnectSource(activePropId(), platform, url);
+  if (!result.ok) {
+    toast(result.error || 'Could not connect calendar');
+    return;
+  }
+  document.getElementById('syncUrl').value = '';
+  casaAvailRenderSources(activePropId(), 'syncSources');
+  renderCal();
+  const taskSync = document.getElementById('task-sync');
+  if (taskSync) taskSync.classList.add('done');
+  toast(`${result.platform} connected — ${result.added} dates imported (preview sync)`);
+}
+
+function postOpeningToFeed() {
+  if (selectedDates.size === 0) {
+    toast('Select open dates first');
+    return;
+  }
+  if (typeof casaAvailPostOpening !== 'function') return;
+  const url = casaAvailPostOpening(activePropId(), calYear, calMonth, [...selectedDates]);
+  window.location.href = url;
+}
+
 function extendSel(day) {
   if (!isDragging || !dragStart) return;
-  if (getDayState(day).type === 'booked') return;
+  if (getDayState(day).type === 'booked' || getDayState(day).type === 'synced') return;
   // Fill range
   const min = Math.min(dragStart, day);
   const max = Math.max(dragStart, day);
   selectedDates.clear();
   for (let d = min; d <= max; d++) {
-    if (getDayState(d).type !== 'booked') selectedDates.add(d);
+    const st = getDayState(d);
+    if (st.type !== 'booked' && st.type !== 'synced') selectedDates.add(d);
   }
   updateBlockToolbar();
   renderCal();
@@ -847,13 +926,11 @@ function pickBlockReason(pill, type) {
 }
 
 function confirmBlock() {
-  const d = CAL_DATA[activeProp];
   const count = selectedDates.size;
-  selectedDates.forEach(day => {
-    if (blockType === 'personal') d.personal.add(day);
-    else if (blockType === 'maintenance') d.maintenance.add(day);
-    else { d.blocked.add(day); }
-  });
+  const days = [...selectedDates];
+  if (typeof casaAvailSetDays === 'function') {
+    casaAvailSetDays(activePropId(), calYear, calMonth, days, blockType);
+  }
   selectedDates.clear();
   closeModal('blockModal');
   document.getElementById('blockToolbar').classList.remove('show');
@@ -916,8 +993,11 @@ function toast(msg) {
 // ═══════════════════════════════════════════════════
 renderEnquiries();
 renderCal();
+if (typeof casaAvailRenderSources === 'function') casaAvailRenderSources(activePropId(), 'syncSources');
 </script>
 
+<script src="casa-properties.js"></script>
+<script src="casa-availability.js"></script>
 <script src="casa-concierge.js"></script>
 <script src="casa.js"></script>
 <script>

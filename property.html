@@ -334,7 +334,7 @@
       <!-- CALENDAR -->
       <div class="cal-block">
         <h2><i>July</i> &amp; August</h2>
-        <div class="sub">Click two dates to set your stay. Calendar is updated by Sarah directly &mdash; available dates are live.</div>
+        <div class="sub">Click two dates to set your stay. Availability comes from the host's single Casa calendar — including dates synced from Airbnb and Booking.com.</div>
         <div class="cal">
           <div class="cal-month">
             <div class="mh">
@@ -546,6 +546,7 @@
 </footer>
 
 <script src="casa-properties.js"></script>
+<script src="casa-availability.js"></script>
 <script src="casa-images.js"></script>
 <script src="casa-hosts.js"></script>
 <script src="casa.js"></script>
@@ -760,6 +761,9 @@ function highlightRange() {
 }
 
 // Init with the pre-selected July 12–19 dates
+if (typeof casaAvailApplyGuestCalendar === 'function') {
+  casaAvailApplyGuestCalendar(listing.id, 2026, [7, 8], '.cal-grid');
+}
 document.getElementById('checkin').value = '2026-07-12';
 document.getElementById('checkout').value = '2026-07-19';
 updateBooking();
