@@ -263,6 +263,21 @@
   .rise-3 { animation: rise .5s .16s ease both; }
   @keyframes rise { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
 
+  .host-sync-callout {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 20px;
+    padding: 28px 32px; margin-bottom: 48px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start;
+  }
+  .hsc-eye { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--brick); margin-bottom: 8px; }
+  .hsc-title { font-family: var(--serif); font-size: 28px; line-height: 1.05; letter-spacing: -.02em; margin-bottom: 10px; }
+  .hsc-title i { font-style: italic; color: var(--brick); }
+  .hsc-body { font-size: 14.5px; color: var(--ink-2); line-height: 1.55; margin: 0; }
+  .hsc-body a { color: var(--brick); }
+  .hsc-aside { font-size: 13.5px; color: var(--ink-2); line-height: 1.55; }
+  .hsc-strong { margin: 0 0 10px; color: var(--ink); font-weight: 500; }
+  .hsc-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; }
+  .hsc-note { margin: 12px 0 0; font-size: 12px; color: var(--ink-4); }
+
   @media (max-width: 1000px) {
     .hiw-hero h1 { font-size: 64px; }
     .step-row { grid-template-columns: 48px 1fr; }
@@ -274,6 +289,7 @@
     .trust-grid { grid-template-columns: 1fr; }
     .trust-card { border-right: none; border-bottom: 1px solid var(--rule); }
     .section-title { font-size: 48px; }
+    .host-sync-callout { grid-template-columns: 1fr; gap: 20px; padding: 24px; }
   }
 
   @media (max-width: 640px) {

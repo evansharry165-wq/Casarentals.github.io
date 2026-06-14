@@ -216,6 +216,62 @@
   .post-mini .body { font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
   .post-mini .body i { font-style: italic; color: var(--brick); cursor: pointer; }
 
+  .post-mini .body i { font-style: italic; color: var(--brick); cursor: pointer; }
+
+  /* ─── HOST CALENDAR SYNC PROMO ─── */
+  .host-sync-band { padding: 0 0 56px; }
+  .host-sync-inner {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;
+    background: var(--paper); border: 1px solid var(--rule); border-radius: 24px;
+    padding: 48px 52px; position: relative; overflow: hidden;
+  }
+  .host-sync-inner::before {
+    content: ''; position: absolute; right: -80px; top: -80px; width: 280px; height: 280px;
+    border-radius: 50%; background: radial-gradient(circle, rgba(77,92,64,.12), transparent 70%);
+    pointer-events: none;
+  }
+  .host-sync-copy { position: relative; z-index: 1; }
+  .host-sync-copy .eyebrow { margin-bottom: 10px; }
+  .host-sync-copy h2 {
+    font-family: var(--serif); font-size: 42px; line-height: 1.02;
+    letter-spacing: -0.025em; margin-bottom: 14px;
+  }
+  .host-sync-copy h2 i { font-style: italic; color: var(--brick); }
+  .host-sync-copy .lead {
+    font-size: 15px; color: var(--ink-2); line-height: 1.55; margin-bottom: 20px; max-width: 520px;
+  }
+  .host-sync-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px; }
+  .host-sync-list li {
+    display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--ink-2); line-height: 1.45;
+  }
+  .host-sync-list li svg {
+    width: 18px; height: 18px; stroke: var(--moss); fill: none; stroke-width: 2; flex-shrink: 0; margin-top: 2px;
+  }
+  .host-sync-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .host-sync-visual {
+    position: relative; z-index: 1; background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 18px; padding: 24px;
+  }
+  .host-sync-visual h4 {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-3); margin-bottom: 14px;
+  }
+  .host-sync-flow { display: flex; flex-direction: column; gap: 10px; }
+  .host-sync-step {
+    display: flex; gap: 12px; align-items: center; padding: 12px 14px;
+    background: var(--paper); border: 1px solid var(--rule-2); border-radius: 12px;
+  }
+  .host-sync-step .num {
+    width: 28px; height: 28px; border-radius: 8px; background: var(--ink); color: var(--paper);
+    font-family: var(--mono); font-size: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .host-sync-step .txt { font-size: 13px; color: var(--ink-2); line-height: 1.4; }
+  .host-sync-step .txt strong { color: var(--ink); font-weight: 500; }
+  .host-sync-note {
+    margin-top: 14px; font-size: 12px; color: var(--ink-4); line-height: 1.45;
+    padding: 10px 12px; background: var(--paper-2); border-radius: 10px;
+  }
+
   /* ─── DUAL SPLIT HOST/RENTER CTA ─── */
   .host-cta { padding: 0 0 96px; }
   .host-cta-inner {
@@ -250,5 +306,7 @@
     .diff-head { grid-template-columns: 1fr; }
     .community-grid { grid-template-columns: 1fr; }
     .host-cta-inner { grid-template-columns: 1fr; padding: 32px; gap: 24px; }
+    .host-sync-inner { grid-template-columns: 1fr; padding: 32px 28px; }
+    .host-sync-copy h2 { font-size: 34px; }
     .hero-strip { grid-template-columns: repeat(2, 1fr); }
   }
