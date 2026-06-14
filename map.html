@@ -62,8 +62,13 @@
 
       <div class="map-search-box">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input type="search" id="mapSearch" placeholder="Search place, region, stay, or host…" oninput="casaMapOnSearch(this.value)" autocomplete="off">
+        <input type="search" id="mapSearch" placeholder="Search place, region, stay, or amenity…" autocomplete="off">
         <button type="button" class="map-search-clear" id="mapSearchClear" onclick="casaMapClearSearch()" aria-label="Clear search">×</button>
+      </div>
+
+      <div class="map-search-scope" id="mapSearchScope" role="tablist" aria-label="Search scope">
+        <button type="button" class="active" data-scope="area" onclick="casaMapSetSearchScope('area')">In this area</button>
+        <button type="button" data-scope="uk" onclick="casaMapSetSearchScope('uk')">All UK</button>
       </div>
 
       <div class="subarea-chips hidden" id="subareaChips"></div>

@@ -23,13 +23,38 @@ const casaMapState = {
   layer: 'both',
   sort: 'curated',
   search: '',
+  searchScope: 'area',
   expandedCountries: new Set(['england']),
   expandedRegions: new Set(),
   activePin: null,
   openPopup: null,
   mobileTab: 'areas',
+  searchDebounceTimer: null,
   _refreshToken: 0,
 };
+
+function casaMapTokenize(q) {
+  return (q || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
+}
+
+function casaMapMatchesTokens(haystack, tokens) {
+  if (!tokens.length) return true;
+  const h = (haystack || '').toLowerCase();
+  return tokens.every(t => h.includes(t));
+}
+
+function casaMapStayHaystack(p) {
+  const tagLabels = (p.tags || []).map(t => CASA_MAP_TAG_LABELS[t] || t).join(' ');
+  return `${p.title} ${p.loc} ${p.rLabel || ''} ${p.type || ''} ${p.region || ''} ${tagLabels}`;
+}
+
+function casaMapFeedHaystack(f) {
+  return `${f.name} ${f.loc} ${f.text || ''} ${f.type || ''}`;
+}
+
+function casaMapIsUkSearch() {
+  return casaMapState.region === 'all' || casaMapState.searchScope === 'uk';
+}
 
 function casaMapFormatRegionName(label) {
   const parts = label.split(' ');
@@ -225,50 +250,56 @@ function casaMapFilterItems(items) {
   if (casaMapState.subarea) {
     list = list.filter(x => casaMapItemInSubarea(x, casaMapState.region, casaMapState.subarea));
   }
-  if (casaMapState.search) {
-    const q = casaMapState.search.toLowerCase();
-    list = list.filter(x =>
-      (x.title && x.title.toLowerCase().includes(q)) ||
-      (x.loc && x.loc.toLowerCase().includes(q)) ||
-      (x.text && x.text.toLowerCase().includes(q)) ||
-      (x.name && x.name.toLowerCase().includes(q))
-    );
+  const tokens = casaMapTokenize(casaMapState.search);
+  if (tokens.length) {
+    list = list.filter(x => {
+      const hay = x.title != null ? casaMapStayHaystack(x) : casaMapFeedHaystack(x);
+      return casaMapMatchesTokens(hay, tokens);
+    });
   }
   return list;
 }
 
+function casaMapTreeRegionMatches(rid, tokens) {
+  if (!tokens.length) return true;
+  const r = CASA_MAP_REGIONS[rid];
+  if (!r) return false;
+  if (casaMapMatchesTokens(`${r.label} ${r.county} ${rid}`, tokens)) return true;
+  if (r.subareas) {
+    for (const [, sa] of Object.entries(r.subareas)) {
+      if (casaMapMatchesTokens(`${sa.label} ${(sa.towns || []).join(' ')}`, tokens)) return true;
+    }
+  }
+  const props = casaMapAllProperties().filter(p => p.region === rid);
+  const feed = casaMapAllFeed().filter(f => f.region === rid);
+  return props.some(p => casaMapMatchesTokens(casaMapStayHaystack(p), tokens))
+    || feed.some(f => casaMapMatchesTokens(casaMapFeedHaystack(f), tokens));
+}
+
 function casaMapSearchEverywhere(q) {
-  const query = q.trim().toLowerCase();
-  if (!query) return { regions: [], subareas: [], stays: [], posts: [] };
+  const tokens = casaMapTokenize(q);
+  if (!tokens.length) return { regions: [], subareas: [], stays: [], posts: [] };
 
   const regions = [];
   const subareas = [];
 
   Object.entries(CASA_MAP_REGIONS).forEach(([rid, r]) => {
-    const hay = `${r.label} ${r.county} ${rid}`.toLowerCase();
-    if (hay.includes(query)) {
+    const hay = `${r.label} ${r.county} ${rid}`;
+    if (casaMapMatchesTokens(hay, tokens)) {
       regions.push({ type: 'region', regionId: rid, label: r.label, sub: r.county });
     }
     if (r.subareas) {
       Object.entries(r.subareas).forEach(([sid, sa]) => {
-        const subHay = `${sa.label} ${(sa.towns || []).join(' ')}`.toLowerCase();
-        if (subHay.includes(query)) {
+        const subHay = `${sa.label} ${(sa.towns || []).join(' ')} ${r.label}`;
+        if (casaMapMatchesTokens(subHay, tokens)) {
           subareas.push({ type: 'subarea', regionId: rid, subareaId: sid, label: sa.label, sub: r.label });
         }
       });
     }
   });
 
-  const props = casaMapAllProperties().filter(p =>
-    (p.title && p.title.toLowerCase().includes(query)) ||
-    (p.loc && p.loc.toLowerCase().includes(query))
-  ).slice(0, 8);
-
-  const feed = casaMapAllFeed().filter(f =>
-    (f.text && f.text.toLowerCase().includes(query)) ||
-    (f.loc && f.loc.toLowerCase().includes(query)) ||
-    (f.name && f.name.toLowerCase().includes(query))
-  ).slice(0, 6);
+  const props = casaMapAllProperties().filter(p => casaMapMatchesTokens(casaMapStayHaystack(p), tokens)).slice(0, 8);
+  const feed = casaMapAllFeed().filter(f => casaMapMatchesTokens(casaMapFeedHaystack(f), tokens)).slice(0, 6);
 
   return { regions, subareas, stays: props, posts: feed };
 }
@@ -277,6 +308,7 @@ function casaMapSyncUrl() {
   const opts = {};
   if (casaMapState.region !== 'all') opts.region = casaMapState.region;
   if (casaMapState.subarea) opts.subarea = casaMapState.subarea;
+  if (casaMapState.search) opts.q = casaMapState.search;
   if (casaMapState.activePin) {
     if (casaMapState.activePin.startsWith('p-')) opts.property = casaMapState.activePin.slice(2);
     else if (casaMapState.activePin.startsWith('f-')) opts.pin = casaMapState.activePin.slice(2);
@@ -322,6 +354,10 @@ function casaMapRenderSubareaChips() {
 function casaMapRenderTree() {
   const totals = casaMapTotalCounts();
   const tree = document.getElementById('countyTree');
+  const tokens = casaMapTokenize(casaMapState.search);
+  const filterTree = tokens.length > 0 && casaMapIsUkSearch();
+  const localTree = tokens.length > 0 && !casaMapIsUkSearch() && casaMapState.region !== 'all';
+
   let html = `
     <button type="button" class="tree-all${casaMapState.region === 'all' ? ' active' : ''}" onclick="casaMapSelectRegion('all')">
       <span class="ta-code">UK</span>
@@ -329,9 +365,18 @@ function casaMapRenderTree() {
       <span class="ta-meta">${totals.stays} stays · ${totals.feed} posts</span>
     </button>`;
 
+  let visibleCountries = 0;
   CASA_MAP_TREE.forEach(country => {
+    const countryRegions = country.regions.filter(rid => {
+      if (localTree) return rid === casaMapState.region;
+      if (!filterTree) return true;
+      return casaMapTreeRegionMatches(rid, tokens);
+    });
+    if (!countryRegions.length) return;
+    visibleCountries++;
+
     const counts = casaMapCountForCountry(country.id);
-    const open = casaMapState.expandedCountries.has(country.id);
+    const open = filterTree || localTree || casaMapState.expandedCountries.has(country.id);
     html += `
       <div class="tree-country${open ? ' open' : ''}" data-country="${country.id}">
         <button type="button" class="tree-country-btn" onclick="casaMapToggleCountry('${country.id}')">
@@ -341,11 +386,11 @@ function casaMapRenderTree() {
         </button>
         <div class="tree-regions">`;
 
-    country.regions.forEach(rid => {
+    countryRegions.forEach(rid => {
       const r = CASA_MAP_REGIONS[rid];
       const c = casaMapCountForRegion(rid);
       const subareas = r.subareas ? Object.entries(r.subareas) : [];
-      const regionOpen = casaMapState.expandedRegions.has(rid);
+      const regionOpen = filterTree || localTree || casaMapState.expandedRegions.has(rid);
       const isActive = casaMapState.region === rid;
       html += `
         <div class="tree-region-wrap${regionOpen ? ' open' : ''}">
@@ -364,6 +409,11 @@ function casaMapRenderTree() {
       if (subareas.length) {
         html += `<div class="tree-subareas">`;
         subareas.forEach(([sid, sa]) => {
+          if (filterTree) {
+            const regionNameMatch = casaMapMatchesTokens(`${r.label} ${r.county}`, tokens);
+            const subHay = `${sa.label} ${(sa.towns || []).join(' ')}`;
+            if (!regionNameMatch && !casaMapMatchesTokens(subHay, tokens)) return;
+          }
           const sc = typeof casaMapCountForSubarea === 'function'
             ? casaMapCountForSubarea(rid, sid)
             : { stays: 0, feed: 0 };
@@ -381,6 +431,10 @@ function casaMapRenderTree() {
 
     html += `</div></div>`;
   });
+
+  if (filterTree && visibleCountries === 0) {
+    html += `<div class="tree-search-empty">No areas match — try a different place or clear search.</div>`;
+  }
 
   tree.innerHTML = html;
 }
@@ -608,7 +662,7 @@ function casaMapRenderSearchResults() {
   document.getElementById('resultsLabel').textContent = total ? `${total} matches` : 'No matches';
 
   if (!total) {
-    container.innerHTML = `<div class="map-empty"><h3>No matches</h3><p>Try a place name, region, stay, or host. Example: Cornwall, Windermere, hot tub.</p></div>`;
+    container.innerHTML = `<div class="map-empty"><h3>No matches</h3><p>Try a place name, region, stay, or amenity — e.g. Cornwall, Windermere, hot tub.</p></div>`;
     return true;
   }
 
@@ -659,9 +713,9 @@ function casaMapRenderList() {
   const showProps = casaMapState.layer === 'both' || casaMapState.layer === 'props';
   const showFeed = casaMapState.layer === 'both' || casaMapState.layer === 'feed';
 
-  if (casaMapState.search && casaMapRenderSearchResults()) return;
+  if (casaMapState.search && casaMapIsUkSearch() && casaMapRenderSearchResults()) return;
 
-  if (casaMapState.region === 'all') {
+  if (casaMapState.region === 'all' && !casaMapState.search) {
     document.getElementById('resultsLabel').textContent = 'UK overview';
     container.innerHTML = `<div class="map-empty"><h3>Search a local area</h3><p>Type a place, region, or stay above — or tap a highlighted region on the map to zoom in and browse Casa listings and community posts nearby.</p></div>`;
     return;
@@ -676,8 +730,11 @@ function casaMapRenderList() {
 
   const total = (showProps ? props.length : 0) + (showFeed ? feed.length : 0);
   const r = CASA_MAP_REGIONS[casaMapState.region];
-  const sa = casaMapState.subarea && r.subareas?.[casaMapState.subarea];
-  document.getElementById('resultsLabel').textContent = total + ' in ' + (sa ? sa.label : r.label);
+  const sa = casaMapState.subarea && r?.subareas?.[casaMapState.subarea];
+  const searchNote = casaMapState.search ? ` · “${casaMapState.search}”` : '';
+  document.getElementById('resultsLabel').textContent = casaMapState.search
+    ? (total ? `${total} match${total === 1 ? '' : 'es'}${searchNote}` : `No matches${searchNote}`)
+    : (total + ' in ' + (sa ? sa.label : r.label));
 
   let html = '';
   if (showProps && props.length) {
@@ -714,7 +771,12 @@ function casaMapRenderList() {
 
   if (!html) {
     const layerHint = casaMapState.layer === 'props' ? 'stays' : casaMapState.layer === 'feed' ? 'feed posts' : 'results';
-    html = `<div class="map-empty"><h3>No ${layerHint} here</h3><p>Try another neighbourhood chip, switch layers, or clear your search.</p></div>`;
+    if (casaMapState.search && !casaMapIsUkSearch()) {
+      html = `<div class="map-empty"><h3>No ${layerHint} in this area</h3><p>Try another neighbourhood chip, clear your search, or look across the UK.</p>
+        <button type="button" class="map-search-uk-btn" onclick="casaMapSetSearchScope('uk')">Search all UK</button></div>`;
+    } else {
+      html = `<div class="map-empty"><h3>No ${layerHint} here</h3><p>Try another neighbourhood chip, switch layers, or clear your search.</p></div>`;
+    }
   }
 
   container.innerHTML = html;
@@ -756,6 +818,7 @@ function casaMapSelectRegion(regionId, opts = {}) {
   casaMapState.region = regionId;
   if (!opts.keepSubarea) casaMapState.subarea = null;
   if (!opts.keepPin) casaMapState.activePin = null;
+  if (regionId !== 'all' && !opts.keepSearchScope) casaMapState.searchScope = 'area';
 
   if (regionId !== 'all') {
     casaMapExpandForRegion(regionId);
@@ -763,9 +826,11 @@ function casaMapSelectRegion(regionId, opts = {}) {
     casaMapSetMobileTab('results');
   } else {
     casaMapState.subarea = null;
+    casaMapState.searchScope = 'uk';
     if (!opts.skipFly) casaMapFlyToUk();
   }
 
+  casaMapUpdateSearchScopeUi();
   casaMapRefreshView();
 }
 
@@ -791,22 +856,66 @@ function casaMapSetSort(value) {
   casaMapRenderList();
 }
 
+function casaMapUpdateSearchScopeUi() {
+  const wrap = document.getElementById('mapSearchScope');
+  if (!wrap) return;
+  const inRegion = casaMapState.region !== 'all';
+  wrap.classList.toggle('visible', inRegion);
+  if (!inRegion) return;
+  wrap.querySelectorAll('button').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.scope === casaMapState.searchScope);
+  });
+}
+
+function casaMapSetSearchScope(scope) {
+  if (!['area', 'uk'].includes(scope)) return;
+  casaMapState.searchScope = scope;
+  casaMapUpdateSearchScopeUi();
+  if (casaMapState.search) casaMapSetMobileTab('results');
+  casaMapRenderTree();
+  casaMapRenderMarkers(casaMapState.activePin);
+  casaMapRenderList();
+  casaMapSyncUrl();
+}
+
+function casaMapOnSearchInput(val) {
+  clearTimeout(casaMapState.searchDebounceTimer);
+  casaMapState.searchDebounceTimer = setTimeout(() => casaMapOnSearch(val), 200);
+}
+
 function casaMapOnSearch(val) {
   casaMapState.search = val.trim();
   const clearBtn = document.getElementById('mapSearchClear');
   clearBtn?.classList.toggle('visible', !!casaMapState.search);
   const input = document.getElementById('mapSearch');
-  if (input) input.placeholder = casaMapState.region === 'all'
-    ? 'Search place, region, stay, or host…'
-    : 'Filter this area…';
+  if (input) {
+    input.placeholder = casaMapState.region === 'all'
+      ? 'Search place, region, stay, or amenity…'
+      : casaMapState.searchScope === 'uk'
+        ? 'Search all UK…'
+        : 'Filter this area…';
+  }
+  if (casaMapState.search) casaMapSetMobileTab('results');
+  casaMapUpdateSearchScopeUi();
+  casaMapRenderTree();
   casaMapRenderMarkers(casaMapState.activePin);
   casaMapRenderList();
+  casaMapSyncUrl();
 }
 
 function casaMapClearSearch() {
   const input = document.getElementById('mapSearch');
   if (input) input.value = '';
   casaMapOnSearch('');
+  input?.focus();
+}
+
+function casaMapActivateFirstSearchResult() {
+  const first = document.querySelector('#listItems .map-jump-item, #listItems .map-list-pc, #listItems .map-list-ac');
+  if (first) {
+    if (first.tagName === 'A' || first.classList.contains('map-list-ac')) first.click();
+    else first.click();
+  }
 }
 
 function casaMapApplyLocation(regionId, subareaId, opts = {}) {
@@ -879,6 +988,7 @@ function casaMapApplyDeepLink() {
   const pinParam = qp.get('pin');
   const propertyParam = qp.get('property');
   const postParam = qp.get('post');
+  const qParam = qp.get('q');
 
   if (regionParam) {
     const key = typeof casaMapNormalizeRegion === 'function'
@@ -891,6 +1001,13 @@ function casaMapApplyDeepLink() {
       });
       casaMapRefreshView({ reopenPin: null });
     }
+  }
+
+  if (qParam) {
+    casaMapState.search = qParam;
+    const input = document.getElementById('mapSearch');
+    if (input) input.value = qParam;
+    casaMapOnSearch(qParam);
   }
 
   if (postParam && typeof casaMapFeedByPostId === 'function') {
@@ -910,8 +1027,24 @@ function casaMapApplyDeepLink() {
 function casaMapPageInit() {
   casaMapInit();
   casaMapSetMobileTab('areas');
+  casaMapUpdateSearchScopeUi();
   casaMapRefreshView();
   casaMapApplyDeepLink();
+
+  const searchInput = document.getElementById('mapSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', e => casaMapOnSearchInput(e.target.value));
+    searchInput.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        casaMapClearSearch();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        casaMapActivateFirstSearchResult();
+      }
+    });
+  }
+
   requestAnimationFrame(() => casaMapInstance.invalidateSize());
 }
 
@@ -924,7 +1057,9 @@ window.casaMapToggleRegionTree = casaMapToggleRegionTree;
 window.casaMapToggleCountry = casaMapToggleCountry;
 window.casaMapSetLayer = casaMapSetLayer;
 window.casaMapOnSearch = casaMapOnSearch;
+window.casaMapOnSearchInput = casaMapOnSearchInput;
 window.casaMapClearSearch = casaMapClearSearch;
+window.casaMapSetSearchScope = casaMapSetSearchScope;
 window.casaMapFocusProperty = casaMapFocusProperty;
 window.casaMapFocusFeed = casaMapFocusFeed;
 window.casaMapBackToUk = casaMapBackToUk;

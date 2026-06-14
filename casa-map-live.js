@@ -120,6 +120,7 @@ function casaMapUrl(opts = {}) {
   if (opts.pin) p.set('pin', opts.pin);
   if (opts.property) p.set('property', opts.property);
   if (opts.post) p.set('post', opts.post);
+  if (opts.q) p.set('q', opts.q);
   const q = p.toString();
   return `map.html${q ? '?' + q : ''}`;
 }

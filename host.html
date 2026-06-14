@@ -207,6 +207,36 @@
   #hostToast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--ink);color:var(--paper);padding:11px 22px;border-radius:var(--r-pill);font-size:13.5px;font-family:var(--sans);opacity:0;transition:all .2s;z-index:999;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
   #hostToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+  /* Dashboard search */
+  .dh-search-wrap{position:relative;margin-top:20px}
+  .dh-search-box{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:10px 14px}
+  .dh-search-box:focus-within{border-color:var(--brick)}
+  .dh-search-box svg{width:16px;height:16px;stroke:var(--ink-3);fill:none;stroke-width:1.8;flex-shrink:0}
+  .dh-search-box input{flex:1;border:none;background:transparent;outline:none;font-size:14px;font-family:var(--sans);min-width:0}
+  .dh-search-clear{border:none;background:var(--paper-2);color:var(--ink-3);width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:15px;line-height:1;display:none;flex-shrink:0}
+  .dh-search-clear.visible{display:inline-flex;align-items:center;justify-content:center}
+  .dh-search-clear:hover{color:var(--brick)}
+  .dh-search-meta{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px;flex-wrap:wrap}
+  .dh-search-scope{display:flex;gap:6px;flex-wrap:wrap}
+  .dh-search-scope button{padding:5px 12px;border-radius:999px;border:1px solid var(--rule);background:var(--paper);font-size:12px;color:var(--ink-2);cursor:pointer;font-family:var(--sans);transition:all .12s}
+  .dh-search-scope button:hover{border-color:var(--ink);color:var(--ink)}
+  .dh-search-scope button.active{background:var(--ink);color:var(--paper);border-color:var(--ink);font-weight:500}
+  .dh-search-count{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)}
+  .dh-search-results{position:absolute;left:0;right:0;top:calc(100% + 6px);background:var(--paper);border:1px solid var(--rule);border-radius:14px;box-shadow:0 12px 40px rgba(22,20,15,.12);z-index:50;display:none;overflow:hidden;max-height:320px;overflow-y:auto}
+  .dh-search-results.open{display:block}
+  .dh-sr-item{display:flex;align-items:flex-start;gap:10px;width:100%;text-align:left;padding:12px 14px;border:none;background:transparent;cursor:pointer;font-family:var(--sans);border-bottom:1px solid var(--rule-2)}
+  .dh-sr-item:last-child{border-bottom:none}
+  .dh-sr-item:hover,.dh-sr-item.active{background:var(--brick-pale)}
+  .dh-sr-type{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4);padding-top:3px;flex-shrink:0;width:52px}
+  .dh-sr-label{display:block;font-size:13.5px;font-weight:500;color:var(--ink)}
+  .dh-sr-sub{display:block;font-size:11.5px;color:var(--ink-3);margin-top:2px}
+  .dh-sr-empty{padding:16px;font-size:13px;color:var(--ink-3);line-height:1.5}
+  .dh-search-dim{opacity:.35;pointer-events:none}
+  .dh-search-hit{outline:2px solid rgba(176,85,51,.25);outline-offset:4px;border-radius:12px}
+  .enq-table tr.dh-search-hit td{background:rgba(176,85,51,.04)}
+  @keyframes dhFlash{0%,100%{background:transparent}50%{background:rgba(176,85,51,.12)}}
+  .dh-flash{animation:dhFlash 1.2s ease}
+
   @media(max-width:1100px){.dh-grid{grid-template-columns:1fr}.kpi-row{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -326,13 +356,33 @@
         <div class="delta"><svg viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg> No change</div>
       </div>
     </div>
+
+    <div class="dh-search-wrap">
+      <div class="dh-search-box">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input type="search" id="dhSearch" placeholder="Search enquiries, listings, calendar, tasks…" autocomplete="off"
+               oninput="casaHostOnSearchInput(this.value)" aria-label="Search dashboard">
+        <button type="button" class="dh-search-clear" id="dhSearchClear" onclick="casaHostClearSearch()" aria-label="Clear search">×</button>
+      </div>
+      <div class="dh-search-meta">
+        <div class="dh-search-scope" role="tablist" aria-label="Search scope">
+          <button type="button" class="active" data-scope="all" onclick="casaHostSetScope('all')">All</button>
+          <button type="button" data-scope="enquiries" onclick="casaHostSetScope('enquiries')">Enquiries</button>
+          <button type="button" data-scope="listings" onclick="casaHostSetScope('listings')">Listings</button>
+          <button type="button" data-scope="calendar" onclick="casaHostSetScope('calendar')">Calendar</button>
+          <button type="button" data-scope="tasks" onclick="casaHostSetScope('tasks')">Tasks</button>
+        </div>
+        <span class="dh-search-count" id="dhSearchCount" aria-live="polite"></span>
+      </div>
+      <div class="dh-search-results" id="dhSearchResults" role="listbox"></div>
+    </div>
   </div>
 
   <div class="dh-grid">
     <div class="dh-main">
 
       <!-- ═══ CALENDAR ═══ -->
-      <div class="block">
+      <div class="block" id="block-calendar">
         <div class="b-head">
           <h2>One <i>calendar</i></h2>
           <div style="display:flex;gap:8px;align-items:center">
@@ -399,7 +449,7 @@
       </div>
 
       <!-- ═══ ENQUIRIES ═══ -->
-      <div class="block">
+      <div class="block" id="block-enquiries">
         <div class="b-head">
           <h2><i>New</i> enquiries</h2>
           <a href="messages.html" class="more">Go to inbox <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
@@ -413,7 +463,7 @@
       </div>
 
       <!-- ═══ LISTINGS ═══ -->
-      <div class="block">
+      <div class="block" id="block-listings">
         <div class="b-head">
           <h2>Your <i>listings</i></h2>
           <a href="list.html" class="more">Add listing <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
@@ -517,7 +567,7 @@
         </div>
       </div>
 
-      <div class="side-block">
+      <div class="side-block" id="block-tasks">
         <h3><i id="taskCount">3 things</i> to do</h3>
         <div class="meta">Updated just now</div>
         <div id="taskList">
@@ -584,6 +634,7 @@ const ENQUIRIES = [
   { id:'e3', av:'L', name:'Laura Phillips', sub:'3 adults, 1 dog', prop:'Slate Barn', loc:'Ambleside', dates:'22–25 Aug', nights:3, total:'£735', status:'replied', statusLabel:'Replied · awaiting', actionable:false },
   { id:'e4', av:'D', name:'Daniel Roberts', sub:'2 adults', prop:'Stone Cottage', loc:'Windermere', dates:'28 Sep–5 Oct', nights:7, total:'£1,225', status:'paid', statusLabel:'Deposit paid', actionable:false },
 ];
+window.HOST_ENQUIRIES = ENQUIRIES;
 
 let activeEnqId = null;
 let activeAction = null;
@@ -998,6 +1049,7 @@ if (typeof casaAvailRenderSources === 'function') casaAvailRenderSources(activeP
 
 <script src="casa-properties.js"></script>
 <script src="casa-availability.js"></script>
+<script src="casa-host-dashboard.js"></script>
 <script src="casa-concierge.js"></script>
 <script src="casa.js"></script>
 <script>
