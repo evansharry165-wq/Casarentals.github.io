@@ -24,7 +24,7 @@ const CASA_MAP_REGIONS = {
     feedCounty: 'cumbria',
     browseUrl: 'browse.html?region=lake-district',
     feedUrl: 'feed.html?county=cumbria',
-    blurb: '214 stays · Cumbria — fells, lakes, and direct-booking cottages.',
+    blurb: 'Fells, lakes, and direct-booking cottages across Cumbria.',
     activity: "Sarah R. posted a last-minute opening at Stone Cottage. Hannah F.'s Coniston walk tip has 128 likes.",
   },
   cornwall: {
@@ -34,7 +34,7 @@ const CASA_MAP_REGIONS = {
     feedCounty: 'cornwall',
     browseUrl: 'browse.html?region=cornwall',
     feedUrl: 'feed.html?county=cornwall',
-    blurb: '198 stays · Two coastlines, harbour villages, fee-free bookings.',
+    blurb: 'Two coastlines, harbour villages, and fee-free bookings.',
     activity: 'Rachel B. has a last-minute week at Harbour Cottage, Mousehole.',
   },
   norfolk: {
@@ -44,7 +44,7 @@ const CASA_MAP_REGIONS = {
     feedCounty: 'norfolk',
     browseUrl: 'browse.html?region=norfolk',
     feedUrl: 'feed.html?county=norfolk',
-    blurb: '112 stays · Salt marshes, big skies, Wells-next-the-Sea.',
+    blurb: 'Salt marshes, big skies, and Wells-next-the-Sea.',
     activity: "Bridget H. has September wide open at Burnham Overy Barn.",
   },
   yorkshire: {
@@ -54,7 +54,7 @@ const CASA_MAP_REGIONS = {
     feedCounty: 'yorkshire',
     browseUrl: 'browse.html?region=yorkshire',
     feedUrl: 'feed.html?county=yorkshire',
-    blurb: '98 stays · Dales, moors, and Whitby coast.',
+    blurb: 'Dales, moors, and the Whitby coast.',
     activity: 'Graham & Kate posted from Wharfedale — 56 likes this morning.',
   },
   cotswolds: {
@@ -64,7 +64,7 @@ const CASA_MAP_REGIONS = {
     feedCounty: 'cotswolds',
     browseUrl: 'browse.html?region=cotswolds',
     feedUrl: 'feed.html?county=cotswolds',
-    blurb: '87 stays · Honey stone villages and manor houses.',
+    blurb: 'Honey stone villages and manor houses.',
     activity: 'Honeysuckle Cottage and Chipping Manor have summer availability.',
   },
   highlands: {
@@ -74,7 +74,7 @@ const CASA_MAP_REGIONS = {
     feedCounty: 'highlands',
     browseUrl: 'browse.html?region=highlands',
     feedUrl: 'feed.html?county=highlands',
-    blurb: '145 stays · Glens, lochs, bothies, and lodges.',
+    blurb: 'Glens, lochs, bothies, and lodges.',
     activity: "Callum D. has two weeks free at Glen Coe Bothy in August.",
   },
   skye: {
@@ -84,7 +84,7 @@ const CASA_MAP_REGIONS = {
     feedCounty: 'highlands',
     browseUrl: 'browse.html?region=skye',
     feedUrl: 'feed.html?county=highlands',
-    blurb: '67 stays · Trotternish, Portree, and off-grid hideaways.',
+    blurb: 'Trotternish, Portree, and off-grid hideaways.',
     activity: "Fiona M.'s Storr sunrise post is the most liked this week.",
   },
   snowdonia: {
@@ -94,7 +94,7 @@ const CASA_MAP_REGIONS = {
     feedCounty: 'snowdonia',
     browseUrl: 'browse.html?region=snowdonia',
     feedUrl: 'feed.html?county=snowdonia',
-    blurb: '54 stays · Y Wyddfa, lakes, and Welsh farmhouses.',
+    blurb: 'Y Wyddfa, lakes, and Welsh farmhouses.',
     activity: 'Llyn Padarn Cabin has late July availability.',
   },
   pembrokeshire: {
@@ -104,7 +104,7 @@ const CASA_MAP_REGIONS = {
     feedCounty: 'pembrokeshire',
     browseUrl: 'browse.html?region=pembrokeshire',
     feedUrl: 'feed.html?county=pembrokeshire',
-    blurb: '48 stays · Coast path, St Davids, cliffside cottages.',
+    blurb: 'Coast path, St Davids, and cliffside cottages.',
     activity: 'Pembroke Cliffside just dropped September pricing.',
   },
   causeway: {
@@ -114,7 +114,7 @@ const CASA_MAP_REGIONS = {
     feedCounty: 'causeway',
     browseUrl: 'browse.html?region=causeway',
     feedUrl: 'feed.html?county=causeway',
-    blurb: "29 stays · Giant's Causeway, Bushmills, Dark Hedges.",
+    blurb: "Giant's Causeway, Bushmills, and the Dark Hedges.",
     activity: "Fiona's sunrise tip at the Causeway is trending.",
   },
 };
@@ -228,3 +228,5 @@ function casaMapFeedByPostId(postId) {
 }
 
 if (typeof casaMapApplyGeo === 'function') casaMapApplyGeo();
+
+window.casaMapFeedByPostId = casaMapFeedByPostId;
