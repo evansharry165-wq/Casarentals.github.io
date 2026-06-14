@@ -1,5 +1,37 @@
 /* Casa shared utilities — safe to load on every page */
 
+const CASA_CONFIG = {
+  mode: 'preview',
+  domain: 'casa.co.uk',
+  authProvider: 'local',
+};
+
+function casaNormalizeUser(raw) {
+  if (!raw) return null;
+  const name = String(raw.name || raw.email || 'Guest').trim();
+  return {
+    id: raw.id || `local-${Date.now()}`,
+    name,
+    email: String(raw.email || '').trim().toLowerCase(),
+    role: raw.role === 'host' ? 'host' : 'guest',
+    createdAt: raw.createdAt || new Date().toISOString(),
+    sessionType: CASA_CONFIG.mode === 'live' ? 'live' : 'preview',
+  };
+}
+
+function casaInitPreviewBanner() {
+  if (CASA_CONFIG.mode !== 'preview') return;
+  if (document.getElementById('casaPreviewBanner')) return;
+  const bar = document.createElement('div');
+  bar.id = 'casaPreviewBanner';
+  bar.className = 'casa-preview-banner';
+  bar.innerHTML = '<p>Preview build for <strong>casa.co.uk</strong> — sign-in, saves, and messages are stored on this device until launch.</p>';
+  document.body.prepend(bar);
+  document.body.classList.add('has-preview-banner');
+}
+
+window.CASA_CONFIG = CASA_CONFIG;
+
 function casaToast(message, duration = 3000) {
   let el = document.getElementById('casaToast');
   if (!el) {
@@ -57,14 +89,14 @@ const CASA_ENQUIRIES_KEY = 'casa:enquiries';
 function casaGetUser() {
   try {
     const raw = localStorage.getItem(CASA_USER_KEY);
-    return raw ? JSON.parse(raw) : null;
+    return raw ? casaNormalizeUser(JSON.parse(raw)) : null;
   } catch {
     return null;
   }
 }
 
 function casaSetUser(user) {
-  if (user) localStorage.setItem(CASA_USER_KEY, JSON.stringify(user));
+  if (user) localStorage.setItem(CASA_USER_KEY, JSON.stringify(casaNormalizeUser(user)));
   else localStorage.removeItem(CASA_USER_KEY);
 }
 
@@ -328,6 +360,7 @@ function casaHandleAuthRedirectToasts() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  casaInitPreviewBanner();
   casaHandleAuthRedirectToasts();
   casaInitNav();
   casaLinkifyHashtags(document.body);

@@ -1,0 +1,111 @@
+/* Casa shared page components — nav search, headers, motion */
+
+.nav-search {
+  display: flex;
+  align-items: stretch;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 4px;
+  gap: 0;
+  min-width: 460px;
+  transition: box-shadow .12s, border-color .12s;
+  cursor: pointer;
+}
+.nav-search:hover {
+  box-shadow: 0 4px 18px rgba(22, 20, 15, 0.07);
+  border-color: var(--rule-3);
+}
+.nav-search .seg {
+  padding: 6px 16px;
+  border-right: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.nav-search .seg:last-of-type { border-right: none; }
+.nav-search .seg .l {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+}
+.nav-search .seg .v {
+  font-size: 13px;
+  color: var(--ink);
+  margin-top: 1px;
+  white-space: nowrap;
+}
+.nav-search .go {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: var(--brick);
+  color: white;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  margin: auto 2px auto auto;
+  flex-shrink: 0;
+}
+.nav-search .go:hover { background: var(--brick-2); }
+.nav-search .go svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+.head-strip {
+  padding: var(--space-8) 0 var(--space-5);
+  border-bottom: 1px solid var(--rule);
+}
+.head-strip .top {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+.head-strip h1 {
+  font-family: var(--serif);
+  font-size: var(--type-h1);
+  line-height: .95;
+  letter-spacing: -.025em;
+}
+.head-strip h1 i { font-style: italic; color: var(--brick); }
+
+.region-code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6em;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--paper-2);
+  color: var(--ink-3);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.rise { animation: rise .45s ease both; }
+.rise-2 { animation: rise .45s .07s ease both; }
+.rise-3 { animation: rise .45s .14s ease both; }
+.rise-4 { animation: rise .45s .21s ease both; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 680px) {
+  .head-strip h1 { font-size: 40px; }
+  .nav-search { display: none; }
+}

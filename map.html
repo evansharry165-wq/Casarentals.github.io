@@ -102,7 +102,13 @@
   }
   .tree-region:hover { background: var(--surface); }
   .tree-region.active { background: var(--brick-pale); outline: 1px solid rgba(176,85,51,.25); }
-  .tree-region .tr-emoji { font-size: 16px; flex-shrink: 0; }
+  .tree-region .tr-code {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 28px; height: 22px; padding: 0 6px; border-radius: 6px;
+    background: var(--paper-2); font-family: var(--mono); font-size: 9px;
+    letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3);
+    flex-shrink: 0;
+  }
   .tree-region .tr-body { flex: 1; min-width: 0; }
   .tree-region .tr-name { font-family: var(--serif); font-size: 15px; line-height: 1.1; }
   .tree-region .tr-name i { font-style: italic; color: var(--brick); }
@@ -320,7 +326,8 @@
   .casa-pin-stay.active { background: var(--ink); transform: scale(1.08); }
   .casa-pin-feed {
     width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center;
-    font-size: 15px; border: 2px solid white; box-shadow: 0 2px 8px rgba(22,20,15,.18);
+    font-family: var(--mono); font-size: 8px; letter-spacing: .04em; font-weight: 500; color: white;
+    border: 2px solid white; box-shadow: 0 2px 8px rgba(22,20,15,.18);
   }
   .casa-pin-feed.tip { background: #8A6848; }
   .casa-pin-feed.avail { background: var(--brick); }
@@ -461,6 +468,7 @@
 <script src="casa-properties.js"></script>
 <script src="casa-map-geo.js"></script>
 <script src="casa-map-data.js"></script>
+<script src="casa-region-meta.js"></script>
 <script src="casa-map-live.js"></script>
 <script src="casa.js"></script>
 <script>
@@ -616,7 +624,7 @@ function feedPopupHtml(f) {
     : `feed.html?county=${CASA_MAP_REGIONS[f.region]?.feedCounty || ''}`;
   return `<div class="casa-popup casa-popup-feed">
     <div class="cp-body">
-      <div class="cp-type">${f.emoji} ${typeLabel}</div>
+      <div class="cp-type">${typeof casaFeedPinCode === 'function' ? casaFeedPinCode(f) : 'FD'} · ${typeLabel}</div>
       <strong>${f.name}</strong>
       <div class="cp-loc">${f.loc} · ${f.when}</div>
       <div class="cp-text">${f.text}</div>
@@ -687,7 +695,7 @@ function renderTree() {
       <div class="tree-country${open ? ' open' : ''}" data-country="${country.id}">
         <button type="button" class="tree-country-btn" onclick="toggleCountry('${country.id}')">
           <svg class="chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
-          <span>${country.emoji} ${country.label}</span>
+          <span><span class="region-code">${typeof casaCountryCode === 'function' ? casaCountryCode(country.id) : country.id.toUpperCase()}</span> ${country.label}</span>
           <span class="tc-count">${counts.stays} stays</span>
         </button>
         <div class="tree-regions">`;
@@ -702,7 +710,7 @@ function renderTree() {
         <div class="tree-region-wrap${regionOpen ? ' open' : ''}">
         <button type="button" class="tree-region${isActive ? ' active' : ''}${subareas.length ? ' has-sub' : ''}"
                 onclick="selectRegion('${rid}')">
-          <span class="tr-emoji">${r.emoji}</span>
+          <span class="tr-code">${typeof casaRegionCode === 'function' ? casaRegionCode(rid) : rid.slice(0,2).toUpperCase()}</span>
           <span class="tr-body">
             <div class="tr-name">${formatRegionName(r.label)}</div>
             <div class="tr-sub">${r.county} · ${c.stays} stays · ${c.feed} posts</div>
@@ -891,7 +899,7 @@ function renderMarkers() {
       const pinId = 'f-' + f.id;
       const icon = L.divIcon({
         className: '',
-        html: `<div class="casa-pin-feed ${f.type}${state.activePin === pinId ? ' active' : ''}">${f.emoji}</div>`,
+        html: `<div class="casa-pin-feed ${f.type}${state.activePin === pinId ? ' active' : ''}">${typeof casaFeedPinCode === 'function' ? casaFeedPinCode(f) : 'FD'}</div>`,
         iconSize: [32, 32],
         iconAnchor: [16, 16],
       });
@@ -959,7 +967,7 @@ function renderList() {
         : `feed.html?county=${CASA_MAP_REGIONS[state.region]?.feedCounty || ''}`;
       return `
       <div class="map-list-ac${state.activePin === 'f-' + f.id ? ' active' : ''}" id="lac-${f.id}" onclick="focusFeed('${f.id}')">
-        <div class="ac-ico ${f.type}">${f.emoji}</div>
+        <div class="ac-ico ${f.type}">${typeof casaFeedPinCode === 'function' ? casaFeedPinCode(f) : 'FD'}</div>
         <div>
           <div class="ac-text"><strong>${f.name}</strong> — ${f.text}</div>
           <div class="ac-meta">${CASA_FEED_TYPE_LABELS[f.type]} · ${f.loc} · ${f.when}${f.live ? ' · live' : ''}</div>

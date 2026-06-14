@@ -93,7 +93,7 @@
   .region-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 10px; padding: 10px 14px; cursor: pointer; font-size: 13.5px; color: var(--ink-2); transition: all .12s; display: flex; align-items: center; gap: 8px; font-family: var(--sans); border-style: solid; }
   .region-card:hover { border-color: var(--ink); color: var(--ink); }
   .region-card.sel { border-color: var(--brick); background: var(--brick-pale); color: var(--brick-text); font-weight: 500; }
-  .region-card .em { font-size: 16px; }
+  .region-card .region-code { flex-shrink: 0; }
 
   /* ── STEPPER ── */
   .stepper-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
@@ -315,18 +315,18 @@
         <div class="field" id="f-region">
           <label>Region <span class="req">*</span></label>
           <div class="region-grid" id="regionGrid">
-            <div class="region-card" onclick="pickRegion(this,'lake-district')" data-region="lake-district"><span class="em">🏔️</span> Lake District</div>
-            <div class="region-card" onclick="pickRegion(this,'cornwall')" data-region="cornwall"><span class="em">🌊</span> Cornwall</div>
-            <div class="region-card" onclick="pickRegion(this,'highlands')" data-region="highlands"><span class="em">🏴󠁧󠁢󠁳󠁣󠁴󠁿</span> Scottish Highlands</div>
-            <div class="region-card" onclick="pickRegion(this,'norfolk')" data-region="norfolk"><span class="em">🌾</span> Norfolk</div>
-            <div class="region-card" onclick="pickRegion(this,'yorkshire')" data-region="yorkshire"><span class="em">🐑</span> Yorkshire</div>
-            <div class="region-card" onclick="pickRegion(this,'cotswolds')" data-region="cotswolds"><span class="em">🌿</span> Cotswolds</div>
-            <div class="region-card" onclick="pickRegion(this,'snowdonia')" data-region="snowdonia"><span class="em">🏴󠁧󠁢󠁷󠁬󠁳󠁿</span> Snowdonia</div>
-            <div class="region-card" onclick="pickRegion(this,'skye')" data-region="skye"><span class="em">⛵</span> Isle of Skye</div>
-            <div class="region-card" onclick="pickRegion(this,'pembrokeshire')" data-region="pembrokeshire"><span class="em">🌊</span> Pembrokeshire</div>
-            <div class="region-card" onclick="pickRegion(this,'causeway')" data-region="causeway"><span class="em">🇬🇧</span> Causeway Coast</div>
-            <div class="region-card" onclick="pickRegion(this,'devon')" data-region="devon"><span class="em">🌻</span> Devon</div>
-            <div class="region-card" onclick="pickRegion(this,'other')" data-region="other"><span class="em">📍</span> Somewhere else</div>
+            <div class="region-card" onclick="pickRegion(this,'lake-district')" data-region="lake-district"><span class="region-code">LD</span> Lake District</div>
+            <div class="region-card" onclick="pickRegion(this,'cornwall')" data-region="cornwall"><span class="region-code">COR</span> Cornwall</div>
+            <div class="region-card" onclick="pickRegion(this,'highlands')" data-region="highlands"><span class="region-code">HI</span> Scottish Highlands</div>
+            <div class="region-card" onclick="pickRegion(this,'norfolk')" data-region="norfolk"><span class="region-code">NF</span> Norfolk</div>
+            <div class="region-card" onclick="pickRegion(this,'yorkshire')" data-region="yorkshire"><span class="region-code">YK</span> Yorkshire</div>
+            <div class="region-card" onclick="pickRegion(this,'cotswolds')" data-region="cotswolds"><span class="region-code">CT</span> Cotswolds</div>
+            <div class="region-card" onclick="pickRegion(this,'snowdonia')" data-region="snowdonia"><span class="region-code">SN</span> Snowdonia</div>
+            <div class="region-card" onclick="pickRegion(this,'skye')" data-region="skye"><span class="region-code">SK</span> Isle of Skye</div>
+            <div class="region-card" onclick="pickRegion(this,'pembrokeshire')" data-region="pembrokeshire"><span class="region-code">PEM</span> Pembrokeshire</div>
+            <div class="region-card" onclick="pickRegion(this,'causeway')" data-region="causeway"><span class="region-code">CC</span> Causeway Coast</div>
+            <div class="region-card" onclick="pickRegion(this,'devon')" data-region="devon"><span class="region-code">DV</span> Devon</div>
+            <div class="region-card" onclick="pickRegion(this,'other')" data-region="other"><span class="region-code">UK</span> Somewhere else</div>
           </div>
           <span class="err-msg" id="regionErr" style="font-size:12px;color:#C0392B;display:none">Please select your region</span>
         </div>

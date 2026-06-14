@@ -43,6 +43,22 @@
   --r-lg: 14px;
   --r-xl: 20px;
   --r-pill: 999px;
+
+  /* Spacing scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-section: 96px;
+
+  /* Type scale */
+  --type-h1: 52px;
+  --type-h2: 36px;
+  --type-display: 76px;
 }
 
 html, body {
@@ -405,6 +421,17 @@ h1, h2, h3, h4, h5 { font-weight: 400; }
   transition: opacity .16s, transform .16s;
 }
 .casa-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+.casa-preview-banner {
+  background: var(--ink);
+  color: rgba(255, 255, 255, 0.82);
+  padding: 10px 32px;
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.casa-preview-banner strong { color: var(--paper); font-weight: 500; }
 
 @media (max-width: 760px) {
   .casa-nav {
