@@ -15,34 +15,20 @@
     padding: 72px 0 80px;
     border-bottom: 1px solid var(--rule);
     text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  .hiw-hero::before {
-    content: '';
-    position: absolute; left: 50%; top: 0;
-    transform: translateX(-50%);
-    width: 700px; height: 700px; border-radius: 50%;
-    background: radial-gradient(circle at center, rgba(176,85,51,0.07), transparent 65%);
-    pointer-events: none;
   }
   .hiw-hero .eyebrow {
-    display: inline-flex; align-items: center; gap: 10px;
-    font-family: var(--mono); font-size: 11px; letter-spacing: 0.18em;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
     text-transform: uppercase; color: var(--ink-3); margin-bottom: 24px;
   }
-  .hiw-hero .eyebrow .live-dot { background: var(--brick); }
   .hiw-hero h1 {
-    font-family: var(--serif); font-size: 96px; line-height: 0.92;
-    letter-spacing: -0.035em; color: var(--ink); margin-bottom: 28px;
-    position: relative;
+    font-family: var(--serif); font-size: 72px; line-height: 0.95;
+    letter-spacing: -0.03em; color: var(--ink); margin-bottom: 28px;
   }
   .hiw-hero h1 i { font-style: italic; color: var(--brick); }
   .hiw-hero .lede {
-    font-family: var(--serif); font-size: 22px; line-height: 1.5;
+    font-family: var(--serif); font-size: 20px; line-height: 1.5;
     color: var(--ink-2); max-width: 560px; margin: 0 auto 40px;
   }
-  .hiw-hero .lede i { font-style: italic; color: var(--brick); }
 
   .hero-pills { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
   .hero-pill {
@@ -339,10 +325,10 @@
 <section class="hiw-hero">
   <div class="wrap">
     <div class="rise">
-      <div class="eyebrow"><span class="live-dot"></span> How Casa works</div>
-      <h1>Simple.<br><i>Direct.</i> Free.</h1>
+      <div class="eyebrow">How Casa works</div>
+      <h1>Simple, direct<br>&amp; <i>fee-free</i>.</h1>
     </div>
-    <p class="lede rise-2">Casa connects guests directly with hosts across the UK. No middlemen, no hidden fees — just a <i>real conversation</i> between real people.</p>
+    <p class="lede rise-2">Casa connects guests directly with hosts across the UK. No middlemen, no hidden fees — just real conversations between real people.</p>
     <div class="hero-pills rise-3">
       <a href="#guests" class="hero-pill">
         <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>

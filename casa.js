@@ -41,7 +41,7 @@ function casaToggleSaved(id, btn) {
   localStorage.setItem(CASA_SAVED_KEY, JSON.stringify(ids));
   const saved = ids.includes(num);
   if (btn) btn.classList.toggle('saved', saved);
-  casaToast(saved ? 'Saved to your list ♥' : 'Removed from saved');
+  casaToast(saved ? 'Saved to your list' : 'Removed from saved');
   return saved;
 }
 
@@ -321,7 +321,7 @@ window.casaRenderNotifPanel = casaRenderNotifPanel;
 function casaHandleAuthRedirectToasts() {
   const qp = new URLSearchParams(location.search);
   if (qp.get('welcome')) {
-    setTimeout(() => casaToast('Welcome to Casa — you\'re all set 🏡'), 400);
+    setTimeout(() => casaToast('Welcome to Casa — you\'re all set'), 400);
   } else if (qp.get('signedin')) {
     setTimeout(() => casaToast('Signed in — welcome back'), 400);
   }

@@ -368,11 +368,7 @@ h1, h2, h3, h4, h5 { font-weight: 400; }
 .sec-head .see:hover { color: var(--brick); }
 
 /* Pulse for live elements */
-@keyframes pulse-soft {
-  0%,100% { opacity: 0.55; }
-  50% { opacity: 1; }
-}
-.live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--moss); animation: pulse-soft 2s ease-in-out infinite; }
+.live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--moss); flex-shrink: 0; }
 
 /* scrollbars (subtle) */
 ::-webkit-scrollbar { width: 10px; height: 10px; }

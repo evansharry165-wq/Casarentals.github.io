@@ -1,49 +1,43 @@
-/** Homepage photography — hero strip & destination cards */
-function casaInitHomePhotos() {
-  const strip = document.querySelector('.hero-strip');
-  if (strip && typeof CASA_HERO_STRIP !== 'undefined') {
-    const scenes = strip.querySelectorAll('.prop-scene');
-    CASA_HERO_STRIP.forEach((item, i) => {
-      const el = scenes[i];
-      if (!el) return;
-      let url;
-      if (typeof getCasaProperty === 'function') {
-        const prop = getCasaProperty(item.id);
-        url = prop ? casaGetPropertyPhoto(prop, 720) : casaGetRegionPhoto('lake-district', 720);
-      } else {
-        url = casaGetRegionPhoto('lake-district', 720);
-      }
-      el.innerHTML = '';
-      el.className = 'ph prop-scene hero-photo';
-      const img = document.createElement('img');
-      img.className = 'casa-photo-img';
-      img.src = url;
-      img.alt = `${item.label}, ${item.sub}`;
-      img.loading = i === 0 ? 'eager' : 'lazy';
-      el.appendChild(img);
-      const cap = document.createElement('div');
-      cap.style.cssText = 'position:absolute;left:0;right:0;bottom:0;padding:14px 12px 12px;background:linear-gradient(to top,rgba(22,20,15,.78),transparent);color:#fff;z-index:2';
-      cap.innerHTML = `<div style="font-family:var(--mono);font-size:8px;letter-spacing:.14em;text-transform:uppercase;opacity:.9">${item.label.toUpperCase()}</div><div style="font-family:var(--mono);font-size:7px;letter-spacing:.12em;opacity:.65;margin-top:4px">${item.sub.toUpperCase()}</div>`;
-      el.appendChild(cap);
-    });
-  }
+/** Homepage — region counts & property card photos */
 
-  document.querySelectorAll('.dest-card[href*="region="]').forEach(card => {
-    const region = new URL(card.href, location.href).searchParams.get('region');
-    if (!region || typeof casaGetRegionPhoto !== 'function') return;
-    const url = casaGetRegionPhoto(region, 1000);
-    card.querySelectorAll('svg').forEach(s => { s.style.display = 'none'; });
-    if (!card.querySelector('.dest-bg-img')) {
-      const img = document.createElement('img');
-      img.className = 'dest-bg-img casa-photo-img';
-      img.src = url;
-      img.alt = region.replace(/-/g, ' ');
-      img.loading = 'lazy';
-      card.insertBefore(img, card.firstChild);
-    } else {
-      card.querySelector('.dest-bg-img').src = url;
+function casaCountByRegion() {
+  if (typeof CASA_PROPERTIES === 'undefined') return {};
+  return CASA_PROPERTIES.reduce((acc, p) => {
+    acc[p.region] = (acc[p.region] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+function casaMinPriceByRegion(region) {
+  if (typeof CASA_PROPERTIES === 'undefined') return null;
+  const prices = CASA_PROPERTIES.filter(p => p.region === region).map(p => p.price);
+  return prices.length ? Math.min(...prices) : null;
+}
+
+function casaUpdateHomeListingCounts() {
+  const counts = casaCountByRegion();
+  const total = typeof CASA_PROPERTIES !== 'undefined' ? CASA_PROPERTIES.length : 0;
+
+  document.querySelectorAll('.dest-card .sub[data-region]').forEach(el => {
+    const region = el.dataset.region;
+    const n = counts[region] || 0;
+    const min = casaMinPriceByRegion(region);
+    if (n && min) {
+      el.textContent = `${n} preview ${n === 1 ? 'stay' : 'stays'} · from £${min}/night`;
+    } else if (n) {
+      el.textContent = `${n} preview ${n === 1 ? 'stay' : 'stays'}`;
     }
   });
+
+  const browseLink = document.getElementById('browse-all-link');
+  if (browseLink && total) {
+    for (const node of browseLink.childNodes) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        node.textContent = `Browse ${total} preview listings `;
+        break;
+      }
+    }
+  }
 }
 
 function casaApplyCardPhotos(root) {
@@ -74,8 +68,6 @@ function casaApplyCardPhotos(root) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  if (document.querySelector('.hero-strip') || document.querySelector('.dest-card')) {
-    casaInitHomePhotos();
-  }
+  casaUpdateHomeListingCounts();
   casaApplyCardPhotos();
 });

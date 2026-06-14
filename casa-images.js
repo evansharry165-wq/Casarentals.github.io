@@ -85,7 +85,7 @@ const CASA_PROPERTY_PHOTO_OVERRIDES = {
   12: U.kynance,                 // St Agnes Farmhouse
   13: U.houseboat,               // The Boathouse, Fowey
   14: W.shepherdHut,             // Mizen Shepherd Hut
-  15: W.blackhouse,              // Restored Blackhouse, Skye
+  15: W.skyeQuiraing,            // Restored Blackhouse, Skye (Trotternish)
   16: U.glencoeValley,           // Glen Coe Bothy
   17: U.highlandPeaks,           // Loch Ness Lodge
   18: U.glencoeField,            // Croft House, Torridon
