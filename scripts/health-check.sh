@@ -19,7 +19,7 @@ else
 fi
 
 # 2. Required assets in _site
-for f in casa.css casa-components.css casa.js casa-region-meta.js casa-browse-map.js casa-availability.js casa-pages/home.css robots.txt sitemap.xml index.html browse.html map.html host.html; do
+for f in casa.css casa-components.css casa.js casa-region-meta.js casa-browse-map.js casa-availability.js casa-map-page.js casa-pages/home.css casa-pages/map.css robots.txt sitemap.xml index.html browse.html map.html host.html; do
   if [[ -f "_site/$f" ]]; then pass "Artifact contains $f"; else fail "Missing in _site: $f"; fi
 done
 
