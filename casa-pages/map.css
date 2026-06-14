@@ -180,6 +180,57 @@ html, body { height: 100vh; overflow: hidden; }
 .map-search-clear.visible { display: inline-flex; align-items: center; justify-content: center; }
 .map-search-clear:hover { color: var(--brick); }
 
+.map-search-scope {
+  display: none;
+  gap: 6px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.map-search-scope.visible { display: flex; }
+
+.map-search-scope button {
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  font-size: 11.5px;
+  color: var(--ink-2);
+  cursor: pointer;
+  font-family: var(--sans);
+  transition: all .12s;
+}
+
+.map-search-scope button:hover { border-color: var(--ink); color: var(--ink); }
+
+.map-search-scope button.active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+  font-weight: 500;
+}
+
+.tree-search-empty {
+  padding: 14px 16px;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  line-height: 1.5;
+}
+
+.map-search-uk-btn {
+  margin-top: 12px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  font-size: 12.5px;
+  font-family: var(--sans);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.map-search-uk-btn:hover { border-color: var(--brick); color: var(--brick); }
+
 .subarea-chips {
   display: flex;
   flex-wrap: wrap;
