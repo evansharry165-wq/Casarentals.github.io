@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://casa.co.uk/sitemap.xml
+Sitemap: https://evansharry165-wq.github.io/Casarentals.github.io/sitemap.xml
