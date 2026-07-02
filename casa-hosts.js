@@ -7,7 +7,10 @@ const CASA_HOSTS = {
     avatar: 'S',
     avatarClass: '',
     role: 'host',
-    verified: true,
+    emailVerified: true,
+    phoneVerified: true,
+    govIdVerified: true,
+    backgroundCheck: true,
     superhost: true,
     location: 'Windermere, Lake District',
     joined: 'March 2023',
@@ -27,7 +30,10 @@ const CASA_HOSTS = {
     avatar: 'P',
     avatarClass: 'ink',
     role: 'host',
-    verified: true,
+    emailVerified: true,
+    phoneVerified: true,
+    govIdVerified: true,
+    backgroundCheck: false,
     superhost: false,
     location: 'Bushmills, Causeway Coast',
     joined: 'June 2024',
@@ -47,7 +53,10 @@ const CASA_HOSTS = {
     avatar: 'E',
     avatarClass: 'guest',
     role: 'host',
-    verified: true,
+    emailVerified: true,
+    phoneVerified: true,
+    govIdVerified: true,
+    backgroundCheck: true,
     superhost: true,
     location: 'Mousehole, Cornwall',
     joined: 'January 2022',
@@ -67,7 +76,10 @@ const CASA_HOSTS = {
     avatar: 'J',
     avatarClass: 'guest',
     role: 'guest',
-    verified: true,
+    emailVerified: true,
+    phoneVerified: true,
+    govIdVerified: true,
+    backgroundCheck: false,
     superhost: false,
     location: 'London',
     joined: 'September 2025',
@@ -87,7 +99,10 @@ const CASA_HOSTS = {
     avatar: 'H',
     avatarClass: '',
     role: 'host',
-    verified: true,
+    emailVerified: true,
+    phoneVerified: true,
+    govIdVerified: true,
+    backgroundCheck: true,
     superhost: true,
     location: 'Glencoe, Highlands',
     joined: 'November 2021',
@@ -107,7 +122,10 @@ const CASA_HOSTS = {
     avatar: 'D',
     avatarClass: 'ink',
     role: 'host',
-    verified: true,
+    emailVerified: true,
+    phoneVerified: true,
+    govIdVerified: false,
+    backgroundCheck: false,
     superhost: false,
     location: 'Bourton-on-the-Water, Cotswolds',
     joined: 'April 2024',
@@ -121,6 +139,18 @@ const CASA_HOSTS = {
     listings: 2,
   },
 };
+
+/**
+ * "Verified Host" badge criteria (see VERIFICATION-POLICY.md):
+ *   verified      = email + phone + government ID confirmed
+ *   verified-plus = verified, plus a passed background check (optional, host-initiated)
+ * Returns null if the host hasn't completed the core three checks yet.
+ */
+function casaHostVerifiedTier(host) {
+  if (!host) return null;
+  if (!(host.emailVerified && host.phoneVerified && host.govIdVerified)) return null;
+  return host.backgroundCheck ? 'verified-plus' : 'verified';
+}
 
 const CASA_HOST_BY_PROPERTY = {
   1: 'sarah-r', 7: 'sarah-r',

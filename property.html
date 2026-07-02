@@ -639,7 +639,10 @@ function applyListingToPage(p) {
     document.getElementById('hostMeta').textContent = `${host.joined ? 'Host since ' + host.joined.split(' ')[1] : 'Host'} · ${host.languages.join(', ')} · Replies ${host.responseTime || 'promptly'} · ${host.rating} ★`;
     document.getElementById('hostMsgBtn').innerHTML = `<svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg> Message ${host.name.split('.')[0]}`;
     document.querySelector('.book-msg').innerHTML = `<svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg> Message ${host.name.split('.')[0]} first`;
-    document.getElementById('hostVerifiedBadge').style.display = host.verified ? '' : 'none';
+    const hostTier = typeof casaHostVerifiedTier === 'function' ? casaHostVerifiedTier(host) : (host.verified ? 'verified' : null);
+    const verifiedBadgeEl = document.getElementById('hostVerifiedBadge');
+    verifiedBadgeEl.style.display = hostTier ? '' : 'none';
+    if (hostTier === 'verified-plus') verifiedBadgeEl.lastChild.textContent = ' Verified+';
   }
   if (listing.instantBook) {
     document.getElementById('instantBookTrust').style.display = '';

@@ -102,7 +102,9 @@ if (casaIsFollowing(hostId)) {
 }
 
 const badges = [];
-if (host.verified) badges.push('<span class="badge moss">✓ Verified host</span>');
+const verifiedTier = casaHostVerifiedTier(host);
+if (verifiedTier === 'verified-plus') badges.push('<span class="badge moss">✓ Verified+ host</span>');
+else if (verifiedTier === 'verified') badges.push('<span class="badge moss">✓ Verified host</span>');
 if (host.superhost) badges.push('<span class="badge">★ Superhost</span>');
 document.getElementById('hpMeta').innerHTML = `
   ${badges.join(' ')}
