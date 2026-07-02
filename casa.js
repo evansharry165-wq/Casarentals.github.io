@@ -237,6 +237,20 @@ function casaInitNav() {
 
   casaSeedNotificationsIfEmpty();
 
+  // .nav-right collapses to display:none on mobile until the menu is opened.
+  // The toggle and notification bell need to stay visible regardless, so they
+  // live in .nav-end, a persistent sibling wrapper around .nav-right rather
+  // than inside it.
+  let navRight = nav.querySelector('.nav-right');
+  let navEnd = nav.querySelector('.nav-end');
+  if (!navEnd && navRight) {
+    navEnd = document.createElement('div');
+    navEnd.className = 'nav-end';
+    nav.insertBefore(navEnd, navRight);
+    navEnd.appendChild(navRight);
+  }
+  const endContainer = navEnd || nav;
+
   if (!document.getElementById('casaMobileToggle')) {
     const toggle = document.createElement('button');
     toggle.id = 'casaMobileToggle';
@@ -247,12 +261,11 @@ function casaInitNav() {
       nav.classList.toggle('mobile-open');
       document.body.classList.toggle('casa-nav-open');
     });
-    nav.insertBefore(toggle, nav.querySelector('.nav-right') || null);
+    endContainer.insertBefore(toggle, navRight || null);
   }
 
   if (!document.getElementById('casaNotifWrap')) {
-    const right = nav.querySelector('.nav-right');
-    if (right) {
+    if (navRight) {
       const wrap = document.createElement('div');
       wrap.id = 'casaNotifWrap';
       wrap.className = 'casa-notif-wrap';
@@ -262,8 +275,7 @@ function casaInitNav() {
           <span class="casa-notif-badge" id="casaNotifBadge">0</span>
         </button>
         <div class="casa-notif-panel" id="casaNotifPanel"></div>`;
-      const divider = right.querySelector('.nav-divider');
-      right.insertBefore(wrap, divider || right.firstChild);
+      endContainer.insertBefore(wrap, document.getElementById('casaMobileToggle') || navRight);
 
       document.getElementById('casaNotifBtn')?.addEventListener('click', (e) => {
         e.stopPropagation();

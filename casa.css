@@ -134,6 +134,7 @@ html, body {
 .nav-center .nc-btn:hover { background: var(--brick-2); }
 
 .nav-right { display: flex; align-items: center; gap: 6px; }
+.nav-end { display: flex; align-items: center; gap: 6px; }
 .nav-link {
   font-size: 13.5px; color: var(--ink-2); text-decoration: none;
   padding: 8px 12px; border-radius: var(--r-md); transition: background .12s;
@@ -644,6 +645,14 @@ body.casa-nav-open { overflow: hidden; }
 
 @media (max-width: 960px) {
   .casa-mobile-toggle { display: inline-flex; }
+  /* backdrop-filter establishes a containing block for fixed descendants
+     (.nav-right's drawer, .casa-notif-panel), breaking their viewport anchoring */
+  .casa-nav { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .casa-notif-panel {
+    position: fixed;
+    top: 60px; right: 12px; left: 12px;
+    width: auto;
+  }
   .casa-nav .nav-right {
     display: none;
     position: fixed;
@@ -664,7 +673,6 @@ body.casa-nav-open { overflow: hidden; }
     border-radius: 10px;
   }
   .casa-nav .nav-right .nav-divider { display: none; }
-  .casa-notif-wrap { margin-left: auto; margin-right: 8px; }
   .similar-row { grid-template-columns: repeat(2, 1fr); }
 }
 
