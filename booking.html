@@ -360,7 +360,7 @@
                 <svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg>
               </button>
               <span class="gs-val" id="guestCount">2</span>
-              <button class="gs-btn" onclick="changeGuests(1)">
+              <button class="gs-btn" onclick="changeGuests(1)" id="gPlus">
                 <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
               </button>
             </div>
@@ -597,7 +597,7 @@ if (crumbLink) {
 
 if (qp.get('checkin'))  document.getElementById('checkin').value  = qp.get('checkin');
 if (qp.get('checkout')) document.getElementById('checkout').value = qp.get('checkout');
-if (qp.get('guests'))   setGuests(parseInt(qp.get('guests')) || 2);
+// Guest count from the URL is applied below once guestCount/setGuests are declared (see setGuests(guestCount) call).
 
 // Host first name
 document.getElementById('hostFirstName').textContent = PROPERTY.host;
@@ -614,6 +614,7 @@ function setGuests(n) {
   document.getElementById('guestCount').textContent = guestCount;
   document.getElementById('guestLabel').textContent = guestCount + ' guest' + (guestCount > 1 ? 's' : '');
   document.getElementById('gMinus').disabled = guestCount <= 1;
+  document.getElementById('gPlus').disabled = guestCount >= PROPERTY.maxGuests;
   updatePricing();
 }
 
