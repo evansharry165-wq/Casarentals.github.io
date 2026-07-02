@@ -49,7 +49,7 @@
 
   /* Calendar / bookings strip */
   .cal-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-  .cs-day { padding: 12px 8px; border: 1px solid var(--rule); border-radius: 10px; min-height: 100px; display: flex; flex-direction: column; gap: 6px; position: relative; background: var(--paper); }
+  .cs-day { padding: 12px 8px; border: 1px solid var(--rule); border-radius: 10px; min-height: 100px; min-width: 0; display: flex; flex-direction: column; gap: 6px; position: relative; background: var(--paper); overflow-wrap: anywhere; }
   .cs-day.today { border-color: var(--brick); }
   .cs-day .d { font-family: var(--mono); font-size: 11px; color: var(--ink-3); letter-spacing: 0.06em; }
   .cs-day .d.today { color: var(--brick); font-weight: 500; }
@@ -60,7 +60,8 @@
   .cs-day .ev.open { background: var(--moss-pale); color: var(--moss); font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; }
 
   /* Enquiries table */
-  .enq-table { width: 100%; border-collapse: collapse; }
+  .enq-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .enq-table { width: 100%; min-width: 560px; border-collapse: collapse; }
   .enq-table th { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); text-align: left; padding: 0 0 14px; border-bottom: 1px solid var(--rule); font-weight: 400; }
   .enq-table td { padding: 16px 0; border-bottom: 1px solid var(--rule-2); font-size: 14px; vertical-align: top; }
   .enq-table tr:last-child td { border-bottom: none; }
@@ -144,6 +145,14 @@
   @media (max-width: 560px) {
     .kpi-row { grid-template-columns: 1fr; }
     .cal-strip { grid-template-columns: repeat(3, 1fr); }
+    .dh-hero .top { flex-wrap: wrap; align-items: flex-start; }
+    .dh-hero .top h1 { font-size: 36px; }
+    .dh-hero .top .actions { flex-wrap: wrap; }
+    .prop-card-h { flex-wrap: wrap; }
+    .prop-card-h .pa { flex-direction: row; align-items: center; width: 100%; justify-content: space-between; }
+    .prop-card-h .stats { flex-wrap: wrap; row-gap: 4px; }
+    .prop-card-h .vis-bar { flex-wrap: wrap; }
+    .prop-card-h .vis-bar .bar { width: 60px; }
   }
   /* Override: Verified badge — warm slate, not green (avoids Airbnb similarity) */
   .badge.verified-badge { background: rgba(22,20,15,0.08); color: var(--ink); border: 1px solid rgba(22,20,15,0.12); }
@@ -290,6 +299,7 @@
           <h2><i>New</i> enquiries</h2>
           <a href="messages.html" class="more">Go to inbox <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
         </div>
+        <div class="enq-table-scroll">
         <table class="enq-table">
           <thead>
             <tr>
@@ -378,6 +388,7 @@
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
 
       <!-- Properties + chart -->
