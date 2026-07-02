@@ -22,3 +22,51 @@ const POSTS = [
   {id:20,county:'yorkshire',type:'avail',role:'host',av:'Y',avC:'',name:'Yvonne S.',ni:'Moorland Cottage',badge:'Host',when:'5 hrs ago',where:'Goathland, N. Yorkshire',likes:15,replyCount:4,body:`Two weeks free in August at the cottage — right on the edge of the moors, walking from the door. Wood burner, pets welcome. <strong style="font-family:var(--serif);font-style:italic;color:var(--brick);font-weight:400">£160/night</strong>. <span class="tag">#northyorkmoors</span>`,prop:{name:'Moorland Cottage',loc:'Goathland',rating:'4.8 · 28',sleeps:4,beds:2,price:160,col:'warm'}},
   {id:21,county:'all',type:'tip',role:'guest',av:'O',avC:'guest',name:'Oliver B.',badge:'Guest',when:'1 hr ago',where:'UK-wide',likes:201,replyCount:67,body:`Hot take: the best UK coastal walks are in north Devon, not Cornwall. Hartland Quay to Clovelly — nobody talks about it, completely empty, and the cliffs are genuinely terrifying. <span class="tag">#devon</span> <span class="tag">#coastpath</span>`},
 ];
+
+const REPLIES = {
+  1: [
+    {av:'L', avC:'guest', name:'Laura P.', role:'Guest', time:'1 hr ago', body:"Is there any chance of 19–26 July instead? Would love to bring the whole family.", likes:3},
+    {av:'S', avC:'', name:'Sarah R.', role:'Host · Stone Cottage', time:'45 min ago', body:"Hi Laura — yes, 19–26 is available too. Drop me a message and I'll send the details over directly 🏡", likes:7},
+    {av:'J', avC:'guest', name:'James M.', role:'Guest', time:'30 min ago', body:"Do you allow under 5s? We have a 2-year-old and wondering about the stairs.", likes:1},
+  ],
+  2: [
+    {av:'S', avC:'', name:'Sarah R.', role:'Host · Stone Cottage', time:'4 hrs ago', body:"Hi Laura! Stone Cottage could work — sleeps 6 so a bit under your 8, but we have a self-contained studio next door that I could open too. Happy to discuss. DM me 🙌", likes:11},
+    {av:'F', avC:'', name:'Fiona C.', role:'Host · Keswick Cottage', time:'3 hrs ago', body:"Keswick cottage sleeps 8 exactly — August bank holiday is free, dogs welcome, parking for 3 cars, pub is literally 200m. DM me and I'll send the full details.", likes:18},
+    {av:'T', avC:'ink', name:'Tom & Anna', role:"Host · Shepherd's Hut", time:'2 hrs ago', body:"We only sleep 2 so not quite right for your group, but follow us — sometimes we have a weekend where two nearby places are free at the same time 👋", likes:5},
+    {av:'H', avC:'guest', name:'Hannah F.', role:'Guest', time:'1 hr ago', body:"Laura — we stayed at Fiona's Keswick cottage last August bank holiday. 10/10 would recommend.", likes:14},
+  ],
+  3: [
+    {av:'H', avC:'', name:'Hannah R.', role:'Host · The Granary', time:'23 hrs ago', body:"Thank you so much Marcus — really made our morning reading this 😊 You're welcome back any time.", likes:21},
+    {av:'O', avC:'guest', name:'Olivia K.', role:'Guest', time:'20 hrs ago', body:"This is exactly what made us join Casa. Real reviews from real people, not a star rating from an algorithm.", likes:9},
+  ],
+  5: [
+    {av:'R', avC:'guest', name:'Rob T.', role:'Guest', time:'2 days ago', body:"Done this walk twice — agree completely. The views from the summit at 7am are completely otherworldly.", likes:12},
+    {av:'S', avC:'', name:'Sarah R.', role:'Host · Stone Cottage', time:'2 days ago', body:"We always tell our guests about this walk. Takes about 3.5 hours at a comfortable pace — bring waterproofs even in July up on the top.", likes:8},
+    {av:'M', avC:'guest', name:'Marcus J.', role:'Guest', time:'1 day ago', body:"Did this last week based on this post. Thank you!! The sunrise from the ridge was genuinely one of the best things we've ever done.", likes:19},
+  ],
+  12: [
+    {av:'N', avC:'guest', name:'Neil F.', role:'Guest', time:'3 hrs ago', body:"This photo is extraordinary. Where exactly was this taken from? The angle on The Storr is unlike anything I've seen.", likes:14},
+    {av:'F', avC:'ink', name:'Fiona M.', role:"Host · Blackhouse", time:'2 hrs ago', body:"About 400m north of the main viewpoint — there's an unmarked path on the left side going up. The crowds don't usually make it that far.", likes:23},
+  ],
+  14: [
+    {av:'C', avC:'', name:'Callum D.', role:'Host · Glen Coe Bothy', time:'22 hrs ago', body:"Neil — we have guests who wild camp on this route and come back to the bothy for the second night. If you fancy that combo, the bothy is 2 miles from the southern end of the Lairig.", likes:11},
+    {av:'A', avC:'guest', name:'Alice M.', role:'Guest', time:'20 hrs ago', body:"Doing this in September. Any advice on the wild camping spots? Looking for something with a bit of shelter.", likes:6},
+    {av:'N', avC:'guest', name:'Neil F.', role:'Guest', time:'18 hrs ago', body:"Alice — there's a bealach about 12 miles in that has a natural windbreak on the east side. Perfect for a tarp. Avoid the exposed sections near Pools of Dee.", likes:17},
+  ],
+};
+
+/* ─── Locally-added replies (e.g. from the host dashboard) merge in here ─── */
+function casaGetLocalReplies() {
+  try { return JSON.parse(localStorage.getItem('casa:local-replies') || '{}'); } catch { return {}; }
+}
+function casaGetRepliesForPost(postId) {
+  const base = REPLIES[postId] || [];
+  const local = casaGetLocalReplies()[postId] || [];
+  return [...base, ...local];
+}
+function casaAddLocalReply(postId, reply) {
+  const store = casaGetLocalReplies();
+  if (!store[postId]) store[postId] = [];
+  store[postId].push(reply);
+  localStorage.setItem('casa:local-replies', JSON.stringify(store));
+}

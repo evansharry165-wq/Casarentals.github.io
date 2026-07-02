@@ -73,6 +73,17 @@
   .enq-table .price { font-family: var(--serif); font-size: 17px; color: var(--ink); }
   .enq-table .price i { font-style: italic; color: var(--brick); }
   .enq-table .actions-cell { display: flex; gap: 6px; }
+
+  /* Feed comments (Guest questions on your posts) */
+  .hct { padding: 16px 0; border-bottom: 1px solid var(--rule-2); }
+  .hct:last-child { border-bottom: none; }
+  .hct-post { font-size: 13px; color: var(--ink-3); margin-bottom: 10px; }
+  .hct-post strong { color: var(--ink); }
+  .hct-replies { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+  .hct-reply { font-size: 13.5px; background: var(--paper-2); border-radius: 10px; padding: 8px 12px; }
+  .hct-reply .who { font-weight: 500; margin-right: 6px; }
+  .hct-compose { display: flex; gap: 8px; align-items: flex-end; }
+  .hct-compose textarea { flex: 1; min-height: 40px; max-height: 100px; padding: 8px 12px; border: 1px solid var(--rule); border-radius: 10px; font-family: var(--sans); font-size: 13.5px; resize: vertical; background: var(--surface); }
   .status-pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; padding: 3px 9px; border-radius: 999px; font-weight: 500; }
   .status-pill.new { background: var(--brick-pale); color: var(--brick-text); }
   .status-pill.replied { background: var(--moss-pale); color: var(--moss); }
@@ -391,6 +402,15 @@
         </div>
       </div>
 
+      <!-- Feed comments needing a reply -->
+      <div class="block" id="feedCommentsBlock" style="display:none">
+        <div class="b-head">
+          <h2><i>Guest</i> questions on your posts</h2>
+          <a href="feed.html" class="more">Open feed <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+        </div>
+        <div id="hostFeedComments"></div>
+      </div>
+
       <!-- Properties + chart -->
       <div class="block">
         <div class="b-head">
@@ -570,6 +590,49 @@
   </div>
 </div>
 
+<script src="casa-feed-posts.js"></script>
 <script src="casa.js"></script>
+<script>
+// ═══════════════════════════════════════════
+// Guest questions on this host's own feed posts,
+// with a real reply box (Phase 04: reply from the
+// dashboard, not only from feed.html).
+// ═══════════════════════════════════════════
+const HOST_NAME = 'Sarah R.';
+
+function renderHostFeedComments() {
+  if (typeof POSTS === 'undefined' || typeof casaGetRepliesForPost !== 'function') return;
+  const myPosts = POSTS.filter(p => p.role === 'host' && p.name === HOST_NAME);
+  const withReplies = myPosts
+    .map(p => ({ post: p, replies: casaGetRepliesForPost(p.id) }))
+    .filter(x => x.replies.length);
+  const block = document.getElementById('feedCommentsBlock');
+  if (!withReplies.length) { block.style.display = 'none'; return; }
+  block.style.display = '';
+  document.getElementById('hostFeedComments').innerHTML = withReplies.map(({ post, replies }) => `
+    <div class="hct">
+      <div class="hct-post">On <strong>${post.ni || post.name}</strong>'s post: <span>${(post.body || '').replace(/<[^>]+>/g, '').slice(0, 90)}${(post.body || '').length > 90 ? '…' : ''}</span></div>
+      <div class="hct-replies">
+        ${replies.map(r => `<div class="hct-reply"><span class="who">${r.name}</span> ${r.body}</div>`).join('')}
+      </div>
+      <div class="hct-compose">
+        <textarea placeholder="Reply as ${HOST_NAME}…" id="hct-ta-${post.id}"></textarea>
+        <button class="btn btn-primary btn-sm" onclick="hostSendReply(${post.id})">Reply</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function hostSendReply(postId) {
+  const ta = document.getElementById('hct-ta-' + postId);
+  const text = ta.value.trim();
+  if (!text) { ta.focus(); return; }
+  casaAddLocalReply(postId, { av: 'S', avC: '', name: HOST_NAME, role: 'Host', time: 'Just now', body: text, likes: 0 });
+  casaToast('Reply posted to the feed');
+  renderHostFeedComments();
+}
+
+renderHostFeedComments();
+</script>
 </body>
 </html>
