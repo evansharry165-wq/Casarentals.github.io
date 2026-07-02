@@ -166,7 +166,8 @@
   .fees-head p strong { color: var(--paper); font-weight: 500; }
 
   /* Comparison table */
-  .comp-table { width: 100%; border-collapse: collapse; }
+  .comp-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .comp-table { width: 100%; min-width: 480px; border-collapse: collapse; }
   .comp-table th, .comp-table td { padding: 14px 18px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 13.5px; }
   .comp-table th { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.45); padding-bottom: 10px; }
   .comp-table th.casa-col { color: var(--brick-2); }
@@ -295,9 +296,13 @@
   @media (max-width: 640px) {
     .hiw-hero h1 { font-size: 48px; }
     .step-row { grid-template-columns: 1fr; gap: 24px; }
+    .step-row .step-detail { grid-column: 1; }
     .step-num { font-size: 56px; }
     .wrap, .narrow { padding: 0 20px; }
     .fees-head h2, .comm-content h2 { font-size: 48px; }
     .cta-side h2 { font-size: 40px; }
     .faq-head h2 { font-size: 40px; }
+    .mini-search { flex-wrap: wrap; }
+    .ms-seg { flex: 1 1 40%; border-right: none; border-bottom: 1px solid var(--rule); }
+    .ms-go { width: 100%; justify-content: center; }
   }
