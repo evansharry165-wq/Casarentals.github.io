@@ -187,6 +187,15 @@
     .am-grid, .rev-list { grid-template-columns: 1fr; }
     .gallery { grid-template-columns: 1fr; grid-template-rows: 200px; }
     .gallery .g1 { grid-row: span 1; }
+    .cal { grid-template-columns: 1fr; gap: 24px; }
+    .rev-summary { grid-template-columns: 1fr; gap: 20px; }
+    .rev-summary .breakdown { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 640px) {
+    .facts { grid-template-columns: 1fr 1fr; gap: 6px; }
+    .book-form .row { grid-template-columns: 1fr; }
+    .similar-row { grid-template-columns: 1fr 1fr; }
   }
 </style>
 </head>

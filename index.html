@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>casa.co.uk — Stay closer to the host.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -207,6 +208,26 @@
     .diff-head { grid-template-columns: 1fr; }
     .community-grid { grid-template-columns: 1fr; }
     .host-cta-inner { grid-template-columns: 1fr; padding: 48px 32px; }
+    .dest-grid { grid-template-columns: repeat(6, 1fr); }
+    .dest-1, .dest-5 { grid-column: span 6; }
+    .dest-2, .dest-6 { grid-column: span 3; }
+    .dest-3, .dest-4 { grid-column: span 3; }
+  }
+
+  @media (max-width: 640px) {
+    .hero-inner { padding: 0 20px; }
+    .hero { padding: 32px 0 0; }
+    .hero-title { font-size: 48px; }
+    .hero-aside p { font-size: 18px; max-width: none; }
+    .hero-aside .stat-row { gap: 20px; flex-wrap: wrap; }
+    .search { grid-template-columns: 1fr; }
+    .search-go { grid-column: span 1; }
+    .dest-grid { grid-template-columns: 1fr; gap: 12px; }
+    .dest-1, .dest-2, .dest-3, .dest-4, .dest-5, .dest-6 { grid-column: span 1; aspect-ratio: 4/3; }
+    .diff-head h2 { font-size: 40px; }
+    .community-head h2 { font-size: 36px; }
+    .stats-grid-3 { grid-template-columns: 1fr !important; }
+    .feedmap-grid { grid-template-columns: 1fr !important; }
   }
   /* Override: Verified badge — warm slate, not green (avoids Airbnb similarity) */
   .badge.verified-badge { background: rgba(22,20,15,0.08); color: var(--ink); border: 1px solid rgba(22,20,15,0.12); }
@@ -371,7 +392,7 @@
     <p style="font-size:17px;color:var(--ink-2);max-width:560px;line-height:1.55;margin-bottom:48px">The big platforms take 15–22% from every booking. Casa takes nothing from guests and charges hosts a flat £19/month. One booking more than covers it.</p>
 
     <!-- Compact fee comparison — 3 stat cards -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:48px">
+    <div class="stats-grid-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:48px">
       <div style="background:var(--surface);border:1px solid var(--rule);border-radius:16px;padding:22px 24px">
         <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px">Guest booking fee</div>
         <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px">
@@ -398,7 +419,7 @@
     </div>
 
     <!-- Feed + Map panels -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="feedmap-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
 
       <!-- Feed panel -->
       <a href="feed.html" style="background:var(--ink);border-radius:20px;padding:32px 36px;text-decoration:none;display:block;position:relative;overflow:hidden;transition:transform .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">

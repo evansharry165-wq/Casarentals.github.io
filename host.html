@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Host dashboard — Casa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -138,6 +139,11 @@
     .dh-grid { grid-template-columns: 1fr; }
     .kpi-row { grid-template-columns: repeat(2, 1fr); }
     .cal-strip { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  @media (max-width: 560px) {
+    .kpi-row { grid-template-columns: 1fr; }
+    .cal-strip { grid-template-columns: repeat(3, 1fr); }
   }
   /* Override: Verified badge — warm slate, not green (avoids Airbnb similarity) */
   .badge.verified-badge { background: rgba(22,20,15,0.08); color: var(--ink); border: 1px solid rgba(22,20,15,0.12); }

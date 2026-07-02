@@ -44,6 +44,14 @@
   .coll.new-coll:hover { background: var(--surface); color: var(--ink); }
   .coll.new-coll svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.6; margin-right: 4px; }
 
+  @media (max-width: 1000px) {
+    .results { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 640px) {
+    .results { grid-template-columns: 1fr; }
+    .saved-head .meta { flex-wrap: wrap; }
+  }
+
   /* Layout */
   .saved-layout { padding: 32px 0 80px; }
   .results {
