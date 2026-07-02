@@ -492,6 +492,12 @@ function simulateReply(c) {
       const now = new Date();
       c.msgs.push({f:'them', t:reply, ts: now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')});
       c.preview = reply.length > 55 ? reply.slice(0,55)+'…' : reply;
+      casaAddNotification({
+        type: 'reply',
+        title: `New reply from ${c.name || 'your host'}`,
+        body: reply,
+        href: `messages.html?c=${c.id}`,
+      });
       if (active === c.id) { renderThread(); renderList(); }
     }, 1800);
   }, delay);
@@ -574,6 +580,8 @@ function toast(msg) {
 function esc(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ── INIT ──
+const qpConvo = new URLSearchParams(location.search).get('c');
+if (qpConvo && CONVOS.some(c => c.id === qpConvo)) switchConvo(qpConvo);
 renderList();
 renderThread();
 </script>

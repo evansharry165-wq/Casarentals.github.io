@@ -1030,6 +1030,12 @@ function submitReview() {
 
   const where = toProperty && toFeed ? 'the property page and the feed' : toProperty ? 'the property page' : 'the feed';
   casaToast(`Review posted to ${where} ✓`);
+  casaAddNotification({
+    type: 'review',
+    title: 'Review posted',
+    body: `Your ${reviewStarsPicked}★ review of ${reviewCtx.propertyName} is live.`,
+    href: `property.html?id=${reviewCtx.propertyId}`,
+  });
   closeReviewModal();
 }
 
