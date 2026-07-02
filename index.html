@@ -603,9 +603,16 @@ function goSearch() {
   document.querySelectorAll('.search .seg').forEach(s => s.classList.remove('active'));
   event.currentTarget.classList.add('active');
 }
+function goToBrowseSearch() {
+  const where = document.querySelector('.search .seg input[type="text"]')?.value.trim();
+  window.location.href = where ? `browse.html?where=${encodeURIComponent(where)}` : 'browse.html';
+}
 document.querySelector('.search-go').addEventListener('click', e => {
   e.stopPropagation();
-  window.location.href = 'browse.html';
+  goToBrowseSearch();
+});
+document.querySelector('.search .seg input[type="text"]')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); goToBrowseSearch(); }
 });
 </script>
 

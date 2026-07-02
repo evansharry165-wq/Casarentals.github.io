@@ -79,6 +79,9 @@
   .layout { display: grid; grid-template-columns: 1fr 460px; gap: 40px; padding: 32px 0 80px; }
   .results { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px 24px; }
   .region-divider { grid-column: span 2; }
+  .empty-results { grid-column: 1 / -1; text-align: center; padding: 64px 32px; border: 1px dashed var(--rule-3); border-radius: 18px; background: var(--surface); }
+  .empty-results h3 { font-family: var(--serif); font-size: 26px; margin-bottom: 8px; }
+  .empty-results p { color: var(--ink-3); font-size: 14px; }
 
   /* Property card */
   .pc {
@@ -238,12 +241,12 @@
   <div class="head-strip">
     <div class="top">
       <div>
-        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">Casa</a> / Browse / The Lake District</div>
-        <h1 style="margin-top:10px">Stays in the <i>Lake District</i></h1>
+        <div class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">Casa</a> / Browse / <span id="pageCrumb">All stays</span></div>
+        <h1 style="margin-top:10px" id="pageTitle">All <i>stays</i></h1>
       </div>
       <div class="h-meta">
-        <div><span class="n">214 stays</span> · 12 – 19 Jul · 2 guests</div>
-        <div style="margin-top:4px; color: var(--ink-4); font-family: var(--mono); font-size: 11px; letter-spacing:.1em; text-transform:uppercase;">From £85 · avg. £175 / night</div>
+        <div><span class="n" id="statCount">36 stays</span></div>
+        <div style="margin-top:4px; color: var(--ink-4); font-family: var(--mono); font-size: 11px; letter-spacing:.1em; text-transform:uppercase;" id="statPriceRange">From £85 · avg. £175 / night</div>
       </div>
     </div>
 
@@ -326,225 +329,7 @@
   <div class="layout">
 
     <!-- RESULTS -->
-    <div class="results">
-
-      <!-- Card 1 -->
-      <a class="pc rise" href="property.html">
-        <div class="pc-image">
-          <div class="ph warm" data-label="STONE COTTAGE · WINDERMERE · 1 / 12"></div>
-          <div class="badge-row">
-            <span class="badge verified-badge"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> Verified host</span>
-          </div>
-          <button class="save-heart" onclick="event.preventDefault();this.classList.toggle('saved');"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
-          <div class="img-nav"><span class="dt on"></span><span class="dt"></span><span class="dt"></span><span class="dt"></span><span class="dt"></span></div>
-        </div>
-        <div class="pc-body">
-          <div class="pc-row1">
-            <div class="pc-title">Stone Cottage, <i>Windermere</i></div>
-            <div class="pc-rating">
-              <svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
-              4.9 <span class="ct">(23)</span>
-            </div>
-          </div>
-          <div class="pc-loc"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg> Windermere, Lake District</div>
-          <div class="pc-meta">
-            <span><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg> Sleeps 6</span>
-            <span><svg viewBox="0 0 24 24"><path d="M3 17v-7h13a4 4 0 0 1 4 4v3"/><path d="M3 21v-4M21 21v-4"/></svg> 3 bed</span>
-            <span><svg viewBox="0 0 24 24"><path d="M12 22c-4 0-7-3-7-7 0-3 2-5 4-7 0 3 2 4 3 2 1-3-1-5 2-8 0 4 3 5 4 9 1 4-2 11-6 11z"/></svg> Wood burner</span>
-            <span><svg viewBox="0 0 24 24"><circle cx="6" cy="9" r="2"/><circle cx="18" cy="9" r="2"/></svg> Pets ok</span>
-          </div>
-          <div class="pc-price">
-            <div>
-              <span class="p-amt"><i>£175</i></span><span class="p-per"> / night</span>
-              <div class="p-fee">£0 booking fee · pay host direct</div>
-            </div>
-          </div>
-        </div>
-      </a>
-
-      <!-- Card 2 -->
-      <a class="pc rise-2" href="property.html">
-        <div class="pc-image">
-          <div class="ph sage" data-label="BARN CONVERSION · AMBLESIDE · 1 / 8"></div>
-          <div class="badge-row">
-            <span class="badge ink">New</span>
-          </div>
-          <button class="save-heart" onclick="event.preventDefault();this.classList.toggle('saved');"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
-          <div class="img-nav"><span class="dt on"></span><span class="dt"></span><span class="dt"></span></div>
-        </div>
-        <div class="pc-body">
-          <div class="pc-row1">
-            <div class="pc-title">Slate Barn, <i>Ambleside</i></div>
-            <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 4.8 <span class="ct">(11)</span></div>
-          </div>
-          <div class="pc-loc"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg> Ambleside, Lake District</div>
-          <div class="pc-meta">
-            <span>Sleeps 4</span>
-            <span>2 bed</span>
-            <span>Sauna</span>
-            <span>Hot tub</span>
-          </div>
-          <div class="pc-price">
-            <div>
-              <span class="p-amt"><i>£215</i></span><span class="p-per"> / night</span>
-              <div class="p-fee">£0 booking fee · pay host direct</div>
-            </div>
-          </div>
-        </div>
-      </a>
-
-      <!-- Card 3 -->
-      <a class="pc rise-2" href="property.html">
-        <div class="pc-image">
-          <div class="ph dusk" data-label="LAKESIDE CABIN · CONISTON · 1 / 14"></div>
-          <button class="save-heart saved" onclick="event.preventDefault();this.classList.toggle('saved');"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
-          <div class="img-nav"><span class="dt"></span><span class="dt on"></span><span class="dt"></span><span class="dt"></span></div>
-        </div>
-        <div class="pc-body">
-          <div class="pc-row1">
-            <div class="pc-title">Lakeside Cabin, <i>Coniston</i></div>
-            <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 5.0 <span class="ct">(34)</span></div>
-          </div>
-          <div class="pc-loc"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg> Coniston, Lake District</div>
-          <div class="pc-meta"><span>Sleeps 2</span><span>1 bed</span><span>On water</span><span>Romantic</span></div>
-          <div class="pc-price">
-            <div>
-              <span class="p-amt"><i>£145</i></span><span class="p-per"> / night</span>
-              <div class="p-fee">£0 booking fee · pay host direct</div>
-            </div>
-          </div>
-        </div>
-      </a>
-
-      <!-- Card 4 -->
-      <a class="pc rise-3" href="property.html">
-        <div class="pc-image">
-          <div class="ph fog" data-label="GEORGIAN TOWNHOUSE · KESWICK · 1 / 18"></div>
-          <div class="badge-row">
-            <span class="badge verified-badge"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> Verified</span>
-          </div>
-          <button class="save-heart" onclick="event.preventDefault();this.classList.toggle('saved');"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
-          <div class="img-nav"><span class="dt on"></span><span class="dt"></span><span class="dt"></span><span class="dt"></span><span class="dt"></span></div>
-        </div>
-        <div class="pc-body">
-          <div class="pc-row1">
-            <div class="pc-title">Georgian House, <i>Keswick</i></div>
-            <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 4.9 <span class="ct">(47)</span></div>
-          </div>
-          <div class="pc-loc"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg> Keswick, Lake District</div>
-          <div class="pc-meta"><span>Sleeps 8</span><span>4 bed</span><span>Garden</span><span>Parking</span></div>
-          <div class="pc-price">
-            <div>
-              <span class="p-amt"><i>£240</i></span><span class="p-per"> / night</span>
-              <div class="p-fee">£0 booking fee · pay host direct</div>
-            </div>
-          </div>
-        </div>
-      </a>
-
-      <!-- EDITORIAL DIVIDER — replaces ad-like featured banner -->
-      <div class="region-divider" style="display:flex;align-items:center;gap:16px;padding:8px 0">
-        <div style="flex:1;height:1px;background:var(--rule)"></div>
-        <span style="font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-4)">More stays in this region</span>
-        <div style="flex:1;height:1px;background:var(--rule)"></div>
-      </div>
-
-      <!-- Card 5 -->
-      <a class="pc rise" href="property.html">
-        <div class="pc-image">
-          <div class="ph cool" data-label="SHEPHERDS HUT · BUTTERMERE · 1 / 9"></div>
-          <button class="save-heart" onclick="event.preventDefault();this.classList.toggle('saved');"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
-          <div class="img-nav"><span class="dt on"></span><span class="dt"></span><span class="dt"></span></div>
-        </div>
-        <div class="pc-body">
-          <div class="pc-row1">
-            <div class="pc-title">Shepherd's Hut, <i>Buttermere</i></div>
-            <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 4.7 <span class="ct">(8)</span></div>
-          </div>
-          <div class="pc-loc"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg> Buttermere, Lake District</div>
-          <div class="pc-meta"><span>Sleeps 2</span><span>1 bed</span><span>Off grid</span><span>Compost wc</span></div>
-          <div class="pc-price">
-            <div>
-              <span class="p-amt"><i>£95</i></span><span class="p-per"> / night</span>
-              <div class="p-fee">£0 booking fee · pay host direct</div>
-            </div>
-          </div>
-        </div>
-      </a>
-
-      <!-- Card 6 -->
-      <a class="pc rise-2" href="property.html">
-        <div class="pc-image">
-          <div class="ph ink" data-label="MILLERS COTTAGE · GRASMERE · 1 / 11"></div>
-          <button class="save-heart" onclick="event.preventDefault();this.classList.toggle('saved');"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
-          <div class="img-nav"><span class="dt on"></span><span class="dt"></span><span class="dt"></span><span class="dt"></span></div>
-        </div>
-        <div class="pc-body">
-          <div class="pc-row1">
-            <div class="pc-title">Miller's Cottage, <i>Grasmere</i></div>
-            <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 4.8 <span class="ct">(19)</span></div>
-          </div>
-          <div class="pc-loc"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg> Grasmere, Lake District</div>
-          <div class="pc-meta"><span>Sleeps 4</span><span>2 bed</span><span>Riverside</span><span>Wood burner</span></div>
-          <div class="pc-price">
-            <div>
-              <span class="p-amt"><i>£165</i></span><span class="p-per"> / night</span>
-              <div class="p-fee">£0 booking fee · pay host direct</div>
-            </div>
-          </div>
-        </div>
-      </a>
-
-      <!-- Card 7 -->
-      <a class="pc rise-3" href="property.html">
-        <div class="pc-image">
-          <div class="ph brick" data-label="THE GRANARY · HAWKSHEAD · 1 / 22"></div>
-          <div class="badge-row">
-            <span class="badge">Editor's pick</span>
-          </div>
-          <button class="save-heart saved" onclick="event.preventDefault();this.classList.toggle('saved');"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
-          <div class="img-nav"><span class="dt on"></span><span class="dt"></span><span class="dt"></span><span class="dt"></span><span class="dt"></span></div>
-        </div>
-        <div class="pc-body">
-          <div class="pc-row1">
-            <div class="pc-title">The Granary, <i>Hawkshead</i></div>
-            <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 4.9 <span class="ct">(56)</span></div>
-          </div>
-          <div class="pc-loc"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg> Hawkshead, Lake District</div>
-          <div class="pc-meta"><span>Sleeps 5</span><span>3 bed</span><span>Pet friendly</span><span>Open fire</span></div>
-          <div class="pc-price">
-            <div>
-              <span class="p-amt"><i>£195</i></span><span class="p-per"> / night</span>
-              <div class="p-fee">£0 booking fee · pay host direct</div>
-            </div>
-          </div>
-        </div>
-      </a>
-
-      <!-- Card 8 -->
-      <a class="pc rise-3" href="property.html">
-        <div class="pc-image">
-          <div class="ph warm" data-label="HILLSIDE FARMHOUSE · GRIZEDALE · 1 / 16"></div>
-          <button class="save-heart" onclick="event.preventDefault();this.classList.toggle('saved');"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
-          <div class="img-nav"><span class="dt"></span><span class="dt on"></span><span class="dt"></span><span class="dt"></span></div>
-        </div>
-        <div class="pc-body">
-          <div class="pc-row1">
-            <div class="pc-title">Hillside Farmhouse, <i>Grizedale</i></div>
-            <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 4.6 <span class="ct">(14)</span></div>
-          </div>
-          <div class="pc-loc"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg> Grizedale Forest, Lake District</div>
-          <div class="pc-meta"><span>Sleeps 10</span><span>5 bed</span><span>Big garden</span><span>Hot tub</span></div>
-          <div class="pc-price">
-            <div>
-              <span class="p-amt"><i>£385</i></span><span class="p-per"> / night</span>
-              <div class="p-fee">£0 booking fee · pay host direct</div>
-            </div>
-          </div>
-        </div>
-      </a>
-
-    </div>
+    <div class="results" id="resultsGrid"></div>
 
     <!-- INLINE MINI-MAP SIDEBAR -->
     <aside class="side">
@@ -608,47 +393,159 @@
   </div>
 </footer>
 
+<script src="casa-properties.js"></script>
 <script src="casa.js"></script>
 <script>
-// ── Sleeps stepper ──
+// ═══════════════════════════════════════════
+// REAL SEARCH & FILTERING — reads CASA_PROPERTIES,
+// not decorative UI. See getSimilarProperties/searchCasaProperties
+// in casa-properties.js for the shared matching logic.
+// ═══════════════════════════════════════════
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+const TAG_META = {
+  woodburner: { label: 'Wood burner', icon: '<path d="M12 22c-4 0-7-3-7-7 0-3 2-5 4-7 0 3 2 4 3 2 1-3-1-5 2-8 0 4 3 5 4 9 1 4-2 11-6 11z"/>' },
+  pets:       { label: 'Pets ok',     icon: '<circle cx="6" cy="9" r="2"/><circle cx="18" cy="9" r="2"/>' },
+  seaview:    { label: 'Sea view',    icon: '<path d="M2 12c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2"/><path d="M2 17c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2"/>' },
+  offgrid:    { label: 'Off-grid',    icon: '<path d="M12 3 6 12h3v3h6v-3h3z"/><path d="M12 15v6"/>' },
+  hottub:     { label: 'Hot tub',     icon: '<path d="M4 12V8a4 4 0 0 1 8 0v4"/><path d="M2 16h20"/><path d="M4 18h16l-1 4H5z"/>' },
+  sauna:      { label: 'Sauna',       icon: '<path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-6h6v6"/>' },
+  garden:     { label: 'Garden',      icon: '<path d="M12 22c-4 0-7-3-7-7 0-3 2-5 4-7 0 3 2 4 3 2 1-3-1-5 2-8 0 4 3 5 4 9 1 4-2 11-6 11z"/>' },
+  romantic:   { label: 'Romantic',    icon: '<path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/>' },
+  parking:    { label: 'Parking',     icon: '<circle cx="12" cy="12" r="9"/><path d="M9 16V8h4a3 3 0 0 1 0 6H9"/>' },
+};
+function tagMeta(tag) {
+  return TAG_META[tag] || { label: tag.charAt(0).toUpperCase() + tag.slice(1), icon: '<circle cx="12" cy="12" r="3"/>' };
+}
+
+function badgeHtml(p) {
+  if (p.badge === 'verified') return `<span class="badge verified-badge"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> Verified host</span>`;
+  if (p.badge === 'new') return `<span class="badge ink">New</span>`;
+  if (p.badge === 'editors') return `<span class="badge">Editor's pick</span>`;
+  return '';
+}
+
+function cardHtml(p) {
+  const tags = (p.tags || []).slice(0, 2);
+  return `
+    <a class="pc rise" href="property.html?id=${p.id}">
+      <div class="pc-image">
+        <div class="ph" style="background:${p.col}" data-label="${esc(p.title.toUpperCase())} · ${esc(p.loc.toUpperCase())}"></div>
+        <div class="badge-row">${badgeHtml(p)}</div>
+        <button class="save-heart" onclick="event.preventDefault();this.classList.toggle('saved');"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
+      </div>
+      <div class="pc-body">
+        <div class="pc-row1">
+          <div class="pc-title">${esc(p.title)}, <i>${esc(p.loc)}</i></div>
+          <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> ${p.rating.toFixed(1)} <span class="ct">(${p.reviews})</span></div>
+        </div>
+        <div class="pc-loc"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg> ${esc(p.loc)}, ${esc(p.rLabel)}</div>
+        <div class="pc-meta">
+          <span><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg> Sleeps ${p.sleeps}</span>
+          <span><svg viewBox="0 0 24 24"><path d="M3 17v-7h13a4 4 0 0 1 4 4v3"/><path d="M3 21v-4M21 21v-4"/></svg> ${p.beds} bed</span>
+          ${tags.map(t => { const m = tagMeta(t); return `<span><svg viewBox="0 0 24 24">${m.icon}</svg> ${m.label}</span>`; }).join('')}
+        </div>
+        <div class="pc-price">
+          <div><span class="p-amt"><i>£${p.price}</i></span><span class="p-per"> / night</span><div class="p-fee">£0 booking fee · pay host direct</div></div>
+        </div>
+      </div>
+    </a>`;
+}
+
+function matchesCategory(p, type) {
+  if (type === 'all') return true;
+  if (type === 'cottage' || type === 'glamping') return p.type === type;
+  if (['seaview', 'woodburner', 'pets', 'offgrid', 'hottub'].includes(type)) return (p.tags || []).includes(type);
+  // 'lastminute' / 'longstay' have no reliable data signal yet (would need live
+  // availability-window or booking-length data) — pass through rather than fake a filter.
+  return true;
+}
+
+const qp = new URLSearchParams(location.search);
+const initialWhere = qp.get('where') || '';
+const initialRegion = qp.get('region') || '';
+
 let sleepsMin = 2;
 function changeSleeps(delta) {
   sleepsMin = Math.max(1, Math.min(20, sleepsMin + delta));
   document.getElementById('sleepsVal').textContent = sleepsMin + '+';
   document.getElementById('sleepsMinus').disabled = sleepsMin <= 1;
-  filterCards();
+  applyFilters();
 }
 
-// ── Category type filter ──
 function setType(tile, type) {
   document.querySelectorAll('.cat-tile').forEach(t => t.classList.remove('active'));
   tile.classList.add('active');
-  filterCards();
+  applyFilters();
 }
 
-// ── Filter pills ──
 function togglePill(btn, filter) {
   btn.classList.toggle('active');
-  filterCards();
+  applyFilters();
 }
 
-// ── Sort ──
-function sortAndRender() { filterCards(); }
+function sortAndRender() { applyFilters(); }
 
-// ── Filter cards (visual only in prototype) ──
-function filterCards() {
-  const activeFilters = [...document.querySelectorAll('.fb-pill.active')].map(b => b.id?.replace('fp-',''));
+function updateHeader(list) {
+  const crumb = document.getElementById('pageCrumb');
+  const title = document.getElementById('pageTitle');
+  if (initialWhere) {
+    crumb.textContent = initialWhere;
+    title.innerHTML = `Stays matching <i>"${esc(initialWhere)}"</i>`;
+  } else if (initialRegion) {
+    const label = list[0]?.rLabel || initialRegion;
+    crumb.textContent = label;
+    title.innerHTML = `Stays in <i>${esc(label)}</i>`;
+  } else {
+    crumb.textContent = 'All stays';
+    title.innerHTML = `All <i>stays</i>`;
+  }
+  document.getElementById('statCount').textContent = `${list.length} ${list.length === 1 ? 'stay' : 'stays'}`;
+  const priceEl = document.getElementById('statPriceRange');
+  if (list.length) {
+    const prices = list.map(p => p.price);
+    const min = Math.min(...prices);
+    const avg = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
+    priceEl.textContent = `From £${min} · avg. £${avg} / night`;
+  } else {
+    priceEl.textContent = '';
+  }
+}
+
+function applyFilters() {
+  let list = initialWhere ? searchCasaProperties(initialWhere)
+           : initialRegion ? searchCasaProperties(initialRegion)
+           : CASA_PROPERTIES.slice();
+
   const activeType = document.querySelector('.cat-tile.active')?.dataset.type || 'all';
-  const cards = document.querySelectorAll('.pc');
-  let shown = 0;
-  cards.forEach(card => {
-    // In a real build this reads from data. For now show all (filter is visual feedback).
-    card.style.display = '';
-    shown++;
+  list = list.filter(p => matchesCategory(p, activeType));
+
+  const activePills = [...document.querySelectorAll('.fb-pill.active[id^="fp-"]')].map(b => b.id.replace('fp-', ''));
+  const pillTag = { pets: 'pets', fire: 'woodburner', sea: 'seaview', tub: 'hottub', offgrid: 'offgrid' };
+  activePills.forEach(p => {
+    const tag = pillTag[p];
+    if (tag) list = list.filter(pr => (pr.tags || []).includes(tag));
   });
+
+  list = list.filter(p => p.sleeps >= sleepsMin);
+
+  const sort = document.getElementById('sortSelect')?.value || 'curated';
+  if (sort === 'price-asc') list = list.slice().sort((a, b) => a.price - b.price);
+  else if (sort === 'price-desc') list = list.slice().sort((a, b) => b.price - a.price);
+  else if (sort === 'rating') list = list.slice().sort((a, b) => b.rating - a.rating);
+
+  const grid = document.getElementById('resultsGrid');
+  grid.innerHTML = list.length
+    ? list.map(cardHtml).join('')
+    : `<div class="empty-results"><h3>No stays match yet</h3><p>Try a different location, or clear a filter below.</p></div>`;
+
   const countEl = document.getElementById('fbCount');
-  if (countEl) countEl.textContent = shown + ' stays';
+  if (countEl) countEl.textContent = `${list.length} ${list.length === 1 ? 'stay' : 'stays'}`;
+  updateHeader(list);
 }
+
+applyFilters();
 </script>
 </body>
 </html>
