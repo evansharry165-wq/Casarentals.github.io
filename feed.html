@@ -561,7 +561,7 @@ function renderPost(p, i) {
       propImg = `<img class="casa-photo-img" src="${url}" alt="${p.prop.name}, ${p.prop.loc}" loading="lazy">`;
     }
   }
-  if (!propImg) propImg = `<div class="ph ${p.prop.col}"></div>`;
+  if (!propImg && p.prop) propImg = `<div class="ph ${p.prop.col}"></div>`;
   const propH = p.prop ? `<a class="post-prop" href="property.html?id=${propId}"><div class="pi">${propImg}</div><div class="pinfo"><div class="pname">${p.prop.name}, <i>${p.prop.loc}</i></div><div class="pdets"><span>★ ${p.prop.rating}</span><span>·</span><span>Sleeps ${p.prop.sleeps} · ${p.prop.beds} bed</span>${p.prop.tags?`<span>·</span><span>${p.prop.tags}</span>`:''}</div></div><div class="price">£${p.prop.price}<span>/night</span></div></a>` : '';
   const imgH = p.images ? `<div class="post-images ${p.images.length===1?'one':p.images.length===2?'two':'three'}">${p.images.map((c,ix)=>{
     if (typeof casaGetRegionPhoto === 'function' && p.county && p.county !== 'all') {
