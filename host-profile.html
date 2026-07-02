@@ -63,7 +63,7 @@
     </div>
     <div class="hp-actions">
       <a class="btn btn-primary" href="messages.html" id="hpMessage">Message</a>
-      <button class="btn btn-outline follow-btn" type="button" onclick="this.classList.toggle('following');this.textContent=this.classList.contains('following')?'Following':'Follow'">Follow</button>
+      <button class="btn btn-outline follow-btn" type="button" id="hpFollowBtn" onclick="casaToggleFollow(hostId, this)">Follow</button>
     </div>
   </div>
 
@@ -94,6 +94,12 @@ document.getElementById('hpAv').textContent = host.avatar;
 document.getElementById('hpAv').className = 'hp-av ' + (host.avatarClass || '');
 document.getElementById('hpName').innerHTML = host.name.replace('.', ' <i>.</i>');
 document.getElementById('hpListName').textContent = host.name.split('.')[0];
+
+if (casaIsFollowing(hostId)) {
+  const followBtn = document.getElementById('hpFollowBtn');
+  followBtn.classList.add('following');
+  followBtn.textContent = 'Following';
+}
 
 const badges = [];
 if (host.verified) badges.push('<span class="badge moss">✓ Verified host</span>');

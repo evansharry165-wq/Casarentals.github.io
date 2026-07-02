@@ -80,6 +80,40 @@ function casaToggleSaved(id, btn) {
 window.casaIsSaved = casaIsSaved;
 window.casaToggleSaved = casaToggleSaved;
 
+const CASA_FOLLOWS_KEY = 'casa:follows';
+
+function casaGetFollowedHosts() {
+  try {
+    return JSON.parse(localStorage.getItem(CASA_FOLLOWS_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function casaIsFollowing(hostKey) {
+  return casaGetFollowedHosts().includes(String(hostKey));
+}
+
+function casaToggleFollow(hostKey, btn) {
+  const key = String(hostKey);
+  const list = casaGetFollowedHosts();
+  const idx = list.indexOf(key);
+  if (idx >= 0) list.splice(idx, 1);
+  else list.push(key);
+  localStorage.setItem(CASA_FOLLOWS_KEY, JSON.stringify(list));
+  const following = list.includes(key);
+  if (btn) {
+    btn.classList.toggle('following', following);
+    btn.textContent = following ? 'Following' : 'Follow';
+  }
+  casaToast(following ? `Following ${hostKey}` : `Unfollowed ${hostKey}`);
+  return following;
+}
+
+window.casaGetFollowedHosts = casaGetFollowedHosts;
+window.casaIsFollowing = casaIsFollowing;
+window.casaToggleFollow = casaToggleFollow;
+
 /* ─── Auth session ─── */
 const CASA_USER_KEY = 'casa:user';
 const CASA_NOTIF_KEY = 'casa:notifications';
@@ -525,50 +559,4 @@ document.addEventListener('DOMContentLoaded', () => {
     casaToast('Enquiry sent — check Messages for replies');
   });
 
-  /* ─── Likes, saves, follows ─── */
-  document.querySelectorAll('.like-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const label = btn.querySelector('.ct');
-      if (!label) return;
-      let count = parseInt(label.textContent, 10) || 0;
-      if (btn.classList.contains('liked')) {
-        btn.classList.remove('liked');
-        label.textContent = count - 1;
-      } else {
-        btn.classList.add('liked');
-        label.textContent = count + 1;
-      }
-    });
-  });
-
-  document.querySelectorAll('.save-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const svg = btn.querySelector('svg');
-      const textNode = Array.from(btn.childNodes).find(n =>
-        n.nodeType === Node.TEXT_NODE && (n.textContent.includes('Save') || n.textContent.includes('Saved'))
-      );
-      if (btn.classList.contains('saved')) {
-        btn.classList.remove('saved');
-        if (svg) svg.removeAttribute('fill');
-        if (textNode) textNode.textContent = ' Save';
-      } else {
-        btn.classList.add('saved');
-        if (svg) svg.setAttribute('fill', 'currentColor');
-        if (textNode) textNode.textContent = ' Saved';
-      }
-    });
-  });
-
-  document.querySelectorAll('.follow-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      if (btn.classList.contains('following')) {
-        btn.classList.remove('following');
-        btn.textContent = 'Follow';
-      } else {
-        btn.classList.add('following');
-        btn.textContent = 'Following';
-      }
-    });
-  });
 });

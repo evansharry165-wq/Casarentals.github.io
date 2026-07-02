@@ -361,6 +361,7 @@
         <button class="feed-tab active" data-filter="all" onclick="setFilter(this)">All <span class="ct" id="tab-all">0</span></button>
         <button class="feed-tab" data-filter="hosts" onclick="setFilter(this)">From hosts <span class="ct" id="tab-hosts">0</span></button>
         <button class="feed-tab" data-filter="guests" onclick="setFilter(this)">From guests <span class="ct" id="tab-guests">0</span></button>
+        <button class="feed-tab" data-filter="following" onclick="setFilter(this)">Following <span class="ct" id="tab-following">0</span></button>
         <div class="feed-sort">
           Sort: <select id="sortSel" onchange="renderFeed()">
             <option value="recent">Recent</option>
@@ -434,6 +435,7 @@
 <script src="casa-map-geo.js"></script>
 <script src="casa-map-data.js"></script>
 <script src="casa-map-live.js"></script>
+<script src="casa.js"></script>
 <script>
 // ═══════════════════════════════════════
 // DATA
@@ -532,6 +534,10 @@ function getFiltered() {
   if (state.type !== 'all') ps = ps.filter(p => p.type === state.type);
   if (state.filter === 'hosts') ps = ps.filter(p => p.role === 'host');
   if (state.filter === 'guests') ps = ps.filter(p => p.role === 'guest');
+  if (state.filter === 'following') {
+    const followed = casaGetFollowedHosts().map(n => n.toLowerCase());
+    ps = ps.filter(p => followed.some(f => p.name.toLowerCase().includes(f) || f.includes(p.name.toLowerCase())));
+  }
   if (state.tag) ps = ps.filter(p => (p.body||'').toLowerCase().includes(state.tag.toLowerCase().replace('#','')));
   if (state.search) { const q = state.search.toLowerCase(); ps = ps.filter(p => (p.body||'').toLowerCase().includes(q) || p.name.toLowerCase().includes(q) || (p.where||'').toLowerCase().includes(q)); }
   if (state.sort === 'liked') ps = [...ps].sort((a,b) => b.likes - a.likes);
@@ -689,6 +695,8 @@ function renderFeed() {
   document.getElementById('tab-all').textContent   = all.length;
   document.getElementById('tab-hosts').textContent = all.filter(p=>p.role==='host').length;
   document.getElementById('tab-guests').textContent= all.filter(p=>p.role==='guest').length;
+  const followed = casaGetFollowedHosts().map(n => n.toLowerCase());
+  document.getElementById('tab-following').textContent = all.filter(p => followed.some(f => p.name.toLowerCase().includes(f) || f.includes(p.name.toLowerCase()))).length;
 }
 
 function updateSidebar() {
@@ -722,7 +730,7 @@ function updateSidebar() {
           <div class="hn"><i>${h.name}</i></div>
           <div class="hm">${h.online?'<span class="online-dot"></span>Active now':'Last seen recently'} · ${h.stars}★</div>
         </div>
-        <button class="follow-btn" onclick="toggleFollow(this)">${Math.random()>.5?'Following':'Follow'}</button>
+        <button class="follow-btn${casaIsFollowing(h.name)?' following':''}" onclick="toggleFollow(this,'${h.name.replace(/'/g,"\\'")}')">${casaIsFollowing(h.name)?'Following':'Follow'}</button>
       </div>`).join('')
     : `<p style="font-size:12.5px;color:var(--ink-3)">No active hosts yet — be first to join!</p>`;
 }
@@ -835,9 +843,10 @@ function toggleMore(btn) {
 function closeMenus() { document.querySelectorAll('.more-menu.open').forEach(m=>m.classList.remove('open')); }
 document.addEventListener('click', e => { if (!e.target.closest('.post-more')) closeMenus(); });
 
-function toggleFollow(btn) {
-  btn.classList.toggle('following');
-  btn.textContent = btn.classList.contains('following') ? 'Following' : 'Follow';
+function toggleFollow(btn, hostName) {
+  event.stopPropagation();
+  casaToggleFollow(hostName, btn);
+  renderFeed();
 }
 
 function startLooking() {
@@ -1014,6 +1023,5 @@ if (qp.get('post')) {
   }, 400);
 }
 </script>
-<script src="casa.js"></script>
 </body>
 </html>
