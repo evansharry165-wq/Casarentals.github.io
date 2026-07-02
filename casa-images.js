@@ -124,7 +124,12 @@ function casaPhotoUrl(url, width) {
     return `${base}?auto=format&fit=crop&w=${w}&q=80`;
   }
   if (url.includes('upload.wikimedia.org')) {
-    if (url.includes('/thumb/')) return url.replace(/\/(\d+)px-/, `/${w}px-`);
+    // Wikimedia's thumbnail service rejects requests to upscale past a
+    // source image's real resolution (400 error), unlike Unsplash's CDN.
+    // Source photos here are geograph.org.uk-style and not high-res, so
+    // cap at 960 — the width already verified to work for all of them.
+    const safeW = Math.min(w, 960);
+    if (url.includes('/thumb/')) return url.replace(/\/(\d+)px-/, `/${safeW}px-`);
     return url;
   }
   return url;

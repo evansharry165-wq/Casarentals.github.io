@@ -53,7 +53,7 @@
   /* Host strip */
   .host-strip { display: flex; align-items: center; gap: 16px; padding: 24px 0; border-bottom: 1px solid var(--rule); margin-bottom: 32px; }
   .host-strip .av { width: 60px; height: 60px; border-radius: 50%; background: var(--brick); color: white; display: inline-flex; align-items: center; justify-content: center; font-family: var(--serif); font-style: italic; font-size: 26px; flex-shrink: 0; }
-  .host-strip .info { flex: 1; }
+  .host-strip .info { flex: 1; min-width: 0; }
   .host-strip .info .h-name { font-family: var(--serif); font-size: 22px; line-height: 1.1; display: inline-flex; align-items: center; gap: 8px; }
   .host-strip .info .h-meta { font-size: 13px; color: var(--ink-3); margin-top: 2px; }
   .host-strip .actions { display: flex; gap: 8px; }
@@ -196,6 +196,9 @@
     .facts { grid-template-columns: 1fr 1fr; gap: 6px; }
     .book-form .row { grid-template-columns: 1fr; }
     .similar-row { grid-template-columns: 1fr 1fr; }
+    .host-strip { flex-wrap: wrap; }
+    .host-strip .actions { width: 100%; }
+    .host-strip .actions .btn { width: 100%; justify-content: center; }
   }
 </style>
 </head>
