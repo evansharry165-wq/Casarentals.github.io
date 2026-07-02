@@ -845,7 +845,7 @@ async function submitEnquiry() {
   // Show success
   document.getElementById('loadingOverlay').classList.remove('show');
   if (typeof casaSaveEnquiry === 'function') {
-    casaSaveEnquiry({ host: PROPERTY.host, property: PROPERTY.title, ref, email: fname, message, checkin, checkout });
+    casaSaveEnquiry({ host: PROPERTY.host, property: PROPERTY.title, ref, email: fname, message, checkin, checkout, nights, total: PROPERTY.pricePerNight * nights, guestName: fname });
   }
   document.getElementById('formWrap').style.display = 'none';
   document.getElementById('successScreen').classList.add('show');

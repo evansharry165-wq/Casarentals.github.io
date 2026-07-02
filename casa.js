@@ -221,18 +221,64 @@ function casaGetRecentIds() {
 }
 
 /* ─── Enquiries (guest → host flow) ─── */
+const CASA_LOCAL_CONVOS_KEY = 'casa:local-convos';
+
+function casaGetEnquiries() {
+  try {
+    return JSON.parse(localStorage.getItem(CASA_ENQUIRIES_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
+
 function casaSaveEnquiry(enquiry) {
-  let list = [];
-  try { list = JSON.parse(localStorage.getItem(CASA_ENQUIRIES_KEY) || '[]'); } catch { list = []; }
-  list.unshift({ id: Date.now(), status: 'pending', ...enquiry });
+  const convId = 'enq-' + Date.now();
+  let list = casaGetEnquiries();
+  list.unshift({ id: Date.now(), status: 'pending', convId, ...enquiry });
   localStorage.setItem(CASA_ENQUIRIES_KEY, JSON.stringify(list.slice(0, 30)));
+
+  // Create the linked conversation so the host's reply (simulated in
+  // messages.html) can flip this enquiry's status back here.
+  let convos = [];
+  try { convos = JSON.parse(localStorage.getItem(CASA_LOCAL_CONVOS_KEY) || '[]'); } catch { convos = []; }
+  const dateLine = enquiry.checkin && enquiry.checkout
+    ? `${enquiry.checkin} → ${enquiry.checkout}` : '';
+  convos.unshift({
+    id: convId,
+    name: enquiry.host || 'Host',
+    av: (enquiry.host || 'H').charAt(0).toUpperCase(),
+    avc: '',
+    prop: enquiry.property || '',
+    time: 'Just now',
+    tag: 'enquiry',
+    tagLabel: 'Awaiting reply',
+    unread: false,
+    online: false,
+    preview: enquiry.message ? enquiry.message.slice(0, 60) : 'Enquiry sent',
+    msgs: [
+      { f: 'me', t: enquiry.message || `Hi, is ${enquiry.property || 'this place'} available ${dateLine}?`, ts: new Date().toTimeString().slice(0, 5) },
+    ],
+  });
+  localStorage.setItem(CASA_LOCAL_CONVOS_KEY, JSON.stringify(convos.slice(0, 30)));
+
   casaAddNotification({
     type: 'enquiry',
     title: 'Enquiry sent',
     body: `Your message about ${enquiry.property || 'the stay'} was sent to the host.`,
-    href: 'messages.html',
+    href: `messages.html?c=${convId}`,
   });
 }
+
+function casaMarkEnquiryReplied(convId) {
+  const list = casaGetEnquiries();
+  const item = list.find(e => e.convId === convId);
+  if (!item || item.status === 'replied') return;
+  item.status = 'replied';
+  localStorage.setItem(CASA_ENQUIRIES_KEY, JSON.stringify(list));
+}
+
+window.casaGetEnquiries = casaGetEnquiries;
+window.casaMarkEnquiryReplied = casaMarkEnquiryReplied;
 
 window.casaGetUser = casaGetUser;
 window.casaSetUser = casaSetUser;
@@ -410,153 +456,5 @@ document.addEventListener('DOMContentLoaded', () => {
   casaHandleAuthRedirectToasts();
   casaInitNav();
   casaLinkifyHashtags(document.body);
-
-  /* ─── Inline Replies Toggle & Dynamic Submission ─── */
-  document.querySelectorAll('.reply-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const thread = btn.closest('.post')?.querySelector('.reply-thread');
-      if (thread) thread.classList.toggle('open');
-    });
-  });
-
-  document.querySelectorAll('.reply-form').forEach(form => {
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const input = form.querySelector('input');
-      const text = input?.value.trim();
-      if (!text) return;
-
-      const thread = form.closest('.reply-thread');
-      if (!thread) return;
-
-      const replyCard = document.createElement('div');
-      replyCard.className = 'reply-card';
-      replyCard.innerHTML = `
-        <div class="av">J</div>
-        <div class="r-content">
-          <strong>You</strong> ${text}
-          <div class="r-meta">Just now</div>
-        </div>
-      `;
-      thread.insertBefore(replyCard, form);
-      input.value = '';
-
-      const countLabel = form.closest('.post')?.querySelector('.reply-btn .ct');
-      if (countLabel) {
-        const parsedCount = parseInt(countLabel.innerText, 10) || 0;
-        countLabel.innerText = `${parsedCount + 1} replies`;
-      }
-
-      casaToast('Reply posted!');
-    });
-  });
-
-  /* ─── Profile drawer (feed pages only) ─── */
-  const drawerOverlay = document.getElementById('profileDrawerOverlay');
-  const drawer = document.getElementById('profileDrawer');
-  const drawerClose = document.getElementById('profileDrawerClose');
-
-  const openProfileDrawer = (data) => {
-    const set = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.textContent = val; };
-    set('drawerName', data.username);
-    set('drawerBio', data.bio);
-    set('drawerLocation', data.location);
-    set('drawerStays', data.property);
-
-    const avatarContainer = document.getElementById('drawerAvatar');
-    if (avatarContainer) {
-      avatarContainer.textContent = data.avatarLetter || '?';
-      avatarContainer.className = `av ${data.avatarClass || ''}`;
-    }
-
-    const badgeElement = document.getElementById('drawerBadge');
-    if (badgeElement) {
-      badgeElement.textContent = data.role || '';
-      badgeElement.className = (data.role || '').toLowerCase() === 'host' ? 'badge-host' : 'badge-guest';
-    }
-
-    const drawerMsgBtn = document.getElementById('drawerMessageBtn');
-    if (drawerMsgBtn) {
-      drawerMsgBtn.setAttribute('data-host', data.username || '');
-      drawerMsgBtn.setAttribute('data-property', (data.property || '').split(' ·')[0]);
-    }
-
-    drawerOverlay?.classList.add('open');
-    drawer?.classList.add('open');
-  };
-
-  const closeProfileDrawer = () => {
-    drawerOverlay?.classList.remove('open');
-    drawer?.classList.remove('open');
-  };
-
-  const extractProfileMetadata = (node) => ({
-    username: node.getAttribute('data-username'),
-    role: node.getAttribute('data-role'),
-    property: node.getAttribute('data-property'),
-    location: node.getAttribute('data-location'),
-    bio: node.getAttribute('data-bio'),
-    avatarLetter: node.getAttribute('data-avatar'),
-    avatarClass: node.getAttribute('data-avatar-class') || ''
-  });
-
-  document.querySelectorAll('.ph-head .av, .ph-head .name').forEach(el => {
-    el.style.cursor = 'pointer';
-    el.addEventListener('click', () => {
-      const post = el.closest('.post');
-      if (post) openProfileDrawer(extractProfileMetadata(post));
-    });
-  });
-
-  document.querySelectorAll('.sidebar-host').forEach(el => {
-    el.addEventListener('click', (e) => {
-      if (e.target.classList.contains('follow-btn')) return;
-      openProfileDrawer(extractProfileMetadata(el));
-    });
-  });
-
-  drawerClose?.addEventListener('click', closeProfileDrawer);
-  drawerOverlay?.addEventListener('click', (e) => {
-    if (e.target === drawerOverlay) closeProfileDrawer();
-  });
-
-  /* ─── Booking enquiry modal (pages that include markup) ─── */
-  const bookingOverlay = document.getElementById('bookingModalOverlay');
-  const bookingClose = document.getElementById('bookingModalClose');
-  const bookingForm = document.getElementById('bookingForm');
-
-  const openBookingModal = (host, property) => {
-    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-    set('modalHostName', host);
-    set('modalPropName', property);
-    bookingOverlay?.classList.add('open');
-  };
-
-  const closeBookingModal = () => bookingOverlay?.classList.remove('open');
-
-  document.body.addEventListener('click', (e) => {
-    const enquireBtn = e.target.closest('.enquire');
-    if (!enquireBtn || !bookingOverlay) return;
-    e.preventDefault();
-    openBookingModal(
-      enquireBtn.getAttribute('data-host') || 'Member',
-      enquireBtn.getAttribute('data-property') || 'Request Topic'
-    );
-  });
-
-  bookingClose?.addEventListener('click', closeBookingModal);
-  bookingOverlay?.addEventListener('click', (e) => {
-    if (e.target === bookingOverlay) closeBookingModal();
-  });
-
-  bookingForm?.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const host = document.getElementById('modalHostName')?.textContent || 'Host';
-    const property = document.getElementById('modalPropName')?.textContent || 'Stay';
-    casaSaveEnquiry({ host, property, message: bookingForm.querySelector('textarea')?.value || '' });
-    closeBookingModal();
-    bookingForm.reset();
-    casaToast('Enquiry sent — check Messages for replies');
-  });
 
 });

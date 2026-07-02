@@ -322,7 +322,7 @@
               <th></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="enqTableBody">
             <tr>
               <td>
                 <div class="guest">
@@ -632,7 +632,46 @@ function hostSendReply(postId) {
   renderHostFeedComments();
 }
 
+// ═══════════════════════════════════════════
+// Real enquiries (from booking.html), linked to their message thread.
+// Status flips from 'pending' to 'replied' automatically once the host
+// replies in messages.html — see casaMarkEnquiryReplied().
+// ═══════════════════════════════════════════
+function fmtEnqDate(iso) {
+  return new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+function renderRealEnquiries() {
+  if (typeof casaGetEnquiries !== 'function') return;
+  const list = casaGetEnquiries();
+  if (!list.length) return;
+  const rows = list.map(e => {
+    const name = e.guestName || 'Guest';
+    const dateLabel = e.checkin && e.checkout ? `${fmtEnqDate(e.checkin)}–${fmtEnqDate(e.checkout)}` : '—';
+    const nightsLabel = e.nights ? `${e.nights} night${e.nights > 1 ? 's' : ''}` : '';
+    const priceLabel = e.total ? `£${e.total.toLocaleString()}` : '—';
+    const replied = e.status === 'replied';
+    return `<tr>
+      <td>
+        <div class="guest">
+          <div class="av">${name.charAt(0).toUpperCase()}</div>
+          <div><div class="name">${name}</div><div class="sub">Ref ${e.ref || ''}</div></div>
+        </div>
+      </td>
+      <td><div style="font-family:var(--serif);font-size:14px">${e.property || ''}</div></td>
+      <td><div class="dates">${dateLabel}</div><div style="font-size:11px;color:var(--ink-3)">${nightsLabel}</div></td>
+      <td><div class="price"><i>${priceLabel}</i></div></td>
+      <td>${replied ? '<span class="status-pill replied">Replied</span>' : '<span class="status-pill new">New</span>'}</td>
+      <td class="actions-cell">
+        <a class="btn ${replied ? 'btn-outline' : 'btn-primary'} btn-sm" href="messages.html?c=${e.convId}">${replied ? 'Open' : 'Reply'}</a>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('enqTableBody').insertAdjacentHTML('afterbegin', rows);
+}
+
 renderHostFeedComments();
+renderRealEnquiries();
 </script>
 </body>
 </html>

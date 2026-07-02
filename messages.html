@@ -350,6 +350,28 @@ const CONVOS = [
   ]},
 ];
 
+/* ─── Real enquiries from booking.html create a conversation here ─── */
+function casaSyncLocalConvo(c) {
+  let local = [];
+  try { local = JSON.parse(localStorage.getItem('casa:local-convos') || '[]'); } catch { local = []; }
+  const idx = local.findIndex(x => x.id === c.id);
+  if (idx === -1) return;
+  local[idx] = { ...local[idx], msgs: c.msgs, preview: c.preview, time: c.time, tagLabel: c.tagLabel };
+  localStorage.setItem('casa:local-convos', JSON.stringify(local));
+}
+
+(function mergeLocalConvos() {
+  let local = [];
+  try { local = JSON.parse(localStorage.getItem('casa:local-convos') || '[]'); } catch { local = []; }
+  if (!local.length) return;
+  CONVOS.unshift(...local);
+  // Any enquiry that hasn't had its host reply simulated yet, kick that off now
+  // (not gated on the user having that thread open — see simulateReply below).
+  local.forEach(c => {
+    if (c.tag === 'enquiry' && c.msgs.length === 1) simulateReply(c);
+  });
+})();
+
 const EMOJIS = ['😊','👍','🏡','🐕','⭐','🙏','✅','🔑','🏔️','🌊','❤️','👋','😂','🎉','💯','🌿','☀️','🌧️','🍃','🦆','🐑','🍺','☕','🎒','🗝️','💷','📅','✉️','🏴󠁧󠁢󠁳󠁣󠁴󠁿','🇬🇧','🌸','🏖️'];
 
 let active = 'sarah';
@@ -469,6 +491,7 @@ function sendMsg() {
   c.msgs.push({f:'me', t:esc(text), ts});
   c.preview = text.length > 55 ? text.slice(0,55)+'…' : text;
   c.time = 'Just now';
+  casaSyncLocalConvo(c);
   ta.value = ''; ta.style.height = 'auto';
   document.getElementById('sendBtn').disabled = true;
   document.getElementById('charWarn').textContent = '';
@@ -483,15 +506,20 @@ function simulateReply(c) {
   const replies = ["Perfect — I'll sort that for you right away.","Of course! Let me check and come back to you shortly.","That's great — looking forward to having you 🏡","No problem at all. Anything else I can help with?","Brilliant — noted! See you on the 12th."];
   const delay = 1800 + Math.random() * 2000;
   setTimeout(()=>{
-    if (active !== c.id) return;
-    document.getElementById('typingRow').classList.add('show');
-    document.getElementById('thStream').scrollTop = 99999;
+    const isActive = active === c.id;
+    if (isActive) {
+      document.getElementById('typingRow').classList.add('show');
+      document.getElementById('thStream').scrollTop = 99999;
+    }
     setTimeout(()=>{
-      document.getElementById('typingRow').classList.remove('show');
+      if (isActive) document.getElementById('typingRow').classList.remove('show');
       const reply = replies[Math.floor(Math.random()*replies.length)];
       const now = new Date();
       c.msgs.push({f:'them', t:reply, ts: now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')});
       c.preview = reply.length > 55 ? reply.slice(0,55)+'…' : reply;
+      if (c.tag === 'enquiry') c.tagLabel = 'Awaiting your reply';
+      casaSyncLocalConvo(c);
+      if (c.tag === 'enquiry' && typeof casaMarkEnquiryReplied === 'function') casaMarkEnquiryReplied(c.id);
       casaAddNotification({
         type: 'reply',
         title: `New reply from ${c.name || 'your host'}`,
