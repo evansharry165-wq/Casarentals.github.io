@@ -62,7 +62,15 @@
   .th-who h2 i{font-style:italic;color:var(--brick)}
   .th-who .meta{font-size:12px;color:var(--ink-3);margin-top:2px;display:flex;align-items:center;gap:5px}
   .th-who .meta .ld{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--moss);flex-shrink:0}
-  .th-actions{display:flex;gap:6px}
+  .th-actions{display:flex;gap:6px;position:relative}
+  .th-more-menu{display:none;position:absolute;right:0;top:calc(100% + 6px);background:var(--paper);border:1px solid var(--rule);border-radius:12px;box-shadow:0 8px 24px rgba(22,20,15,.1);z-index:50;min-width:170px;padding:6px}
+  .th-more-menu.open{display:block}
+  .th-mm-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:8px;font-size:13px;color:var(--ink-2);cursor:pointer;border:none;background:none;width:100%;font-family:var(--sans);text-align:left}
+  .th-mm-item:hover{background:var(--surface);color:var(--ink)}
+  .th-mm-item svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6}
+  .th-mm-item.danger{color:#C0392B}
+  .th-mm-item:disabled{color:var(--ink-4);cursor:default}
+  .th-mm-item:disabled:hover{background:none}
   .th-status{margin:10px 22px 0;padding:11px 15px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;gap:11px}
   .th-status.accepted{background:var(--moss-pale);border-left:3px solid var(--moss)}
   .th-status.pending{background:var(--brick-pale);border-left:3px solid var(--brick)}
@@ -222,9 +230,14 @@
         <button class="btn btn-outline btn-sm" onclick="toast('Calling — available once live')">
           <svg class="i i-sm" viewBox="0 0 24 24"><path d="M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg> Call
         </button>
-        <button class="btn btn-ghost btn-sm" onclick="toast('Archive, report, block — available once live')">
+        <button class="btn btn-ghost btn-sm" onclick="toggleThMore(event)" id="thMoreBtn">
           <svg class="i i-sm" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>
         </button>
+        <div class="th-more-menu" id="thMoreMenu">
+          <button class="th-mm-item" onclick="toast('Archived — moved out of your inbox view. Coming soon.');closeThMore()"><svg viewBox="0 0 24 24"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>Archive</button>
+          <button class="th-mm-item" id="thReportBtn" onclick="reportCurrentConvo()"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>Report</button>
+          <button class="th-mm-item danger" onclick="blockCurrentConvo()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>Block</button>
+        </div>
       </div>
     </div>
     <div class="th-status accepted" id="thStatus" style="display:none">
@@ -304,6 +317,8 @@
   </aside>
 </div>
 
+<script src="casa-concierge.js"></script>
+<script src="casa.js"></script>
 <script>
 // ═══════════════════
 // DATA
@@ -378,6 +393,17 @@ let active = 'sarah';
 let filterMode = 'all';
 let searchStr = '';
 
+// Blocked conversations never render, in this session or any future one.
+(function removeBlockedConvos() {
+  if (typeof casaGetBlockedConvos !== 'function') return;
+  const blocked = casaGetBlockedConvos();
+  if (!blocked.length) return;
+  for (let i = CONVOS.length - 1; i >= 0; i--) {
+    if (blocked.includes(CONVOS[i].id)) CONVOS.splice(i, 1);
+  }
+  if (blocked.includes(active)) active = CONVOS[0]?.id || null;
+})();
+
 // ── BUILD EMOJI ──
 document.getElementById('emojiGrid').innerHTML = EMOJIS.map(e =>
   `<button class="em" onclick="insertEmoji('${e}')">${e}</button>`).join('');
@@ -410,6 +436,7 @@ function renderList() {
 function renderThread() {
   const c = CONVOS.find(x=>x.id===active);
   if (!c) return;
+  updateReportButtonState();
 
   // Header
   const avEl = document.getElementById('thAv');
@@ -605,6 +632,51 @@ function toast(msg) {
   clearTimeout(el._t); el._t = setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(-50%) translateY(10px)'; }, 2800);
 }
 
+// ── REPORT / BLOCK ──
+function toggleThMore(e) {
+  e.stopPropagation();
+  document.getElementById('thMoreMenu').classList.toggle('open');
+}
+function closeThMore() {
+  document.getElementById('thMoreMenu').classList.remove('open');
+}
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.th-actions')) closeThMore();
+});
+
+function reportCurrentConvo() {
+  const c = CONVOS.find(x => x.id === active);
+  if (!c) return;
+  const reported = casaReportContent('conversation', c.id, { reportedName: c.name });
+  toast(reported ? `${c.name} reported — our team will review this within 24 hours` : 'Already reported');
+  closeThMore();
+  updateReportButtonState();
+}
+
+function updateReportButtonState() {
+  const c = CONVOS.find(x => x.id === active);
+  const btn = document.getElementById('thReportBtn');
+  if (!c || !btn) return;
+  const already = typeof casaIsReported === 'function' && casaIsReported('conversation', c.id);
+  btn.disabled = already;
+  btn.textContent = '';
+  btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>${already ? 'Reported' : 'Report'}`;
+}
+
+function blockCurrentConvo() {
+  const c = CONVOS.find(x => x.id === active);
+  if (!c) return;
+  if (!confirm(`Block ${c.name}? You won't see messages from them again, and this thread will leave your inbox.`)) return;
+  casaBlockConvo(c.id);
+  closeThMore();
+  toast(`${c.name} blocked`);
+  const idx = CONVOS.findIndex(x => x.id === c.id);
+  if (idx !== -1) CONVOS.splice(idx, 1);
+  active = CONVOS[0]?.id || null;
+  renderList();
+  if (active) renderThread();
+}
+
 function esc(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ── INIT ──
@@ -613,7 +685,5 @@ if (qpConvo && CONVOS.some(c => c.id === qpConvo)) switchConvo(qpConvo);
 renderList();
 renderThread();
 </script>
-<script src="casa-concierge.js"></script>
-<script src="casa.js"></script>
 </body>
 </html>

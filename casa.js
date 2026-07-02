@@ -280,6 +280,64 @@ function casaMarkEnquiryReplied(convId) {
 window.casaGetEnquiries = casaGetEnquiries;
 window.casaMarkEnquiryReplied = casaMarkEnquiryReplied;
 
+/* ─── Reporting & moderation (guest/host safety) ─── */
+const CASA_REPORTS_KEY = 'casa:reports';
+const CASA_MUTED_KEY = 'casa:muted-users';
+const CASA_BLOCKED_CONVOS_KEY = 'casa:blocked-convos';
+
+function casaGetReports() {
+  try { return JSON.parse(localStorage.getItem(CASA_REPORTS_KEY) || '[]'); } catch { return []; }
+}
+
+function casaIsReported(targetType, targetId) {
+  return casaGetReports().some(r => r.targetType === targetType && String(r.targetId) === String(targetId));
+}
+
+function casaReportContent(targetType, targetId, meta = {}) {
+  if (casaIsReported(targetType, targetId)) return false;
+  const list = casaGetReports();
+  list.unshift({ id: Date.now(), targetType, targetId: String(targetId), ...meta, reportedAt: new Date().toISOString() });
+  localStorage.setItem(CASA_REPORTS_KEY, JSON.stringify(list.slice(0, 100)));
+  return true;
+}
+
+function casaGetMutedUsers() {
+  try { return JSON.parse(localStorage.getItem(CASA_MUTED_KEY) || '[]'); } catch { return []; }
+}
+
+function casaIsMuted(name) {
+  return casaGetMutedUsers().includes(name);
+}
+
+function casaMuteUser(name) {
+  const list = casaGetMutedUsers();
+  if (!list.includes(name)) {
+    list.push(name);
+    localStorage.setItem(CASA_MUTED_KEY, JSON.stringify(list));
+  }
+}
+
+function casaGetBlockedConvos() {
+  try { return JSON.parse(localStorage.getItem(CASA_BLOCKED_CONVOS_KEY) || '[]'); } catch { return []; }
+}
+
+function casaBlockConvo(id) {
+  const list = casaGetBlockedConvos();
+  if (!list.includes(id)) {
+    list.push(id);
+    localStorage.setItem(CASA_BLOCKED_CONVOS_KEY, JSON.stringify(list));
+  }
+}
+
+window.casaGetReports = casaGetReports;
+window.casaIsReported = casaIsReported;
+window.casaReportContent = casaReportContent;
+window.casaGetMutedUsers = casaGetMutedUsers;
+window.casaIsMuted = casaIsMuted;
+window.casaMuteUser = casaMuteUser;
+window.casaGetBlockedConvos = casaGetBlockedConvos;
+window.casaBlockConvo = casaBlockConvo;
+
 window.casaGetUser = casaGetUser;
 window.casaSetUser = casaSetUser;
 window.casaIsLoggedIn = casaIsLoggedIn;

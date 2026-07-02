@@ -478,7 +478,9 @@ const savedPosts = new Set();
 // GETFILTERED
 // ═══════════════════════════════════════
 function getFiltered() {
-  let ps = POSTS.filter(p => state.county === 'all' || p.county === state.county || p.county === 'all');
+  const muted = casaGetMutedUsers();
+  let ps = POSTS.filter(p => !muted.includes(p.name));
+  ps = ps.filter(p => state.county === 'all' || p.county === state.county || p.county === 'all');
   if (state.type !== 'all') ps = ps.filter(p => p.type === state.type);
   if (state.filter === 'hosts') ps = ps.filter(p => p.role === 'host');
   if (state.filter === 'guests') ps = ps.filter(p => p.role === 'guest');
@@ -578,8 +580,8 @@ function renderPost(p, i) {
         <div class="more-menu">
           <button class="mm-item" onclick="sharePost(${p.id})"><svg viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>Share this post</button>
           <button class="mm-item" onclick="savePostMenu(${p.id},this)"><svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg>Save post</button>
-          <button class="mm-item" onclick="toast('Thanks — we\\'ll look into this');closeMenus()"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>Report</button>
-          <button class="mm-item danger" onclick="toast('User muted — you won\\'t see their posts');closeMenus()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>Mute user</button>
+          <button class="mm-item"${casaIsReported('post', p.id) ? ' disabled' : ''} onclick="reportPost(${p.id},'${p.name.replace(/'/g, "\\'")}',this)"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>${casaIsReported('post', p.id) ? 'Reported' : 'Report'}</button>
+          <button class="mm-item danger" onclick="muteUser('${p.name.replace(/'/g, "\\'")}')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>Mute user</button>
         </div>
       </div>
     </div>
@@ -791,6 +793,24 @@ function toggleMore(btn) {
 
 function closeMenus() { document.querySelectorAll('.more-menu.open').forEach(m=>m.classList.remove('open')); }
 document.addEventListener('click', e => { if (!e.target.closest('.post-more')) closeMenus(); });
+
+function reportPost(postId, authorName, btn) {
+  const reported = casaReportContent('post', postId, { authorName });
+  toast(reported ? 'Reported — our team will review this within 24 hours' : 'Already reported');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>Reported`;
+  }
+  closeMenus();
+}
+
+function muteUser(name) {
+  if (!confirm(`Mute ${name}? You won't see their posts in your feed again.`)) return;
+  casaMuteUser(name);
+  closeMenus();
+  toast(`${name} muted`);
+  renderFeed();
+}
 
 function toggleFollow(btn, hostName) {
   event.stopPropagation();
