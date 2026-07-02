@@ -341,7 +341,7 @@
         <div class="grid-2">
           <div class="field" id="f-checkin">
             <label>Check in <span class="req">*</span></label>
-            <input type="date" id="checkin" onchange="updatePricing(); progressStep()">
+            <input type="date" id="checkin" onchange="syncDateMins(); updatePricing(); progressStep()">
             <span class="err-msg">Please choose a check-in date</span>
           </div>
           <div class="field" id="f-checkout">
@@ -570,6 +570,7 @@
 </div>
 
 <script src="casa-properties.js"></script>
+<script src="casa-availability.js"></script>
 <script>
 // ═══════════════════════════════════════════
 // READ URL PARAMS
@@ -584,6 +585,7 @@ const PROPERTY = {
   hostFull: 'Sarah R.',
   pricePerNight: parseInt(qp.get('price'), 10) || listing.price,
   maxGuests: listing.sleeps,
+  minNights: listing.minNights || 1,
   petsWelcome: true,
 };
 
@@ -624,6 +626,21 @@ function changeGuests(delta) {
 }
 
 setGuests(guestCount);
+
+// ═══════════════════════════════════════════
+// DATE CONSTRAINTS (no past dates, respect min-stay)
+// ═══════════════════════════════════════════
+function syncDateMins() {
+  const todayIso = new Date().toISOString().split('T')[0];
+  const checkinEl = document.getElementById('checkin');
+  const checkoutEl = document.getElementById('checkout');
+  checkinEl.min = todayIso;
+  const ci = checkinEl.value || todayIso;
+  const minCheckout = new Date(ci);
+  minCheckout.setDate(minCheckout.getDate() + PROPERTY.minNights);
+  checkoutEl.min = minCheckout.toISOString().split('T')[0];
+}
+syncDateMins();
 
 // ═══════════════════════════════════════════
 // PRICING CALCULATOR
@@ -690,6 +707,18 @@ function setStep(el, state) {
 }
 
 // ═══════════════════════════════════════════
+// AVAILABILITY CHECK
+// ═══════════════════════════════════════════
+function casaDateRangeUnavailable(ciStr, coStr) {
+  if (typeof casaAvailIsUnavailable !== 'function') return false;
+  const end = new Date(coStr);
+  for (let d = new Date(ciStr); d < end; d.setDate(d.getDate() + 1)) {
+    if (casaAvailIsUnavailable(PROPERTY.id, d.getFullYear(), d.getMonth(), d.getDate())) return true;
+  }
+  return false;
+}
+
+// ═══════════════════════════════════════════
 // VALIDATION
 // ═══════════════════════════════════════════
 function validate() {
@@ -707,9 +736,29 @@ function validate() {
 
   const ci = document.getElementById('checkin').value;
   const co = document.getElementById('checkout').value;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
 
-  check('f-checkin',  'checkin',  v => v.length > 0, 'Please choose a check-in date');
-  check('f-checkout', 'checkout', v => v.length > 0 && new Date(v) > new Date(ci), co && new Date(co) <= new Date(ci) ? 'Check-out must be after check-in' : 'Please choose a check-out date');
+  check('f-checkin', 'checkin',
+    v => v.length > 0 && new Date(v) >= today,
+    ci && new Date(ci) < today ? 'Check-in can’t be in the past' : 'Please choose a check-in date');
+
+  let checkoutOk = co.length > 0;
+  let checkoutMsg = 'Please choose a check-out date';
+  if (checkoutOk && ci) {
+    const nights = Math.round((new Date(co) - new Date(ci)) / 86400000);
+    if (nights <= 0) {
+      checkoutOk = false;
+      checkoutMsg = 'Check-out must be after check-in';
+    } else if (nights < PROPERTY.minNights) {
+      checkoutOk = false;
+      checkoutMsg = `This property has a minimum stay of ${PROPERTY.minNights} nights`;
+    } else if (casaDateRangeUnavailable(ci, co)) {
+      checkoutOk = false;
+      checkoutMsg = 'Some of those dates are already booked — please choose different dates';
+    }
+  }
+  check('f-checkout', 'checkout', () => checkoutOk, checkoutMsg);
+
   check('f-fname',    'fname',    v => v.trim().length > 0, 'Please enter your first name');
   check('f-lname',    'lname',    v => v.trim().length > 0, 'Please enter your last name');
   check('f-email',    'email',    v => v.includes('@') && v.includes('.'), 'Please enter a valid email address');
