@@ -494,6 +494,13 @@ const POSTS = [
   {id:21,county:'all',type:'tip',role:'guest',av:'O',avC:'guest',name:'Oliver B.',badge:'Guest',when:'1 hr ago',where:'UK-wide',likes:201,replyCount:67,body:`Hot take: the best UK coastal walks are in north Devon, not Cornwall. Hartland Quay to Clovelly — nobody talks about it, completely empty, and the cliffs are genuinely terrifying. <span class="tag">#devon</span> <span class="tag">#coastpath</span>`},
 ];
 
+/* ─── Merge in reviews shared to the feed from profile.html's review flow ─── */
+(function loadLocalFeedPosts() {
+  let local = [];
+  try { local = JSON.parse(localStorage.getItem('casa:local-feed-posts') || '[]'); } catch { /* ignore */ }
+  if (local.length) POSTS.unshift(...local);
+})();
+
 const COUNTY_META = {
   all:{title:'UK',eyebrow:'Community feed — All of the UK',stays:'4,202',members:'14.2k',active:'1,847',ccTitle:'All of <i>the UK</i>.',ccDesc:'Every county, every region. The most active community in direct holiday rentals.',stays2:'4,202',members2:'14.2k',from:'£85+',tags:['#cottage 341 88','#seaview 156 75','#petfriendly 134 62','#lastminute 89 54','#woodburner 71 40','#offgrid 62 35'],hosts:[{av:'S',avC:'',name:'Sarah',prop:'Stone Cottage',stars:'4.9',online:true},{av:'F',avC:'ink',name:'Fiona M.',prop:'Blackhouse, Skye',stars:'4.9',online:true},{av:'B',avC:'',name:'Bridget',prop:'Burnham Barn',stars:'4.8',online:false},{av:'G',avC:'ink',name:'Graham & Kate',prop:'Dales Farmhouse',stars:'4.9',online:false}]},
   cumbria:{title:'Cumbria',eyebrow:'Community feed — Cumbria & the Lake District',stays:'214',members:'1,438',active:'312',ccTitle:'Welcome to <i>Cumbria</i>.',ccDesc:'The Lake District — highest fells in England, 16 lakes, and the deepest concentration of direct-booking stays on Casa.',stays2:'214',members2:'1.4k',from:'£85+',tags:['#lakedistrict 214 100','#windermere 78 55','#cottage 61 45','#oldmanofconiston 48 38','#woodburner 42 30'],hosts:[{av:'S',avC:'',name:'Sarah',prop:'Stone Cottage',stars:'4.9',online:true},{av:'T',avC:'ink',name:'Tom & Anna',prop:"Shepherd's Hut",stars:'4.7',online:false},{av:'F',avC:'',name:'Fiona',prop:'Keswick Cottage',stars:'4.8',online:true},{av:'H',avC:'',name:'Hannah',prop:'The Granary',stars:'4.9',online:false}]},

@@ -391,7 +391,7 @@
 
       <!-- REVIEWS -->
       <div class="reviews">
-        <h2><span class="serif" style="font-style:italic;color:var(--brick)">4.9</span> · 23 reviews</h2>
+        <h2><span class="serif" style="font-style:italic;color:var(--brick)">4.9</span> · <span id="revCount">23 reviews</span></h2>
         <div class="rev-summary">
           <div class="overall">
             <div class="score">4.9</div>
@@ -641,6 +641,35 @@ function applyListingToPage(p) {
 }
 
 applyListingToPage(listing);
+
+/* ─── Show any reviews submitted locally via profile.html's review flow ─── */
+(function loadLocalReviews() {
+  let store = {};
+  try { store = JSON.parse(localStorage.getItem('casa:reviews') || '{}'); } catch { /* ignore */ }
+  const mine = store[listing.id];
+  if (!mine || !mine.length) return;
+  const list = document.querySelector('.rev-list');
+  const countEl = document.getElementById('revCount');
+  if (countEl) {
+    const baseCount = parseInt(countEl.textContent, 10) || 0;
+    countEl.textContent = `${baseCount + mine.length} reviews`;
+  }
+  if (!list) return;
+  const html = mine.map(r => `
+    <div class="rev">
+      <div class="r-head">
+        <div class="av">${(r.name || 'You')[0]}</div>
+        <div>
+          <div class="who">${r.name || 'You'}</div>
+          <div class="when">${r.date} · ${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
+        </div>
+      </div>
+      <div class="body">"${r.text}"</div>
+    </div>
+  `).join('');
+  list.insertAdjacentHTML('afterbegin', html);
+})();
+
 const saveBtn = document.getElementById('propSaveBtn');
 if (saveBtn && casaIsSaved(listing.id)) {
   saveBtn.classList.add('saved');

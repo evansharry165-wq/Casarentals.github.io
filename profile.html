@@ -500,7 +500,15 @@
         <h2>Recently <i>stayed</i></h2>
         <a href="#" style="font-size:13px;color:var(--brick);text-decoration:underline;text-underline-offset:3px">All 8 stays →</a>
       </div>
-      <div class="stays-grid">
+      <div class="stays-grid" id="staysGrid">
+        <a class="stay-card" href="property.html?id=3" id="stayCard-3" data-property-id="3" data-property-name="Lakeside Cabin, Coniston">
+          <div class="si"><div class="ph dusk" data-label="LAKESIDE CABIN · CONISTON"></div></div>
+          <div class="sb">
+            <div class="nm">Lakeside Cabin, <i>Coniston</i></div>
+            <div class="when">May '26 &middot; 2 nights</div>
+            <button type="button" class="btn btn-outline btn-sm" style="margin-top:4px" onclick="event.preventDefault();openReviewModal('3','Lakeside Cabin, Coniston','stayCard-3')">Write a review</button>
+          </div>
+        </a>
         <a class="stay-card" href="property.html">
           <div class="si"><div class="ph brick" data-label="THE GRANARY · HAWKSHEAD"></div></div>
           <div class="sb">
@@ -762,44 +770,13 @@
         <h3>My <i>feed</i></h3>
         <a href="feed.html" class="view-all">Open feed →</a>
       </div>
-      <div class="fw-tabs">
-        <button class="active">Following</button>
-        <button>My counties</button>
-        <button>Hosts</button>
+      <div class="fw-tabs" id="fwTabs">
+        <button class="active" data-fw="following">Following</button>
+        <button data-fw="counties">My counties</button>
+        <button data-fw="hosts">Hosts</button>
       </div>
 
-      <div class="mini-post">
-        <div class="mp-head">
-          <div class="av">S</div>
-          <div class="nm"><i>Sarah</i> R. · Stone Cottage</div>
-          <div class="when">2h</div>
-        </div>
-        <span class="type-pill avail">Availability</span>
-        <div class="body">Got a cancellation &mdash; <i>12–19 July</i> just opened up. Sleeps 6, wood burner, dogs welcome…</div>
-        <div class="mp-foot"><span>34 likes</span><span>·</span><span>12 replies</span></div>
-      </div>
-
-      <div class="mini-post">
-        <div class="mp-head">
-          <div class="av guest">L</div>
-          <div class="nm"><i>Laura</i> P. · guest</div>
-          <div class="when">5h</div>
-        </div>
-        <span class="type-pill looking">Looking</span>
-        <div class="body">Group of 8 looking for Lakes <i>August bank holiday</i> &mdash; dog-friendly, parking, ~£250…</div>
-        <div class="mp-foot"><span>8 likes</span><span>·</span><span>17 replies</span></div>
-      </div>
-
-      <div class="mini-post">
-        <div class="mp-head">
-          <div class="av ink">T</div>
-          <div class="nm"><i>Tom &amp; Anna</i></div>
-          <div class="when">1d</div>
-        </div>
-        <span class="type-pill tip">Local pick</span>
-        <div class="body">Buttermere this morning &mdash; <i>June</i> here is the secret time. Hut opens 15 July.</div>
-        <div class="mp-foot"><span>87 likes</span><span>·</span><span>14 replies</span></div>
-      </div>
+      <div id="fwPosts"></div>
 
       <a href="feed.html" class="btn btn-outline btn-sm" style="width:100%;margin-top:6px">
         See all in feed
@@ -866,7 +843,189 @@
   <button class="save" onclick="saveEdit()">Save changes</button>
 </div>
 
+<!-- WRITE A REVIEW -->
+<div id="reviewModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(22,20,15,0.45);z-index:200;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--surface);border-radius:18px;max-width:460px;width:100%;padding:32px;max-height:90vh;overflow-y:auto;">
+    <h2 style="font-family:var(--serif);font-size:26px;margin:0 0 4px;">Write a <i style="font-style:italic;color:var(--brick)">review</i></h2>
+    <p style="color:var(--ink-3);font-size:14px;margin:0 0 20px;" id="reviewModalSub">Your stay at &mdash;</p>
+
+    <div style="margin-bottom:18px;">
+      <div style="font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-3);margin-bottom:8px;">Rating</div>
+      <div id="reviewStars" style="display:flex;gap:6px;">
+        <button type="button" class="review-star" data-star="1" style="background:none;border:none;cursor:pointer;padding:0;"><svg viewBox="0 0 24 24" style="width:30px;height:30px;fill:none;stroke:var(--rule-3);stroke-width:1.4"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg></button>
+        <button type="button" class="review-star" data-star="2" style="background:none;border:none;cursor:pointer;padding:0;"><svg viewBox="0 0 24 24" style="width:30px;height:30px;fill:none;stroke:var(--rule-3);stroke-width:1.4"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg></button>
+        <button type="button" class="review-star" data-star="3" style="background:none;border:none;cursor:pointer;padding:0;"><svg viewBox="0 0 24 24" style="width:30px;height:30px;fill:none;stroke:var(--rule-3);stroke-width:1.4"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg></button>
+        <button type="button" class="review-star" data-star="4" style="background:none;border:none;cursor:pointer;padding:0;"><svg viewBox="0 0 24 24" style="width:30px;height:30px;fill:none;stroke:var(--rule-3);stroke-width:1.4"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg></button>
+        <button type="button" class="review-star" data-star="5" style="background:none;border:none;cursor:pointer;padding:0;"><svg viewBox="0 0 24 24" style="width:30px;height:30px;fill:none;stroke:var(--rule-3);stroke-width:1.4"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg></button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:18px;">
+      <div style="font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-3);margin-bottom:8px;">Your review</div>
+      <textarea id="reviewText" rows="4" placeholder="How was the stay? What stood out?" style="width:100%;border:1px solid var(--rule-3);border-radius:10px;padding:12px;font-family:var(--sans);font-size:14px;resize:vertical;background:var(--paper);color:var(--ink);"></textarea>
+    </div>
+
+    <div style="margin-bottom:24px;">
+      <div style="font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-3);margin-bottom:8px;">Where should this appear?</div>
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;margin-bottom:8px;cursor:pointer;">
+        <input type="checkbox" id="reviewToProperty" checked style="width:16px;height:16px;"> On the property page
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;">
+        <input type="checkbox" id="reviewToFeed" checked style="width:16px;height:16px;"> Shared to the community feed
+      </label>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button type="button" class="btn btn-outline" style="flex:1;" onclick="closeReviewModal()">Cancel</button>
+      <button type="button" class="btn btn-primary" style="flex:1;" id="reviewSubmitBtn" onclick="submitReview()" disabled>Post review</button>
+    </div>
+  </div>
+</div>
+
 <script>
+/* ─── My feed widget: Following / My counties / Hosts ─── */
+const FW_SETS = {
+  following: [
+    { av:'S', avCls:'', name:'<i>Sarah</i> R. · Stone Cottage', when:'2h', pill:'avail', pillLabel:'Availability', body:'Got a cancellation &mdash; <i>12–19 July</i> just opened up. Sleeps 6, wood burner, dogs welcome…', likes:34, replies:12 },
+    { av:'L', avCls:'guest', name:'<i>Laura</i> P. · guest', when:'5h', pill:'looking', pillLabel:'Looking', body:'Group of 8 looking for Lakes <i>August bank holiday</i> &mdash; dog-friendly, parking, ~£250…', likes:8, replies:17 },
+    { av:'T', avCls:'ink', name:'<i>Tom &amp; Anna</i>', when:'1d', pill:'tip', pillLabel:'Local pick', body:'Buttermere this morning &mdash; <i>June</i> here is the secret time. Hut opens 15 July.', likes:87, replies:14 },
+  ],
+  counties: [
+    { av:'C', avCls:'', name:'<i>Cumbria</i> community', when:'1h', pill:'avail', pillLabel:'Availability', body:'Three new listings in <i>Ambleside</i> this week &mdash; barn conversion, lakeside cabin, farmhouse.', likes:19, replies:4 },
+    { av:'K', avCls:'guest', name:'<i>Katie</i> M. · guest', when:'6h', pill:'tip', pillLabel:'Local pick', body:'Best chippy in <i>Keswick</i> is the one by the market square, not the one on the main road.', likes:41, replies:9 },
+    { av:'D', avCls:'ink', name:'<i>Dan</i> R. · host', when:'2d', pill:'looking', pillLabel:'Looking', body:'Anyone know a good local cleaner covering <i>Grasmere</i>? My usual just retired.', likes:6, replies:11 },
+  ],
+  hosts: [
+    { av:'M', avCls:'', name:'<i>Mia</i> host · Slate Barn', when:'3h', pill:'review', pillLabel:'Review', body:'Just left a 5-star review for our guests this weekend &mdash; genuinely lovely to host.', likes:22, replies:3 },
+    { av:'R', avCls:'', name:'<i>Rob</i> host · Cliffside Cottage', when:'9h', pill:'avail', pillLabel:'Availability', body:'Late cancellation for <i>next weekend</i> in Cornwall &mdash; first come, first served.', likes:15, replies:6 },
+    { av:'H', avCls:'', name:'<i>Hillside</i> Farmhouse', when:'1d', pill:'tip', pillLabel:'Local pick', body:'Guests keep asking about walks nearby &mdash; wrote up our top 3 routes, linked in bio.', likes:29, replies:5 },
+  ],
+};
+
+function renderFeedWidget(key) {
+  const el = document.getElementById('fwPosts');
+  if (!el) return;
+  el.innerHTML = FW_SETS[key].map(p => `
+    <div class="mini-post">
+      <div class="mp-head">
+        <div class="av${p.avCls ? ' ' + p.avCls : ''}">${p.av}</div>
+        <div class="nm">${p.name}</div>
+        <div class="when">${p.when}</div>
+      </div>
+      <span class="type-pill ${p.pill}">${p.pillLabel}</span>
+      <div class="body">${p.body}</div>
+      <div class="mp-foot"><span>${p.likes} likes</span><span>·</span><span>${p.replies} replies</span></div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('fwTabs')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-fw]');
+  if (!btn) return;
+  document.querySelectorAll('#fwTabs button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFeedWidget(btn.dataset.fw);
+});
+
+renderFeedWidget('following');
+
+/* ─── Write a review modal ─── */
+let reviewCtx = null; // { propertyId, propertyName, cardId }
+let reviewStarsPicked = 0;
+
+function openReviewModal(propertyId, propertyName, cardId) {
+  reviewCtx = { propertyId, propertyName, cardId };
+  reviewStarsPicked = 0;
+  document.getElementById('reviewModalSub').textContent = `Your stay at ${propertyName}`;
+  document.getElementById('reviewText').value = '';
+  document.getElementById('reviewToProperty').checked = true;
+  document.getElementById('reviewToFeed').checked = true;
+  paintStars(0);
+  document.getElementById('reviewSubmitBtn').disabled = true;
+  document.getElementById('reviewModalOverlay').style.display = 'flex';
+}
+
+function closeReviewModal() {
+  document.getElementById('reviewModalOverlay').style.display = 'none';
+  reviewCtx = null;
+}
+
+function paintStars(n) {
+  document.querySelectorAll('.review-star').forEach(btn => {
+    const filled = Number(btn.dataset.star) <= n;
+    const svg = btn.querySelector('svg');
+    svg.style.fill = filled ? 'var(--brick)' : 'none';
+    svg.style.stroke = filled ? 'var(--brick)' : 'var(--rule-3)';
+  });
+}
+
+document.querySelectorAll('.review-star').forEach(btn => {
+  btn.addEventListener('mouseenter', () => paintStars(Number(btn.dataset.star)));
+  btn.addEventListener('mouseleave', () => paintStars(reviewStarsPicked));
+  btn.addEventListener('click', () => {
+    reviewStarsPicked = Number(btn.dataset.star);
+    paintStars(reviewStarsPicked);
+    checkReviewValid();
+  });
+});
+
+document.getElementById('reviewText')?.addEventListener('input', checkReviewValid);
+
+function checkReviewValid() {
+  const text = document.getElementById('reviewText').value.trim();
+  document.getElementById('reviewSubmitBtn').disabled = !(reviewStarsPicked > 0 && text.length >= 10);
+}
+
+function submitReview() {
+  if (!reviewCtx || reviewStarsPicked === 0) return;
+  const text = document.getElementById('reviewText').value.trim();
+  const toProperty = document.getElementById('reviewToProperty').checked;
+  const toFeed = document.getElementById('reviewToFeed').checked;
+  if (!toProperty && !toFeed) { casaToast('Choose at least one place to post this'); return; }
+
+  const dateLabel = new Date().toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+
+  if (toProperty) {
+    let store = {};
+    try { store = JSON.parse(localStorage.getItem('casa:reviews') || '{}'); } catch { /* ignore */ }
+    if (!store[reviewCtx.propertyId]) store[reviewCtx.propertyId] = [];
+    store[reviewCtx.propertyId].unshift({ name: 'You', stars: reviewStarsPicked, text, date: dateLabel });
+    localStorage.setItem('casa:reviews', JSON.stringify(store));
+  }
+
+  if (toFeed) {
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem('casa:local-feed-posts') || '[]'); } catch { /* ignore */ }
+    local.unshift({
+      id: Date.now(), county: 'all', type: 'review', role: 'guest',
+      av: 'Y', avC: 'guest', name: 'You', badge: 'Guest', when: 'Just now',
+      where: reviewCtx.propertyName, likes: 0, replyCount: 0,
+      propertyId: Number(reviewCtx.propertyId) || undefined,
+      review: { stars: reviewStarsPicked, text: `"${text}"`, meta: `Reviewed ${dateLabel}` },
+    });
+    localStorage.setItem('casa:local-feed-posts', JSON.stringify(local));
+  }
+
+  // Update the stay card in place
+  const card = document.getElementById(reviewCtx.cardId);
+  if (card) {
+    const sb = card.querySelector('.sb');
+    if (sb) {
+      sb.querySelector('button')?.remove();
+      const when = sb.querySelector('.when');
+      if (when) when.innerHTML = `<span class="stars">${'★'.repeat(reviewStarsPicked)}${'☆'.repeat(5 - reviewStarsPicked)}</span> ${dateLabel}`;
+      const reviewDiv = document.createElement('div');
+      reviewDiv.className = 'review';
+      reviewDiv.textContent = `"${text}"`;
+      sb.appendChild(reviewDiv);
+    }
+  }
+
+  const where = toProperty && toFeed ? 'the property page and the feed' : toProperty ? 'the property page' : 'the feed';
+  casaToast(`Review posted to ${where} ✓`);
+  closeReviewModal();
+}
+
 function setMode(mode, btn) {
   document.body.className = 'mode-' + mode;
   document.querySelectorAll('.role-toggle button').forEach(b => b.classList.remove('active'));
