@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Local attractions &amp; tips — Casa</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+  .att-hero { padding: 40px 0 28px; border-bottom: 1px solid var(--rule); }
+  .att-hero .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 12px; }
+  .att-hero h1 { font-family: var(--serif); font-size: 48px; line-height: 1; letter-spacing: -0.02em; margin-bottom: 12px; }
+  .att-hero h1 i { font-style: italic; color: var(--brick); }
+  .att-hero p { color: var(--ink-3); font-size: 15px; max-width: 60ch; line-height: 1.55; }
+
+  .att-filters { display: flex; gap: 8px; flex-wrap: wrap; padding: 20px 0; overflow-x: auto; }
+  .att-pill { flex-shrink: 0; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--rule); background: var(--surface); font-size: 13px; cursor: pointer; color: var(--ink-2); transition: border-color .12s, background .12s; }
+  .att-pill:hover { border-color: var(--ink-3); }
+  .att-pill.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  .att-layout { padding: 8px 0 80px; display: grid; grid-template-columns: 1fr 320px; gap: 40px; }
+  .att-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-content: start; }
+  .att-card { border: 1px solid var(--rule); border-radius: 16px; padding: 20px; background: var(--surface); text-decoration: none; color: inherit; display: block; transition: border-color .12s, transform .12s; }
+  .att-card:hover { border-color: var(--ink); transform: translateY(-2px); }
+  .att-card .ac-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .att-card .av { width: 34px; height: 34px; border-radius: 50%; background: var(--brick); color: white; display: inline-flex; align-items: center; justify-content: center; font-family: var(--serif); font-style: italic; font-size: 14px; flex-shrink: 0; }
+  .att-card .av.guest { background: var(--moss); }
+  .att-card .av.ink { background: var(--ink); }
+  .att-card .ac-who { font-size: 13px; font-weight: 500; }
+  .att-card .ac-when { font-family: var(--mono); font-size: 10px; color: var(--ink-4); text-transform: uppercase; letter-spacing: .04em; margin-top: 1px; }
+  .att-card .ac-where { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; text-transform: uppercase; color: var(--brick); margin-bottom: 10px; }
+  .att-card .ac-where svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .att-card .ac-body { font-size: 14.5px; line-height: 1.55; color: var(--ink-2); }
+  .att-card .ac-body .tag { color: var(--brick); }
+  .att-card .ac-foot { display: flex; align-items: center; gap: 6px; margin-top: 14px; font-size: 12.5px; color: var(--ink-4); }
+  .att-card .ac-foot svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+
+  .att-empty { grid-column: 1 / -1; text-align: center; padding: 56px 32px; border: 1px dashed var(--rule-3); border-radius: 16px; color: var(--ink-3); }
+
+  .att-side { position: sticky; top: 84px; align-self: start; }
+  .att-compose { border: 1px solid var(--rule); border-radius: 16px; padding: 20px; background: var(--surface); }
+  .att-compose h3 { font-family: var(--serif); font-size: 20px; margin-bottom: 6px; }
+  .att-compose p { font-size: 12.5px; color: var(--ink-3); margin-bottom: 14px; line-height: 1.5; }
+  .att-compose label { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin: 10px 0 5px; }
+  .att-compose input, .att-compose textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--rule); border-radius: 10px; font-family: var(--sans); font-size: 13.5px; background: var(--paper); }
+  .att-compose textarea { min-height: 90px; resize: vertical; }
+  .att-compose button { width: 100%; margin-top: 14px; padding: 11px; border: none; border-radius: 10px; background: var(--brick); color: white; font-size: 14px; cursor: pointer; }
+  .att-compose button:hover { background: var(--brick-2); }
+  .att-compose button:disabled { background: var(--rule-3); cursor: not-allowed; }
+
+  @media (max-width: 900px) {
+    .att-layout { grid-template-columns: 1fr; }
+    .att-side { position: static; order: -1; }
+    .att-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="casa-nav">
+  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
+  <div class="nav-right">
+    <a class="nav-link" href="browse.html">Browse</a>
+    <a class="nav-link" href="feed.html">Feed</a>
+    <a class="nav-link" href="attractions.html">Attractions</a>
+    <a class="nav-link" href="list.html">Become a host</a>
+    <div class="nav-divider"></div>
+    <a class="nav-link" href="messages.html">Messages</a>
+    <a class="nav-link" href="signup.html">Sign in</a>
+    <a class="nav-link primary" href="signup.html">Join free</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="att-hero">
+    <div class="eyebrow">Casa / Community / Attractions</div>
+    <h1>Local <i>attractions</i> &amp; tips</h1>
+    <p>Walks, viewpoints, cafés, and hidden spots — shared by the hosts and guests who actually know them. Pulled straight from the community feed, in one browsable place.</p>
+  </div>
+
+  <div class="att-filters" id="attFilters"></div>
+
+  <div class="att-layout">
+    <div class="att-grid" id="attGrid"></div>
+
+    <aside class="att-side">
+      <div class="att-compose">
+        <h3>Share a <i>tip</i></h3>
+        <p>Know a walk, a view, or a place worth the detour? Post it here — it'll appear on this page and in the community feed.</p>
+        <label>Where</label>
+        <input type="text" id="attWhere" placeholder="e.g. Coniston, Cumbria">
+        <label>Your tip</label>
+        <textarea id="attBody" placeholder="What should people know?"></textarea>
+        <button id="attSubmit" onclick="submitAttraction()" disabled>Post tip</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<footer class="casa-foot">
+  <div class="inner">
+    <div class="top">
+      <div>
+        <div class="casa-mark-lg">casa</div>
+        <div class="pitch">A quieter place to find a holiday stay — <em>fee-free</em>, and direct with the host.</div>
+      </div>
+      <div><h5>Stays</h5><a href="browse.html">Browse all</a><a href="map.html">Map view</a><a href="last-minute.html">Last minute</a><a href="long-stays.html">Long stays</a></div>
+      <div><h5>Hosts</h5><a href="list.html">List a property</a><a href="host-resources.html">Resources</a><a href="community.html">Community</a></div>
+      <div><h5>Casa</h5><a href="about.html">Our story</a><a href="press.html">Press</a><a href="careers.html">Careers</a><a href="help.html">Help &amp; contact</a></div>
+    </div>
+    <div class="bot"><div>© 2026 Casa.co.uk</div><div><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div></div>
+  </div>
+</footer>
+
+<script src="casa-feed-posts.js"></script>
+<script src="casa.js"></script>
+<script>
+let attCounty = 'all';
+
+function getAllTips() {
+  const local = (function() { try { return JSON.parse(localStorage.getItem('casa:local-feed-posts') || '[]'); } catch { return []; } })();
+  return [...local, ...POSTS].filter(p => p.type === 'tip');
+}
+
+function renderFilters(tips) {
+  const counties = ['all', ...new Set(tips.map(t => t.county).filter(c => c && c !== 'all'))];
+  document.getElementById('attFilters').innerHTML = counties.map(c => {
+    const label = c === 'all' ? 'All regions' : c.charAt(0).toUpperCase() + c.slice(1);
+    return `<button class="att-pill${c === attCounty ? ' active' : ''}" onclick="setAttCounty('${c}')">${label}</button>`;
+  }).join('');
+}
+
+function setAttCounty(c) {
+  attCounty = c;
+  renderAttractions();
+}
+
+function renderAttractions() {
+  const tips = getAllTips();
+  renderFilters(tips);
+  const shown = attCounty === 'all' ? tips : tips.filter(t => t.county === attCounty || t.county === 'all');
+  const grid = document.getElementById('attGrid');
+  if (!shown.length) {
+    grid.innerHTML = `<div class="att-empty"><h3>No tips here yet</h3><p>Be the first to share one for this region.</p></div>`;
+    return;
+  }
+  grid.innerHTML = shown.map(t => `
+    <a class="att-card" href="feed.html?post=${t.id}">
+      <div class="ac-head">
+        <div class="av ${t.avC || ''}">${t.av || (t.name || '?')[0]}</div>
+        <div>
+          <div class="ac-who">${t.name}</div>
+          <div class="ac-when">${t.when}</div>
+        </div>
+      </div>
+      <div class="ac-where"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>${t.where || ''}</div>
+      <div class="ac-body">${t.body || ''}</div>
+      <div class="ac-foot">
+        <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg> ${t.likes || 0}
+        <span style="margin-left:auto">Open in feed →</span>
+      </div>
+    </a>
+  `).join('');
+}
+
+document.getElementById('attWhere').addEventListener('input', checkAttValid);
+document.getElementById('attBody').addEventListener('input', checkAttValid);
+function checkAttValid() {
+  const where = document.getElementById('attWhere').value.trim();
+  const body = document.getElementById('attBody').value.trim();
+  document.getElementById('attSubmit').disabled = !(where.length > 1 && body.length >= 15);
+}
+
+function submitAttraction() {
+  const where = document.getElementById('attWhere').value.trim();
+  const body = document.getElementById('attBody').value.trim();
+  if (where.length < 2 || body.length < 15) return;
+  const user = typeof casaGetUser === 'function' ? casaGetUser() : null;
+  const name = user?.name || 'You';
+
+  let local = [];
+  try { local = JSON.parse(localStorage.getItem('casa:local-feed-posts') || '[]'); } catch { local = []; }
+  local.unshift({
+    id: Date.now(),
+    county: 'all',
+    type: 'tip',
+    role: user?.role || 'guest',
+    av: name.charAt(0).toUpperCase(),
+    avC: 'guest',
+    name,
+    badge: user?.role === 'host' ? 'Host' : 'Guest',
+    when: 'Just now',
+    where,
+    likes: 0,
+    replyCount: 0,
+    body,
+  });
+  localStorage.setItem('casa:local-feed-posts', JSON.stringify(local));
+
+  document.getElementById('attWhere').value = '';
+  document.getElementById('attBody').value = '';
+  checkAttValid();
+  casaToast('Tip posted — visible here and in the feed');
+  attCounty = 'all';
+  renderAttractions();
+}
+
+renderAttractions();
+</script>
+</body>
+</html>
