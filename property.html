@@ -123,6 +123,15 @@
   .rev-row .val { font-family: var(--mono); font-size: 11px; color: var(--ink-3); text-align: right; }
 
   .rev-list { display: grid; grid-template-columns: 1fr 1fr; gap: 24px 32px; }
+
+  /* Community mentions */
+  #communityMentions { display: flex; flex-direction: column; gap: 14px; }
+  .cm-post { display: block; padding: 16px 18px; border: 1px solid var(--rule); border-radius: 12px; text-decoration: none; color: inherit; transition: border-color .12s; }
+  .cm-post:hover { border-color: var(--ink); }
+  .cm-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 6px; font-size: 13px; }
+  .cm-head .who { font-weight: 500; color: var(--ink); }
+  .cm-head .when { color: var(--ink-4); font-family: var(--mono); font-size: 10.5px; letter-spacing: .04em; }
+  .cm-body { font-size: 14px; color: var(--ink-2); line-height: 1.5; }
   .rev { padding: 4px 0; }
   .rev .r-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
   .rev .r-head .av { width: 40px; height: 40px; border-radius: 50%; background: var(--moss); color: white; display: inline-flex; align-items: center; justify-content: center; font-family: var(--serif); font-style: italic; font-size: 16px; }
@@ -465,6 +474,11 @@
         <div style="margin-top: 28px"><button class="btn btn-outline">Show all 23 reviews</button></div>
       </div>
 
+      <section style="padding:32px 0;border-top:1px solid var(--rule);display:none" id="communityMentionsSection">
+        <h2 class="h-2" style="margin-bottom:20px">From the <i>community</i></h2>
+        <div id="communityMentions"></div>
+      </section>
+
       <section style="padding:32px 0;border-top:1px solid var(--rule)">
         <h2 class="h-2" style="margin-bottom:20px">Similar <i>stays</i></h2>
         <div class="similar-row" id="similarStays"></div>
@@ -561,6 +575,7 @@
 <script src="casa-availability.js"></script>
 <script src="casa-images.js"></script>
 <script src="casa-hosts.js"></script>
+<script src="casa-feed-posts.js"></script>
 <script src="casa.js"></script>
 <script>
 const listing = getCasaProperty(new URLSearchParams(location.search).get('id'));
@@ -671,6 +686,25 @@ applyListingToPage(listing);
     </div>
   `).join('');
   list.insertAdjacentHTML('afterbegin', html);
+})();
+
+/* ─── From the community: feed posts that mention this property ─── */
+(function loadCommunityMentions() {
+  if (typeof POSTS === 'undefined') return;
+  const title = (listing.title || '').toLowerCase().trim();
+  const mentions = POSTS.filter(p => {
+    if (!p.prop || !p.prop.name) return false;
+    const name = p.prop.name.toLowerCase().trim();
+    return name === title || name.includes(title) || title.includes(name);
+  });
+  if (!mentions.length) return;
+  document.getElementById('communityMentionsSection').style.display = '';
+  document.getElementById('communityMentions').innerHTML = mentions.map(p => `
+    <a class="cm-post" href="feed.html?post=${p.id}">
+      <div class="cm-head"><span class="who">${p.name}</span><span class="when">${p.when}</span></div>
+      <div class="cm-body">${p.review ? p.review.text : p.body || ''}</div>
+    </a>
+  `).join('');
 })();
 
 const saveBtn = document.getElementById('propSaveBtn');
