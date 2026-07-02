@@ -78,6 +78,7 @@
   /* Results layout */
   .layout { display: grid; grid-template-columns: 1fr 460px; gap: 40px; padding: 32px 0 80px; }
   .results { display: grid; grid-template-columns: repeat(2, 1fr); gap: 28px 24px; }
+  .region-divider { grid-column: span 2; }
 
   /* Property card */
   .pc {
@@ -193,6 +194,10 @@
     .layout { grid-template-columns: 1fr; }
     .side { position: relative; top: auto; height: 360px; }
     .results { grid-template-columns: 1fr; }
+    .region-divider { grid-column: span 1; }
+  }
+  @media (max-width: 960px) {
+    .nav-search { display: none; }
   }
   /* Override: Verified badge — warm slate, not green (avoids Airbnb similarity) */
   .badge.verified-badge { background: rgba(22,20,15,0.08); color: var(--ink); border: 1px solid rgba(22,20,15,0.12); }
@@ -438,7 +443,7 @@
       </a>
 
       <!-- EDITORIAL DIVIDER — replaces ad-like featured banner -->
-      <div style="grid-column:span 2;display:flex;align-items:center;gap:16px;padding:8px 0">
+      <div class="region-divider" style="display:flex;align-items:center;gap:16px;padding:8px 0">
         <div style="flex:1;height:1px;background:var(--rule)"></div>
         <span style="font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-4)">More stays in this region</span>
         <div style="flex:1;height:1px;background:var(--rule)"></div>
