@@ -16,34 +16,6 @@
   .saved-head .meta { font-size: 13.5px; color: var(--ink-3); text-align: right; }
   .saved-head .meta .n { font-family: var(--serif); font-style: italic; color: var(--brick); font-size: 22px; }
 
-  /* Collection bar */
-  .coll-bar {
-    display: flex; gap: 12px; overflow-x: auto;
-    padding: 4px 0; scrollbar-width: none;
-  }
-  .coll-bar::-webkit-scrollbar { display: none; }
-  .coll {
-    flex-shrink: 0; display: flex; gap: 12px;
-    background: var(--surface); border: 1px solid var(--rule);
-    border-radius: 14px; padding: 10px 14px 10px 10px; cursor: pointer;
-    transition: border-color .12s, box-shadow .12s;
-    min-width: 220px; align-items: center;
-  }
-  .coll:hover, .coll.active { border-color: var(--ink); }
-  .coll.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .coll .thumb { width: 48px; height: 48px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
-  .coll .thumb .ph { width: 100%; height: 100%; }
-  .coll.active .thumb .ph::after { color: rgba(255,255,255,0.7); }
-  .coll .nm { font-family: var(--serif); font-style: italic; font-size: 17px; line-height: 1; }
-  .coll .ct { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; opacity: 0.6; margin-top: 4px; }
-  .coll.new-coll {
-    background: transparent; border-style: dashed; min-width: 180px;
-    display: flex; align-items: center; justify-content: center; padding: 18px; color: var(--ink-3);
-    font-size: 13px;
-  }
-  .coll.new-coll:hover { background: var(--surface); color: var(--ink); }
-  .coll.new-coll svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.6; margin-right: 4px; }
-
   /* Layout */
   .saved-layout { padding: 32px 0 80px; }
   .results {
@@ -67,13 +39,6 @@
   .pc-image .ph { width: 100%; height: 100%; }
   .pc-image .save-heart { position: absolute; top: 12px; right: 12px; }
   .pc-image .save-heart.saved svg { fill: var(--brick); stroke: var(--brick); }
-  .pc-image .note {
-    position: absolute; left: 12px; bottom: 12px; right: 56px;
-    background: rgba(22,20,15,0.78); backdrop-filter: blur(8px); color: white;
-    padding: 8px 12px; border-radius: 10px;
-    font-family: var(--serif); font-style: italic; font-size: 14px; line-height: 1.3;
-  }
-  .pc-image .note::before { content: '"'; font-size: 28px; color: var(--brick-2); position: relative; top: 6px; line-height: 0; margin-right: 4px; }
   .pc-body { padding: 14px 4px 0; }
   .pc-row1 { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
   .pc-title { font-family: var(--serif); font-size: 22px; line-height: 1.1; letter-spacing: -0.01em; }
@@ -87,16 +52,7 @@
   .pc-price-row .p-per { font-size: 12px; color: var(--ink-3); }
   .pc-action { display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; color: var(--brick); text-decoration: underline; text-underline-offset: 3px; }
 
-  /* Availability strip */
-  .avail-strip {
-    margin-top: 8px; display: flex; gap: 12px; align-items: center;
-    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-4);
-  }
-  .avail-strip .live-dot { background: var(--moss); }
-  .avail-strip .av-warn .live-dot { background: var(--brick); }
-  .avail-strip .av-warn { color: var(--brick); }
-
-  /* Empty state for second collection */
+  /* Empty state */
   .empty-card {
     grid-column: span 3;
     padding: 64px 32px; text-align: center; border: 1px dashed var(--rule-3); border-radius: 18px;
@@ -137,186 +93,14 @@
         <h1 style="margin-top: 10px"><i>Saved</i> places.</h1>
       </div>
       <div class="meta">
-        <div><span class="n">12</span> stays in 3 collections</div>
-        <div style="margin-top: 4px; color: var(--ink-4); font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;">Last saved · 2 hours ago</div>
-      </div>
-    </div>
-
-    <div class="coll-bar">
-      <div class="coll active">
-        <div class="thumb"><div class="ph warm" data-label=""></div></div>
-        <div><div class="nm">Summer 2026</div><div class="ct">7 stays · all UK</div></div>
-      </div>
-      <div class="coll">
-        <div class="thumb"><div class="ph sage" data-label=""></div></div>
-        <div><div class="nm">Anniversary trip</div><div class="ct">3 stays · Scotland</div></div>
-      </div>
-      <div class="coll">
-        <div class="thumb"><div class="ph ink" data-label=""></div></div>
-        <div><div class="nm">Wild &amp; off-grid</div><div class="ct">2 stays · all UK</div></div>
-      </div>
-      <div class="coll new-coll">
-        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-        New collection
+        <div><span class="n" id="savedCount">0</span> stays saved</div>
       </div>
     </div>
   </div>
 
   <!-- RESULTS -->
   <div class="saved-layout">
-    <div class="results">
-
-      <a class="pc" href="property.html?id=1">
-        <div class="pc-image">
-          <div class="ph warm" data-label="STONE COTTAGE · WINDERMERE"></div>
-          <button class="save-heart saved" onclick="event.preventDefault();const id=parseInt(this.closest('a.pc').href.split('id=')[1],10);casaToggleSaved(id,this)"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
-          <div class="note">Sarah's place &mdash; check July first.</div>
-        </div>
-        <div class="pc-body">
-          <div class="pc-row1">
-            <div class="pc-title">Stone Cottage, <i>Windermere</i></div>
-            <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 4.9</div>
-          </div>
-          <div class="pc-loc">Lake District · Sleeps 6 · Dogs ok</div>
-          <div class="pc-price-row">
-            <div><span class="p-amt"><i>£175</i></span><span class="p-per"> / night</span></div>
-            <span class="pc-action">Enquire →</span>
-          </div>
-          <div class="avail-strip">
-            <span><span class="live-dot"></span> Available your dates</span>
-          </div>
-        </div>
-      </a>
-
-      <a class="pc" href="property.html?id=15">
-        <div class="pc-image">
-          <div class="ph dusk" data-label="BLACKHOUSE · TROTTERNISH"></div>
-          <button class="save-heart saved" onclick="event.preventDefault();const id=parseInt(this.closest('a.pc').href.split('id=')[1],10);casaToggleSaved(id,this)"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
-        </div>
-        <div class="pc-body">
-          <div class="pc-row1">
-            <div class="pc-title">Blackhouse, <i>Trotternish</i></div>
-            <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 5.0</div>
-          </div>
-          <div class="pc-loc">Isle of Skye · Sleeps 4 · Hot tub</div>
-          <div class="pc-price-row">
-            <div><span class="p-amt"><i>£195</i></span><span class="p-per"> / night</span></div>
-            <span class="pc-action">Enquire →</span>
-          </div>
-          <div class="avail-strip av-warn">
-            <span><span class="live-dot"></span> Booked 7 – 14 Jul</span>
-          </div>
-        </div>
-      </a>
-
-      <a class="pc" href="property.html?id=33">
-        <div class="pc-image">
-          <div class="ph sage" data-label="STONE FARMHOUSE · SNOWDONIA"></div>
-          <button class="save-heart saved" onclick="event.preventDefault();const id=parseInt(this.closest('a.pc').href.split('id=')[1],10);casaToggleSaved(id,this)"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
-          <div class="note">Big garden for the dog.</div>
-        </div>
-        <div class="pc-body">
-          <div class="pc-row1">
-            <div class="pc-title">Stone Farmhouse, <i>Betws-y-Coed</i></div>
-            <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 4.7</div>
-          </div>
-          <div class="pc-loc">Snowdonia, Wales · Sleeps 8 · Pets ok</div>
-          <div class="pc-price-row">
-            <div><span class="p-amt"><i>£210</i></span><span class="p-per"> / night</span></div>
-            <span class="pc-action">Enquire →</span>
-          </div>
-          <div class="avail-strip">
-            <span><span class="live-dot"></span> Available your dates</span>
-          </div>
-        </div>
-      </a>
-
-      <a class="pc" href="property.html?id=35">
-        <div class="pc-image">
-          <div class="ph fog" data-label="CLIFFSIDE COTTAGE · PORTRUSH"></div>
-          <button class="save-heart saved" onclick="event.preventDefault();const id=parseInt(this.closest('a.pc').href.split('id=')[1],10);casaToggleSaved(id,this)"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
-        </div>
-        <div class="pc-body">
-          <div class="pc-row1">
-            <div class="pc-title">Cliffside Cottage, <i>Portrush</i></div>
-            <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 4.9</div>
-          </div>
-          <div class="pc-loc">Antrim Coast, N. Ireland · Sleeps 5</div>
-          <div class="pc-price-row">
-            <div><span class="p-amt"><i>£140</i></span><span class="p-per"> / night</span></div>
-            <span class="pc-action">Enquire →</span>
-          </div>
-          <div class="avail-strip">
-            <span><span class="live-dot"></span> Available your dates</span>
-          </div>
-        </div>
-      </a>
-
-      <a class="pc" href="property.html?id=5">
-        <div class="pc-image">
-          <div class="ph cool" data-label="SHEPHERDS HUT · BUTTERMERE"></div>
-          <button class="save-heart saved" onclick="event.preventDefault();const id=parseInt(this.closest('a.pc').href.split('id=')[1],10);casaToggleSaved(id,this)"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
-        </div>
-        <div class="pc-body">
-          <div class="pc-row1">
-            <div class="pc-title">Shepherd's Hut, <i>Buttermere</i></div>
-            <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 4.7</div>
-          </div>
-          <div class="pc-loc">Lake District · Sleeps 2 · Off-grid</div>
-          <div class="pc-price-row">
-            <div><span class="p-amt"><i>£95</i></span><span class="p-per"> / night</span></div>
-            <span class="pc-action">Enquire →</span>
-          </div>
-          <div class="avail-strip av-warn">
-            <span><span class="live-dot"></span> Price up £10 since you saved</span>
-          </div>
-        </div>
-      </a>
-
-      <a class="pc" href="property.html?id=7">
-        <div class="pc-image">
-          <div class="ph brick" data-label="THE GRANARY · HAWKSHEAD"></div>
-          <button class="save-heart saved" onclick="event.preventDefault();const id=parseInt(this.closest('a.pc').href.split('id=')[1],10);casaToggleSaved(id,this)"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
-          <div class="note">Pub walking distance &mdash; Tom mentioned.</div>
-        </div>
-        <div class="pc-body">
-          <div class="pc-row1">
-            <div class="pc-title">The Granary, <i>Hawkshead</i></div>
-            <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 4.9</div>
-          </div>
-          <div class="pc-loc">Lake District · Sleeps 5 · Open fire</div>
-          <div class="pc-price-row">
-            <div><span class="p-amt"><i>£195</i></span><span class="p-per"> / night</span></div>
-            <span class="pc-action">Enquire →</span>
-          </div>
-          <div class="avail-strip">
-            <span><span class="live-dot"></span> Editor's pick</span>
-          </div>
-        </div>
-      </a>
-
-      <a class="pc" href="property.html?id=3">
-        <div class="pc-image">
-          <div class="ph ink" data-label="LAKESIDE CABIN · CONISTON"></div>
-          <button class="save-heart saved" onclick="event.preventDefault();const id=parseInt(this.closest('a.pc').href.split('id=')[1],10);casaToggleSaved(id,this)"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
-        </div>
-        <div class="pc-body">
-          <div class="pc-row1">
-            <div class="pc-title">Lakeside Cabin, <i>Coniston</i></div>
-            <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> 5.0</div>
-          </div>
-          <div class="pc-loc">Lake District · Sleeps 2 · On water</div>
-          <div class="pc-price-row">
-            <div><span class="p-amt"><i>£145</i></span><span class="p-per"> / night</span></div>
-            <span class="pc-action">Enquire →</span>
-          </div>
-          <div class="avail-strip">
-            <span><span class="live-dot"></span> Available your dates</span>
-          </div>
-        </div>
-      </a>
-
-    </div>
+    <div class="results" id="savedResults"></div>
   </div>
 </div>
 
@@ -343,5 +127,57 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
 <script src="casa.js"></script>
+<script>
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function savedCardHtml(p) {
+  return `
+    <a class="pc" href="property.html?id=${p.id}">
+      <div class="pc-image">
+        <div class="ph" style="background:${p.col}" data-label="${esc((p.title || '').toUpperCase())} · ${esc((p.loc || '').toUpperCase())}"></div>
+        <button class="save-heart saved" onclick="event.preventDefault();event.stopPropagation();casaToggleSaved(${p.id},this).then(saved=>{if(!saved){this.closest('a.pc').remove();renderSavedCount();}})"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
+      </div>
+      <div class="pc-body">
+        <div class="pc-row1">
+          <div class="pc-title">${esc(p.title)}, <i>${esc(p.loc)}</i></div>
+          <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> ${p.rating ? p.rating.toFixed(1) : 'New'}</div>
+        </div>
+        <div class="pc-loc">${esc(p.rLabel || p.loc)} · Sleeps ${p.sleeps}</div>
+        <div class="pc-price-row">
+          <div><span class="p-amt"><i>£${p.price}</i></span><span class="p-per"> / night</span></div>
+          <span class="pc-action">Enquire &rarr;</span>
+        </div>
+      </div>
+    </a>`;
+}
+
+function renderSavedCount() {
+  document.getElementById('savedCount').textContent = document.querySelectorAll('#savedResults .pc').length;
+}
+
+function renderSaved() {
+  const ids = casaGetSavedIds();
+  const grid = document.getElementById('savedResults');
+  if (!ids.length) {
+    grid.innerHTML = '<div class="empty-card"><h3>No <i>saved</i> stays yet</h3><p>Tap the heart on any listing to save it here.</p><a class="btn btn-primary" href="browse.html">Browse stays</a></div>';
+    renderSavedCount();
+    return;
+  }
+  const props = ids.map(id => getCasaProperty(id)).filter(Boolean);
+  grid.innerHTML = props.map(savedCardHtml).join('');
+  renderSavedCount();
+}
+
+// Instant paint from whatever's cached locally, then reconcile with the
+// signed-in user's real saved_properties rows and any real (non-seed)
+// listings once both round trips land.
+renderSaved();
+
+(async () => {
+  if (typeof casaSyncSavedFromSupabase === 'function') await casaSyncSavedFromSupabase();
+  if (typeof casaRefreshProperties === 'function') await casaRefreshProperties();
+  renderSaved();
+})();
+</script>
 </body>
 </html>
