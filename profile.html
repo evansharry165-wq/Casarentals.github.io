@@ -314,8 +314,8 @@
     </div>
     <div class="info">
       <div class="name-edit">
-        <input type="text" id="firstNm" class="italic" value="James" style="width:160px">
-        <input type="text" id="lastNm" value="Harrison" style="width:240px">
+        <input type="text" id="firstNm" class="italic" placeholder="First name" style="width:160px">
+        <input type="text" id="lastNm" placeholder="Last name" style="width:240px">
         <span class="edit-tag">Click to edit</span>
       </div>
       <div class="badges">
@@ -1108,7 +1108,16 @@ function verifItem(done, label, sub) {
 async function renderProfileReal() {
   if (!window.casaSupabase) return;
   const { data: { session } } = await window.casaSupabase.auth.getSession();
-  if (!session) return;
+  if (!session) {
+    // This page is inherently "my account" — there's nothing honest to
+    // show a signed-out visitor, and leaving the static markup as-is
+    // showed a fake "James Harrison" identity to every signed-out
+    // visitor. Same pattern used by list.html/booking.html for
+    // account-required actions.
+    if (window.casaToast) casaToast('Please sign in to view your profile');
+    window.location.href = 'signup.html';
+    return;
+  }
 
   const { data: profile } = await window.casaSupabase
     .from('profiles')

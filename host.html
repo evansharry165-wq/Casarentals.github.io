@@ -395,7 +395,20 @@ function dhKpiCard(lbl, val, sub) {
 async function renderHostDashboard() {
   if (!window.casaSupabase) return;
   const { data: { session } } = await window.casaSupabase.auth.getSession();
-  if (!session) return;
+  if (!session) {
+    // Previously left every "Loading…" placeholder stuck forever for a
+    // signed-out visitor — an honest prompt instead of a dead end.
+    document.getElementById('dhEyebrow').textContent = 'Not signed in';
+    document.getElementById('dhGreetName').textContent = 'Sign in to see your dashboard.';
+    document.getElementById('dhGreetBody').innerHTML = '<a href="signup.html" style="color:var(--brick)">Sign in or create a host account →</a>';
+    document.getElementById('dhKpiRow').innerHTML = '';
+    document.getElementById('dhCalStrip').innerHTML = '';
+    document.getElementById('enqTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--ink-3);padding:24px">Sign in to see your enquiries.</td></tr>';
+    document.getElementById('dhListings').innerHTML = '<p style="color:var(--ink-3)">Sign in to manage your listings.</p>';
+    document.getElementById('dhTasks').textContent = '';
+    document.getElementById('dhReviewsMeta').textContent = '';
+    return;
+  }
 
   const [{ data: profile }, { data: properties }] = await Promise.all([
     window.casaSupabase.from('profiles').select('full_name, joined_at').eq('id', session.user.id).single(),
