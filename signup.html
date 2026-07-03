@@ -332,7 +332,10 @@
 
     const { data, error } = await window.casaSupabase.auth.signUp({
       email, password: pwd,
-      options: { data: { full_name: fname + ' ' + lname, role: currentRole } }
+      options: {
+        data: { full_name: fname + ' ' + lname, role: currentRole },
+        emailRedirectTo: new URL('auth-callback.html', location.href).toString(),
+      }
     });
 
     if (error) {

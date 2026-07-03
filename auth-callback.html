@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirming — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css">
+<style>
+  .cb-wrap { max-width: 460px; margin: 0 auto; padding: 120px 24px; text-align: center; }
+  .cb-wrap h1 { font-family: var(--serif); font-size: 34px; line-height: 1.1; margin-bottom: 14px; }
+  .cb-wrap h1 i { font-style: italic; color: var(--brick); }
+  .cb-wrap p { font-size: 15px; color: var(--ink-3); line-height: 1.6; margin-bottom: 24px; }
+  .cb-icon { width: 52px; height: 52px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+  .cb-icon.ok { background: var(--moss); color: white; }
+  .cb-icon.err { background: var(--brick); color: white; }
+  .cb-icon svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .cb-form { display: flex; gap: 8px; max-width: 360px; margin: 0 auto; }
+  .cb-form input { flex: 1; padding: 12px 14px; border: 1px solid var(--rule-3); border-radius: 10px; font-family: inherit; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<nav class="casa-nav">
+  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
+</nav>
+
+<div class="cb-wrap" id="cbWrap">
+  <div class="cb-icon ok"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></div>
+  <h1>Confirming your <i>account</i>&hellip;</h1>
+  <p>One moment.</p>
+</div>
+
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="casa-supabase.js"></script>
+<script src="casa.js"></script>
+<script>
+// Supabase redirects here as #access_token=...&type=signup on success, or
+// #error=...&error_code=...&error_description=... on a dead/used/expired
+// link. supabase-js auto-parses the success case into a real session
+// (detectSessionInUrl defaults to true) — casa.js's onAuthStateChange
+// listener (casaSyncUserFromSession) picks that up on its own. The error
+// case is never surfaced by anything, so this page has to read it itself.
+const hashParams = new URLSearchParams(location.hash.replace(/^#/, ''));
+const err = hashParams.get('error_code');
+const wrap = document.getElementById('cbWrap');
+
+const ERROR_COPY = {
+  otp_expired: 'This confirmation link has expired or was already used.',
+};
+
+function showError(email) {
+  wrap.innerHTML = `
+    <div class="cb-icon err"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"/></svg></div>
+    <h1>Link <i>didn't work.</i></h1>
+    <p>${ERROR_COPY[err] || 'Something went wrong confirming your account.'} Enter your email and we'll send a fresh link.</p>
+    <div class="cb-form">
+      <input type="email" id="cbEmail" placeholder="you@email.com" value="${email || ''}">
+      <button class="btn btn-primary" onclick="resendConfirmation()">Resend</button>
+    </div>
+  `;
+}
+
+async function resendConfirmation() {
+  const email = document.getElementById('cbEmail').value.trim();
+  if (!email || !email.includes('@')) { if (window.casaToast) casaToast('Enter a valid email'); return; }
+  const { error } = await window.casaSupabase.auth.resend({ type: 'signup', email });
+  wrap.innerHTML = error
+    ? `<div class="cb-icon err"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"/></svg></div><h1>Couldn't <i>resend.</i></h1><p>${error.message}</p>`
+    : `<div class="cb-icon ok"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></div><h1>Check your <i>email.</i></h1><p>A fresh confirmation link is on its way to ${email}.</p>`;
+}
+window.resendConfirmation = resendConfirmation;
+
+if (err) {
+  showError('');
+} else {
+  // Success path: wait for casa.js's auth listener to pick up the
+  // session supabase-js already parsed from the hash, then move on.
+  let tries = 0;
+  const poll = setInterval(() => {
+    const user = typeof casaGetUser === 'function' ? casaGetUser() : null;
+    tries++;
+    if (user) {
+      clearInterval(poll);
+      wrap.innerHTML = `
+        <div class="cb-icon ok"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></div>
+        <h1>You're <i>confirmed.</i></h1>
+        <p>Taking you in&hellip;</p>`;
+      setTimeout(() => {
+        window.location.href = user.role === 'host' ? 'list.html?welcome=1' : 'browse.html?welcome=1';
+      }, 1200);
+    } else if (tries > 20) {
+      clearInterval(poll);
+      wrap.innerHTML = `
+        <div class="cb-icon err"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"/></svg></div>
+        <h1>Nothing to <i>confirm.</i></h1>
+        <p>This link may already have been used, or there's nothing pending. Try signing in instead.</p>
+        <a class="btn btn-primary" href="signup.html">Go to sign in</a>`;
+    }
+  }, 300);
+}
+</script>
+</body>
+</html>
