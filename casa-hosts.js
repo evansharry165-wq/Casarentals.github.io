@@ -2,6 +2,7 @@
 const CASA_HOSTS = {
   'sarah-r': {
     id: 'sarah-r',
+    supabaseId: 'dc5a5686-8d2a-4e6a-9e1a-ede96a15a09c',
     name: 'Sarah R.',
     fullName: 'Sarah Reynolds',
     avatar: 'S',
@@ -25,6 +26,7 @@ const CASA_HOSTS = {
   },
   'patrick-m': {
     id: 'patrick-m',
+    supabaseId: 'd2404f99-a7e6-403d-880f-9f518b0beace',
     name: 'Patrick M.',
     fullName: 'Patrick McAllister',
     avatar: 'P',
@@ -48,6 +50,7 @@ const CASA_HOSTS = {
   },
   'emma-t': {
     id: 'emma-t',
+    supabaseId: 'b7f266f1-6c36-4c19-bd5a-06c61ac1a6a6',
     name: 'Emma T.',
     fullName: 'Emma Thorne',
     avatar: 'E',
@@ -94,6 +97,7 @@ const CASA_HOSTS = {
   },
   'helen-w': {
     id: 'helen-w',
+    supabaseId: '51cf41f6-ecad-4aa8-8770-61b1b7e386ae',
     name: 'Helen W.',
     fullName: 'Helen Walsh',
     avatar: 'H',
@@ -117,6 +121,7 @@ const CASA_HOSTS = {
   },
   'david-k': {
     id: 'david-k',
+    supabaseId: 'd8a0a4dc-b3f7-495e-8f61-9b881d38339a',
     name: 'David K.',
     fullName: 'David Kerr',
     avatar: 'D',

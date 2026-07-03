@@ -64,7 +64,11 @@ function casaIsSaved(id) {
   return casaGetSavedIds().includes(Number(id));
 }
 
-function casaToggleSaved(id, btn) {
+// Toggles the local cache immediately (so the UI responds instantly and
+// still works signed-out), then mirrors the change into saved_properties
+// when a real session exists. localStorage stays the synchronous read
+// path everywhere else in the codebase.
+async function casaToggleSaved(id, btn) {
   const ids = casaGetSavedIds();
   const num = Number(id);
   const idx = ids.indexOf(num);
@@ -74,7 +78,24 @@ function casaToggleSaved(id, btn) {
   const saved = ids.includes(num);
   if (btn) btn.classList.toggle('saved', saved);
   casaToast(saved ? 'Saved to your list' : 'Removed from saved');
+
+  const user = casaGetUser();
+  if (window.casaSupabase && user) {
+    if (saved) {
+      await window.casaSupabase.from('saved_properties').upsert({ user_id: user.id, property_id: num });
+    } else {
+      await window.casaSupabase.from('saved_properties').delete().eq('user_id', user.id).eq('property_id', num);
+    }
+  }
   return saved;
+}
+
+async function casaSyncSavedFromSupabase() {
+  if (!window.casaSupabase) return;
+  const user = casaGetUser();
+  if (!user) return;
+  const { data } = await window.casaSupabase.from('saved_properties').select('property_id').eq('user_id', user.id);
+  if (data) localStorage.setItem(CASA_SAVED_KEY, JSON.stringify(data.map(r => r.property_id)));
 }
 
 window.casaIsSaved = casaIsSaved;
@@ -94,7 +115,12 @@ function casaIsFollowing(hostKey) {
   return casaGetFollowedHosts().includes(String(hostKey));
 }
 
-function casaToggleFollow(hostKey, btn) {
+// hostKey is a local CASA_HOSTS slug (e.g. 'sarah-r'), not a Supabase id —
+// resolved to the real profile id via CASA_HOSTS[key].supabaseId, seeded
+// to match the demo host auth accounts (see supabase/seed.sql). Real
+// (non-seed) hosts created via signup.html use their own auth id directly
+// once host profiles stop being sourced from casa-hosts.js.
+async function casaToggleFollow(hostKey, btn) {
   const key = String(hostKey);
   const list = casaGetFollowedHosts();
   const idx = list.indexOf(key);
@@ -107,7 +133,28 @@ function casaToggleFollow(hostKey, btn) {
     btn.textContent = following ? 'Following' : 'Follow';
   }
   casaToast(following ? `Following ${hostKey}` : `Unfollowed ${hostKey}`);
+
+  const user = casaGetUser();
+  const targetId = typeof CASA_HOSTS !== 'undefined' ? CASA_HOSTS[key]?.supabaseId : null;
+  if (window.casaSupabase && user && targetId) {
+    if (following) {
+      await window.casaSupabase.from('follows').upsert({ follower_id: user.id, followed_id: targetId });
+    } else {
+      await window.casaSupabase.from('follows').delete().eq('follower_id', user.id).eq('followed_id', targetId);
+    }
+  }
   return following;
+}
+
+async function casaSyncFollowsFromSupabase() {
+  if (!window.casaSupabase || typeof CASA_HOSTS === 'undefined') return;
+  const user = casaGetUser();
+  if (!user) return;
+  const { data } = await window.casaSupabase.from('follows').select('followed_id').eq('follower_id', user.id);
+  if (!data) return;
+  const followedIds = new Set(data.map(r => r.followed_id));
+  const slugs = Object.keys(CASA_HOSTS).filter(slug => CASA_HOSTS[slug].supabaseId && followedIds.has(CASA_HOSTS[slug].supabaseId));
+  localStorage.setItem(CASA_FOLLOWS_KEY, JSON.stringify(slugs));
 }
 
 window.casaGetFollowedHosts = casaGetFollowedHosts;
@@ -505,6 +552,8 @@ async function casaSyncUserFromSession(session) {
     role,
   });
   casaRenderAuthNav();
+  casaSyncSavedFromSupabase();
+  casaSyncFollowsFromSupabase();
 }
 
 function casaInitSupabaseAuthSync() {
