@@ -571,6 +571,8 @@
 
 <script src="casa-properties.js"></script>
 <script src="casa-availability.js"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="casa-supabase.js"></script>
 <script>
 // ═══════════════════════════════════════════
 // READ URL PARAMS
@@ -581,13 +583,44 @@ const listing = getCasaProperty(qp.get('id'));
 const PROPERTY = {
   id: listing.id,
   title: qp.get('prop') || `${listing.title}, ${listing.loc}`,
-  host: 'Sarah',
-  hostFull: 'Sarah R.',
+  host: 'the host',
+  hostFull: '',
+  hostId: null,
   pricePerNight: parseInt(qp.get('price'), 10) || listing.price,
   maxGuests: listing.sleeps,
   minNights: listing.minNights || 1,
   petsWelcome: true,
 };
+
+// Resolve the real host from Supabase (property_id -> host_id -> profile).
+// Falls back to the local CASA_HOSTS approximation if the lookup fails
+// (e.g. offline preview) so the page still renders something sensible.
+async function resolvePropertyHost() {
+  try {
+    const { data } = await window.casaSupabase
+      .from('properties')
+      .select('host_id, profiles!properties_host_id_fkey(full_name)')
+      .eq('id', PROPERTY.id)
+      .single();
+    if (data?.host_id) {
+      PROPERTY.hostId = data.host_id;
+      PROPERTY.hostFull = data.profiles?.full_name || '';
+      PROPERTY.host = (PROPERTY.hostFull || '').split(' ')[0] || 'the host';
+    }
+  } catch {
+    /* fall through to local fallback below */
+  }
+  if (!PROPERTY.hostId && typeof getCasaHostForProperty === 'function') {
+    const fallback = getCasaHostForProperty(PROPERTY.id);
+    if (fallback) {
+      PROPERTY.hostFull = fallback.name || '';
+      PROPERTY.host = (fallback.name || '').split(' ')[0] || 'the host';
+    }
+  }
+  document.getElementById('hostFirstName').textContent = PROPERTY.host;
+  document.getElementById('submitBtn').innerHTML = `Send enquiry to ${PROPERTY.host} <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0"><path d="M5 12h14M13 5l7 7-7 7"/></svg>`;
+}
+const propertyHostReady = resolvePropertyHost();
 
 const propUrl = `property.html?id=${listing.id}`;
 document.getElementById('backToProperty').href = propUrl;
@@ -600,11 +633,6 @@ if (crumbLink) {
 if (qp.get('checkin'))  document.getElementById('checkin').value  = qp.get('checkin');
 if (qp.get('checkout')) document.getElementById('checkout').value = qp.get('checkout');
 // Guest count from the URL is applied below once guestCount/setGuests are declared (see setGuests(guestCount) call).
-
-// Host first name
-document.getElementById('hostFirstName').textContent = PROPERTY.host;
-document.getElementById('submitBtn').textContent = '';
-document.getElementById('submitBtn').innerHTML = `Send enquiry to ${PROPERTY.host} <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0"><path d="M5 12h14M13 5l7 7-7 7"/></svg>`;
 
 // ═══════════════════════════════════════════
 // GUEST STEPPER
@@ -789,63 +817,80 @@ function validate() {
 
 // ═══════════════════════════════════════════
 // SUBMIT
-// ─────────────────────────────────────────
-// TO WIRE TO SUPABASE:
-// Replace the setTimeout block below with:
-//
-//   const { data, error } = await supabase
-//     .from('enquiries')
-//     .insert({
-//       property_id: PROPERTY.id,
-//       guest_id: supabase.auth.user().id,
-//       check_in: checkin,
-//       check_out: checkout,
-//       guests: guestCount,
-//       pets: pets,
-//       message: message,
-//       special_requests: special,
-//       status: 'pending'
-//     });
-//
-//   Then call: await supabase.functions.invoke('send-enquiry-email', {body: { enquiry_id: data[0].id }});
 // ═══════════════════════════════════════════
 async function submitEnquiry() {
   if (!validate()) return;
 
+  const user = typeof casaGetUser === 'function' ? casaGetUser() : null;
+  if (!user) {
+    if (window.casaToast) casaToast('Please sign in to send an enquiry');
+    window.location.href = 'signup.html';
+    return;
+  }
+
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
   document.getElementById('loadingOverlay').classList.add('show');
+
+  await propertyHostReady;
 
   const checkin  = document.getElementById('checkin').value;
   const checkout = document.getElementById('checkout').value;
   const email    = document.getElementById('email').value.trim();
   const fname    = document.getElementById('fname').value.trim();
   const message  = document.getElementById('message').value.trim();
+  const special  = document.getElementById('special')?.value.trim() || '';
+  const pets     = document.getElementById('pets').checked;
+  const nights   = Math.round((new Date(checkout) - new Date(checkin)) / 86400000);
+  const total    = PROPERTY.pricePerNight * nights;
 
-  // ── DEMO: simulate network delay ──
-  // In production, replace this with the Supabase insert above.
-  await new Promise(r => setTimeout(r, 1400));
+  const { data, error } = await window.casaSupabase
+    .from('enquiries')
+    .insert({
+      property_id: PROPERTY.id,
+      guest_id: user.id,
+      host_id: PROPERTY.hostId,
+      check_in: checkin,
+      check_out: checkout,
+      guests: guestCount,
+      pets: pets,
+      message: message,
+      special_requests: special,
+      total_price: total,
+      status: 'pending',
+    })
+    .select()
+    .single();
 
-  // Generate reference number (Supabase will return a real UUID)
-  const ref = 'CSA-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+  if (error) {
+    btn.disabled = false;
+    document.getElementById('loadingOverlay').classList.remove('show');
+    if (window.casaToast) casaToast('Could not send enquiry: ' + error.message);
+    else alert(error.message);
+    return;
+  }
+
+  const ref = 'CSA-' + String(data.id).padStart(6, '0');
 
   // Format dates for display
   const fmt = d => new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-  const nights = Math.round((new Date(checkout) - new Date(checkin)) / 86400000);
 
   // Populate success screen
   document.getElementById('s-ref').textContent    = ref;
   document.getElementById('s-host').textContent   = PROPERTY.host;
   document.getElementById('s-prop').textContent   = PROPERTY.title;
   document.getElementById('s-dates').textContent  = `${fmt(checkin)} → ${fmt(checkout)} (${nights} night${nights>1?'s':''})`;
-  document.getElementById('s-guests').textContent = guestCount + ' guest' + (guestCount > 1 ? 's' : '') + (document.getElementById('pets').checked ? ' + pets' : '');
+  document.getElementById('s-guests').textContent = guestCount + ' guest' + (guestCount > 1 ? 's' : '') + (pets ? ' + pets' : '');
   document.getElementById('s-email').textContent  = email;
   document.getElementById('s-sent').textContent   = 'Sent ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
   // Show success
   document.getElementById('loadingOverlay').classList.remove('show');
   if (typeof casaSaveEnquiry === 'function') {
-    casaSaveEnquiry({ host: PROPERTY.host, property: PROPERTY.title, ref, email: fname, message, checkin, checkout, nights, total: PROPERTY.pricePerNight * nights, guestName: fname });
+    // Also mirrors into the local casa:enquiries/casa:local-convos overlay
+    // that host.html and messages.html still read until they're migrated
+    // to query Supabase directly (see supabase/README.md).
+    casaSaveEnquiry({ host: PROPERTY.host, property: PROPERTY.title, ref, email: fname, message, checkin, checkout, nights, total, guestName: fname });
   }
   document.getElementById('formWrap').style.display = 'none';
   document.getElementById('successScreen').classList.add('show');
@@ -864,8 +909,6 @@ document.querySelectorAll('.consent-item input').forEach(cb => {
 });
 </script>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="casa-supabase.js"></script>
 <script src="casa.js"></script>
 </body>
 </html>
