@@ -241,7 +241,33 @@ alter table notifications enable row level security;
 -- profiles: public read (host/guest profiles are shown to strangers),
 -- self-only write.
 create policy "profiles are publicly readable" on profiles for select using (true);
+create policy "users create their own profile" on profiles for insert with check (auth.uid() = id);
 create policy "users update their own profile" on profiles for update using (auth.uid() = id);
+
+-- Auto-create a profiles row whenever a new auth.users row is created, using
+-- the full_name/role passed as signUp() metadata (see signup.html). Runs as
+-- security definer so it works even before email confirmation (no session
+-- yet, so a client-side insert would fail RLS at that point).
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+begin
+  insert into public.profiles (id, full_name, role)
+  values (
+    new.id,
+    coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email, '@', 1)),
+    coalesce(new.raw_user_meta_data->>'role', 'guest')
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
 
 -- properties: published listings are public; hosts see and manage their
 -- own regardless of publish state.

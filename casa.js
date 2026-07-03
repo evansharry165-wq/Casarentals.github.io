@@ -425,6 +425,7 @@ function casaInitNav() {
 
   casaRenderAuthNav();
   casaUpdateNotifBadge();
+  casaInitSupabaseAuthSync();
 
   document.addEventListener('click', (e) => {
     if (!e.target.closest('#casaNotifWrap')) {
@@ -468,6 +469,57 @@ function casaRenderAuthNav() {
     if (primaryJoin) { primaryJoin.textContent = 'Join free'; primaryJoin.href = 'signup.html'; }
   }
 }
+
+/* ─── Supabase session sync ───
+   casaGetUser() stays synchronous (read from the casa:user localStorage
+   cache) so every existing call site keeps working unchanged. On pages
+   that load casa-supabase.js before casa.js, this keeps that cache in
+   sync with the real Supabase session — casa:user becomes a read-through
+   cache, not the source of truth. Pages that don't load casa-supabase.js
+   are unaffected (falls through to a no-op). */
+async function casaSyncUserFromSession(session) {
+  if (!session) {
+    casaSetUser(null);
+    casaRenderAuthNav();
+    return;
+  }
+  let fullName = session.user.email;
+  let role = 'guest';
+  try {
+    const { data: profile } = await window.casaSupabase
+      .from('profiles')
+      .select('full_name, role')
+      .eq('id', session.user.id)
+      .single();
+    if (profile) {
+      fullName = profile.full_name || fullName;
+      role = profile.role || role;
+    }
+  } catch {
+    /* profile row may not exist yet (e.g. trigger lag) — fall back to session data */
+  }
+  casaSetUser({
+    id: session.user.id,
+    name: fullName,
+    email: session.user.email,
+    role,
+  });
+  casaRenderAuthNav();
+}
+
+function casaInitSupabaseAuthSync() {
+  if (!window.casaSupabase) return;
+  window.casaSupabase.auth.getSession().then(({ data }) => casaSyncUserFromSession(data.session));
+  window.casaSupabase.auth.onAuthStateChange((_event, session) => casaSyncUserFromSession(session));
+}
+
+async function casaSignOut() {
+  if (window.casaSupabase) await window.casaSupabase.auth.signOut();
+  casaSetUser(null);
+  window.location.href = 'index.html';
+}
+
+window.casaSignOut = casaSignOut;
 
 function casaRenderNotifPanel() {
   const panel = document.getElementById('casaNotifPanel');

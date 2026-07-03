@@ -306,9 +306,6 @@
   }
 
   // ── SIGN UP ──
-  // TO WIRE: replace setTimeout with:
-  //   const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fname + ' ' + lname, role: currentRole } } });
-  //   if (error) { showErr(error.message); return; }
   async function submitSignup() {
     const fname = document.getElementById('fname').value.trim();
     const lname = document.getElementById('lname').value.trim();
@@ -333,11 +330,28 @@
     btn.classList.add('loading');
     btn.innerHTML = 'Creating your account… <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>';
 
-    // DEMO: simulate network
-    await new Promise(r => setTimeout(r, 1400));
+    const { data, error } = await window.casaSupabase.auth.signUp({
+      email, password: pwd,
+      options: { data: { full_name: fname + ' ' + lname, role: currentRole } }
+    });
 
-    // Store session hint in localStorage (Supabase will handle real sessions)
-    localStorage.setItem('casa:user', JSON.stringify({ name: fname, role: currentRole, email }));
+    if (error) {
+      btn.classList.remove('loading');
+      btn.innerHTML = 'Create my Casa account <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
+      setFieldErr('f-email', true);
+      if (window.casaToast) casaToast(error.message);
+      else alert(error.message);
+      return;
+    }
+
+    if (!data.session) {
+      // Email confirmation required — no session yet, can't redirect into an authed page.
+      btn.classList.remove('loading');
+      btn.innerHTML = 'Check your email to confirm →';
+      if (window.casaToast) casaToast('Almost there — check ' + email + ' to confirm your account.', 6000);
+      return;
+    }
+
     if (typeof casaAddNotification === 'function') {
       casaAddNotification({
         type: 'welcome',
@@ -356,9 +370,6 @@
   }
 
   // ── SIGN IN ──
-  // TO WIRE: replace setTimeout with:
-  //   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  //   if (error) { showSigninErr(error.message); return; }
   async function submitSignin() {
     const email = document.getElementById('email2').value.trim();
     const pwd   = document.getElementById('pwd2').value;
@@ -371,12 +382,23 @@
     btn.classList.add('loading');
     btn.innerHTML = 'Signing in… <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>';
 
-    await new Promise(r => setTimeout(r, 1200));
+    const { data, error } = await window.casaSupabase.auth.signInWithPassword({ email, password: pwd });
 
-    // Restore role from localStorage if present, default to guest
-    const stored = JSON.parse(localStorage.getItem('casa:user') || '{}');
-    const role = stored.role || 'guest';
-    localStorage.setItem('casa:user', JSON.stringify({ ...stored, email, signedIn: true }));
+    if (error) {
+      btn.classList.remove('loading');
+      btn.innerHTML = 'Sign in <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
+      setFieldErr('f-email2', true);
+      if (window.casaToast) casaToast(error.message);
+      else alert(error.message);
+      return;
+    }
+
+    const { data: profile } = await window.casaSupabase
+      .from('profiles')
+      .select('role')
+      .eq('id', data.user.id)
+      .single();
+    const role = profile?.role || 'guest';
 
     // Redirect with welcome toast trigger
     window.location.href = (role === 'host' ? 'host.html' : 'index.html') + '?signedin=1';
@@ -399,6 +421,8 @@
   // Welcome / signed-in toasts: handled by casa.js (?welcome=1, ?signedin=1)
 </script>
 
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="casa-supabase.js"></script>
 <script src="casa.js"></script>
 </body>
 </html>
