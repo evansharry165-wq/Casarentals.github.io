@@ -345,6 +345,25 @@ function casaReportContent(targetType, targetId, meta = {}) {
   const list = casaGetReports();
   list.unshift({ id: Date.now(), targetType, targetId: String(targetId), ...meta, reportedAt: new Date().toISOString() });
   localStorage.setItem(CASA_REPORTS_KEY, JSON.stringify(list.slice(0, 100)));
+
+  // target_id has no FK constraint in the reports table (the target itself
+  // may still be local-only seed content), so this write-through doesn't
+  // depend on the target being migrated yet.
+  //
+  // supabase-js query builders are lazy — the request isn't actually sent
+  // until something calls .then()/await on them. Calling .then() here
+  // fires it without making this function block on the network round trip.
+  const user = casaGetUser();
+  if (window.casaSupabase && user) {
+    window.casaSupabase.from('reports').insert({
+      reporter_id: user.id,
+      target_type: targetType,
+      target_id: String(targetId),
+      reason: meta.reason || null,
+    }).then(({ error }) => {
+      if (error) console.error('casaReportContent: Supabase sync failed', error);
+    });
+  }
   return true;
 }
 

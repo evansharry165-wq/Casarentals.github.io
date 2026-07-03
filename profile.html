@@ -983,7 +983,7 @@ function checkReviewValid() {
   document.getElementById('reviewSubmitBtn').disabled = !(reviewStarsPicked > 0 && text.length >= 10);
 }
 
-function submitReview() {
+async function submitReview() {
   if (!reviewCtx || reviewStarsPicked === 0) return;
   const text = document.getElementById('reviewText').value.trim();
   const toProperty = document.getElementById('reviewToProperty').checked;
@@ -998,6 +998,17 @@ function submitReview() {
     if (!store[reviewCtx.propertyId]) store[reviewCtx.propertyId] = [];
     store[reviewCtx.propertyId].unshift({ name: 'You', stars: reviewStarsPicked, text, date: dateLabel });
     localStorage.setItem('casa:reviews', JSON.stringify(store));
+
+    const user = typeof casaGetUser === 'function' ? casaGetUser() : null;
+    if (window.casaSupabase && user) {
+      const { error } = await window.casaSupabase.from('reviews').insert({
+        property_id: Number(reviewCtx.propertyId),
+        author_id: user.id,
+        stars: reviewStarsPicked,
+        body: text,
+      });
+      if (error) casaToast('Review saved locally, but failed to sync: ' + error.message);
+    }
   }
 
   if (toFeed) {
