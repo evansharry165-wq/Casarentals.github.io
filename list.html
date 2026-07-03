@@ -772,36 +772,49 @@ function saveDraft() {
 
 // ═══════════════════════════════════════════════════════════════
 // SUBMIT
-// ─────────────────────────────────────────────────────────────
-// TO WIRE TO SUPABASE:
-// Replace the setTimeout below with:
-//
-//   const amenities = [...document.querySelectorAll('.am-pill.on')].map(a => a.dataset.am);
-//   const { data, error } = await supabase.from('properties').insert({
-//     host_id:         supabase.auth.user().id,
-//     title:           document.getElementById('title').value,
-//     region:          form.region,
-//     type:            form.type,
-//     town:            document.getElementById('town').value,
-//     description:     document.getElementById('desc').value,
-//     house_rules:     document.getElementById('rules').value,
-//     sleeps:          parseInt(document.getElementById('sleeps').textContent),
-//     bedrooms:        parseInt(document.getElementById('beds').textContent),
-//     bathrooms:       parseInt(document.getElementById('baths').textContent),
-//     max_guests:      parseInt(document.getElementById('maxg').textContent),
-//     price_per_night: parseInt(document.getElementById('price').value),
-//     cleaning_fee:    parseInt(document.getElementById('cleaning').value) || 0,
-//     min_stay:        parseInt(document.getElementById('minstay').value),
-//     amenities:       amenities,
-//     published:       form.publishMode === 'live',
-//   });
 // ═══════════════════════════════════════════════════════════════
+const LIST_REGION_LABELS = { 'lake-district':'Lake District', cornwall:'Cornwall', highlands:'Scottish Highlands', norfolk:'Norfolk', yorkshire:'Yorkshire', cotswolds:'Cotswolds', snowdonia:'Snowdonia', skye:'Isle of Skye', pembrokeshire:'Pembrokeshire', causeway:'Causeway Coast', devon:'Devon', other:'Other' };
+
 async function submitListing() {
   document.getElementById('nextBtn').disabled = true;
   document.getElementById('nextBtn').textContent = 'Publishing…';
 
-  // DEMO: simulate network delay
-  await new Promise(r => setTimeout(r, 1200));
+  const user = typeof casaGetUser === 'function' ? casaGetUser() : null;
+  if (!user) {
+    toast('Please sign in as a host to publish a listing');
+    document.getElementById('nextBtn').disabled = false;
+    document.getElementById('nextBtn').textContent = 'Publish listing';
+    window.location.href = 'signup.html';
+    return;
+  }
+
+  const amenities = [...document.querySelectorAll('.am-pill.on')].map(a => a.dataset.am);
+  const { error } = await window.casaSupabase.from('properties').insert({
+    host_id:         user.id,
+    title:           document.getElementById('title').value,
+    region:          form.region,
+    region_label:    LIST_REGION_LABELS[form.region] || form.region,
+    type:            form.type,
+    town:            document.getElementById('town').value,
+    description:     document.getElementById('desc').value,
+    house_rules:     document.getElementById('rules').value,
+    sleeps:          parseInt(document.getElementById('sleeps').textContent),
+    bedrooms:        parseInt(document.getElementById('beds').textContent),
+    bathrooms:       parseInt(document.getElementById('baths').textContent),
+    max_guests:      parseInt(document.getElementById('maxg').textContent),
+    price_per_night: parseInt(document.getElementById('price').value),
+    cleaning_fee:    parseInt(document.getElementById('cleaning').value) || 0,
+    min_stay:        parseInt(document.getElementById('minstay').value),
+    amenities:       amenities,
+    published:       form.publishMode === 'live',
+  });
+
+  if (error) {
+    toast('Could not publish: ' + error.message);
+    document.getElementById('nextBtn').disabled = false;
+    document.getElementById('nextBtn').textContent = 'Publish listing';
+    return;
+  }
 
   // Show success
   document.getElementById('mainLayout').style.display = 'none';
