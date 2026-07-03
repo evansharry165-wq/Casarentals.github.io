@@ -27,10 +27,15 @@ Frontend is functionally complete for the core guest and host loops:
 search, browse, property detail, booking enquiry, community feed (posting,
 replying, following, reporting/moderation), messaging, reviews, a local
 attractions directory, and a host dashboard that reflects real submitted
-data. Everything currently persists to `localStorage` via shared helpers in
-`casa.js` and the other `casa-*.js` catalogue files — there is no live
-backend yet. `supabase/` has the schema, seed data, and setup guide for the
-migration; see `supabase/README.md` for the exact next step.
+data.
+
+The Supabase backend is live (Phase 06) — auth, listing creation,
+enquiries, saved properties, follows, reviews, and reports all write to
+real tables now, not just `localStorage`. See `supabase/README.md` for
+exactly what's wired vs. what's still local-only and why (short version:
+feed replies, blocked conversations, and messages real-time are all
+blocked on migrating the 21 seed community posts and local conversations
+into real tables — a genuine content-migration task, not a quick wire).
 
 Don't trust old planning docs (`casa-audit.md`, `launch-plan.md`) for
 current state — they're dated snapshots from earlier in the project and are
@@ -60,16 +65,20 @@ When in doubt, check the actual code and git history, not a document.
 - **Verify before trusting docs/trackers.** Tracker files and planning
   docs go stale fast. Before redoing or "fixing" something a tracker
   flags, check the actual current code/git history first.
-- **localStorage keys as the interim data layer** — each one has a direct
-  Supabase table already designed in `schema.sql`:
-  - `casa:user` — current session (auth stub)
-  - `casa:saved` — saved property IDs
-  - `casa:follows` — followed host names/ids
-  - `casa:enquiries` + `casa:local-convos` — bookings, linked to a message thread
-  - `casa:local-replies` — feed reply overlay (merges with seed `REPLIES`)
-  - `casa:reviews` + cross-post into `casa:local-feed-posts`
-  - `casa:reports`, `casa:muted-users`, `casa:blocked-convos` — moderation
-  - `casa:notifications`
+- **localStorage keys, and which are wired to real Supabase tables** —
+  see `supabase/README.md` for the full picture:
+  - `casa:user` — **live**, synced from the real session (`profiles` +
+    `auth.users`), read-through cache, not the source of truth anymore
+  - `casa:saved` — **live** (`saved_properties`)
+  - `casa:follows` — **live** (`follows`, via `CASA_HOSTS[key].supabaseId`)
+  - `casa:enquiries` — **live** (`enquiries`); `casa:local-convos` is
+    still local-only (conversations aren't migrated yet)
+  - `casa:reviews` — **live** (`reviews`); the feed cross-post
+    (`casa:local-feed-posts`) is still local-only
+  - `casa:reports` — **live** (`reports`)
+  - `casa:local-replies`, `casa:muted-users`, `casa:blocked-convos`,
+    `casa:notifications` — **still local-only**, blocked on migrating the
+    seed feed posts and conversations into real tables first
 - **Commit in small, real increments** and push as each logical piece
   lands, not one giant commit at the end.
 
