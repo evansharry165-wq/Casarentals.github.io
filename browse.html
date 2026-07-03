@@ -548,6 +548,14 @@ function applyFilters() {
 }
 
 applyFilters();
+
+// CASA_PROPERTIES starts as the 36 seed listings so the page paints
+// instantly — refresh from Supabase right after so any real listing
+// published via list.html (which only exists in the database, not in
+// this file's local seed array) shows up too, then re-render.
+if (typeof casaRefreshProperties === 'function') {
+  casaRefreshProperties().then(applyFilters);
+}
 </script>
 </body>
 </html>

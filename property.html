@@ -580,9 +580,21 @@
 <script src="casa-supabase.js"></script>
 <script src="casa.js"></script>
 <script>
-const listing = getCasaProperty(new URLSearchParams(location.search).get('id'));
+// getCasaProperty() falls back to CASA_PROPERTIES[0] (Stone Cottage) for
+// any id it doesn't recognise — previously that meant a link to a real
+// listing published via list.html (which only exists in Supabase, not
+// in the local seed array) silently rendered the wrong property instead
+// of erroring. Render the local/seed fast path instantly (no network
+// wait), then — only if the id wasn't actually found — correct in place
+// once Supabase confirms the real listing (or that it truly doesn't
+// exist). `listing`/`host`/`PROP` are declared with `let` specifically
+// so this correction can reassign them; every function below reads them
+// via closure, so a later reassignment is picked up automatically by
+// onclick handlers that fire after the correction has landed.
+const qpId = parseInt(new URLSearchParams(location.search).get('id'), 10);
+let listing = getCasaProperty(qpId);
 casaTrackView(listing.id);
-const host = getCasaHostForProperty(listing.id);
+let host = getCasaHostForProperty(listing.id);
 let PROP = {
   id: listing.id,
   title: `${listing.title}, ${listing.loc}`,
@@ -638,7 +650,7 @@ function applyListingToPage(p) {
     document.getElementById('hostAvLink').textContent = host.avatar;
     document.getElementById('hostNameLink').href = hostUrl;
     document.getElementById('hostDisplayName').textContent = host.name.replace('.', '');
-    document.getElementById('hostMeta').textContent = `${host.joined ? 'Host since ' + host.joined.split(' ')[1] : 'Host'} · ${host.languages.join(', ')} · Replies ${host.responseTime || 'promptly'} · ${host.rating} ★`;
+    document.getElementById('hostMeta').textContent = `${host.joined ? 'Host since ' + host.joined.split(' ')[1] : 'Host'} · ${host.languages.join(', ')} · Replies ${host.responseTime || 'promptly'}${host.rating ? ' · ' + host.rating + ' ★' : ''}`;
     document.getElementById('hostMsgBtn').innerHTML = `<svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg> Message ${host.name.split('.')[0]}`;
     document.querySelector('.book-msg').innerHTML = `<svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg> Message ${host.name.split('.')[0]} first`;
     const hostTier = typeof casaHostVerifiedTier === 'function' ? casaHostVerifiedTier(host) : (host.verified ? 'verified' : null);
@@ -664,6 +676,30 @@ function applyListingToPage(p) {
 }
 
 applyListingToPage(listing);
+
+/* ─── Correct in place if this id wasn't in the local seed set ───
+   Fires only for a listing published after this file's local
+   CASA_PROPERTIES snapshot was written (i.e. anything beyond the 36
+   seed ids), or a genuinely invalid id. */
+if (qpId && listing.id !== qpId) {
+  (async () => {
+    await casaRefreshProperties();
+    const real = CASA_PROPERTIES.find(p => p.id === qpId);
+    if (!real) {
+      document.body.innerHTML = '<div style="max-width:480px;margin:120px auto;text-align:center;font-family:sans-serif;padding:0 24px"><h1 style="font-size:28px;margin-bottom:12px">Listing not found</h1><p style="color:#8a8478;margin-bottom:24px">This property may have been removed, or the link is incorrect.</p><a href="browse.html" style="color:#B05533">Browse all stays &rarr;</a></div>';
+      return;
+    }
+    listing = real;
+    host = (typeof casaResolveHostProfile === 'function' ? await casaResolveHostProfile(listing.hostId) : null) || getCasaHostForProperty(listing.id);
+    PROP.id = listing.id;
+    PROP.title = `${listing.title}, ${listing.loc}`;
+    PROP.price = listing.price;
+    PROP.cleaning = listing.cleaningFee || Math.max(40, Math.round(listing.price * 0.34));
+    PROP.maxGuests = listing.sleeps;
+    PROP.instantBook = listing.instantBook;
+    applyListingToPage(listing);
+  })();
+}
 
 /* ─── Show any reviews submitted locally via profile.html's review flow ─── */
 (function loadLocalReviews() {

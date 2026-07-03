@@ -122,3 +122,68 @@ function searchCasaProperties(query) {
     p.tags.some(t => t.includes(q))
   );
 }
+
+/* ─── Live Supabase data (Phase 06c) ───
+   CASA_PROPERTIES started as 36 hardcoded seed listings, but those same
+   36 rows are also real rows in Supabase now (see supabase/seed.sql) —
+   and any listing published via list.html only exists in Supabase, not
+   here. Every page that lists/searches properties (browse, map,
+   host-profile) reads the CASA_PROPERTIES global via closures
+   (searchCasaProperties, getCasaProperty, etc.), so rather than
+   threading async data through every one of those functions, this
+   refreshes CASA_PROPERTIES' *contents* in place from Supabase — same
+   reference, so every existing call site starts seeing real listings
+   (seed + newly published) the moment this resolves, with zero other
+   changes needed. Callers should re-render after awaiting this. */
+const CASA_COLOR_PALETTE = ['#C8A882', '#8DA88A', '#8A7DB0', '#A8B4C0', '#7BA0B4', '#3C3830', '#B05533'];
+function casaColorForId(id) {
+  return CASA_COLOR_PALETTE[Number(id) % CASA_COLOR_PALETTE.length];
+}
+
+function casaMapSupabaseRow(row) {
+  const reviews = row.reviews || [];
+  const reviewCount = reviews.length;
+  const rating = reviewCount ? Math.round((reviews.reduce((s, r) => s + r.stars, 0) / reviewCount) * 10) / 10 : 0;
+  const host = row.profiles || {};
+  const badge = (host.email_verified && host.phone_verified && host.gov_id_verified) ? 'verified' : undefined;
+  const p = {
+    id: row.id,
+    hostId: row.host_id,
+    title: row.title,
+    loc: row.town,
+    region: row.region,
+    rLabel: row.region_label,
+    type: row.type,
+    price: row.price_per_night,
+    rating, reviews: reviewCount,
+    sleeps: row.sleeps,
+    beds: row.bedrooms,
+    tags: row.amenities || [],
+    badge,
+    col: casaColorForId(row.id),
+    cleaningFee: row.cleaning_fee || Math.max(35, Math.round(row.price_per_night * 0.28)),
+    minNights: row.min_stay || 1,
+    instantBook: !!row.instant_book,
+  };
+  const centre = CASA_REGION_COORDS[p.region] || CASA_REGION_COORDS['lake-district'];
+  p.lat = casaSpreadCoord(centre.lat, p.id, 0);
+  p.lng = casaSpreadCoord(centre.lng, p.id, 1);
+  return p;
+}
+
+async function casaRefreshProperties() {
+  if (!window.casaSupabase) return CASA_PROPERTIES;
+  const { data, error } = await window.casaSupabase
+    .from('properties')
+    .select('*, reviews(stars), profiles!properties_host_id_fkey(email_verified, phone_verified, gov_id_verified, background_check)')
+    .eq('published', true);
+  if (error || !data) {
+    console.error('casaRefreshProperties failed', error);
+    return CASA_PROPERTIES;
+  }
+  const mapped = data.map(casaMapSupabaseRow).sort((a, b) => a.id - b.id);
+  CASA_PROPERTIES.length = 0;
+  CASA_PROPERTIES.push(...mapped);
+  return CASA_PROPERTIES;
+}
+window.casaRefreshProperties = casaRefreshProperties;

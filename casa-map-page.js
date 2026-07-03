@@ -913,6 +913,13 @@ function casaMapPageInit() {
   casaMapRefreshView();
   casaMapApplyDeepLink();
   requestAnimationFrame(() => casaMapInstance.invalidateSize());
+
+  // CASA_PROPERTIES starts as the 36 seed listings (instant paint);
+  // refresh from Supabase right after so real listings published via
+  // list.html — which only exist in the database — show up too.
+  if (typeof casaRefreshProperties === 'function') {
+    casaRefreshProperties().then(() => casaMapRefreshView());
+  }
 }
 
 document.addEventListener('DOMContentLoaded', casaMapPageInit);

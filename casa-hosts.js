@@ -179,3 +179,41 @@ function getCasaHostForProperty(propertyId) {
 function casaHostProfileUrl(hostId) {
   return `host-profile.html?id=${encodeURIComponent(hostId)}`;
 }
+
+/* ─── Real host profiles (Phase 06c) ───
+   CASA_HOSTS only covers the 5 seed demo hosts. A host who signs up for
+   real has a Supabase profiles row instead — this fetches it and maps
+   it into the same shape CASA_HOSTS objects use, so casaHostVerifiedTier(),
+   host-profile.html, and property.html's host section all work
+   unchanged regardless of which kind of host they're given. */
+async function casaResolveHostProfile(hostId) {
+  if (!hostId || !window.casaSupabase) return null;
+  const { data, error } = await window.casaSupabase
+    .from('profiles')
+    .select('id, full_name, bio, location, languages, response_rate, response_time, joined_at, email_verified, phone_verified, gov_id_verified, background_check')
+    .eq('id', hostId)
+    .single();
+  if (error || !data) return null;
+  return {
+    id: data.id,
+    name: data.full_name,
+    avatar: (data.full_name || 'H').charAt(0).toUpperCase(),
+    avatarClass: '',
+    role: 'host',
+    emailVerified: data.email_verified,
+    phoneVerified: data.phone_verified,
+    govIdVerified: data.gov_id_verified,
+    backgroundCheck: data.background_check,
+    superhost: false,
+    location: data.location || '',
+    joined: data.joined_at ? new Date(data.joined_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '',
+    responseRate: data.response_rate,
+    responseTime: data.response_time,
+    bio: data.bio || '',
+    languages: data.languages && data.languages.length ? data.languages : ['English'],
+    rating: null,
+    reviews: 0,
+    listings: null,
+  };
+}
+window.casaResolveHostProfile = casaResolveHostProfile;

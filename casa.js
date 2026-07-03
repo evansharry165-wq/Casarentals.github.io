@@ -135,7 +135,11 @@ async function casaToggleFollow(hostKey, btn) {
   casaToast(following ? `Following ${hostKey}` : `Unfollowed ${hostKey}`);
 
   const user = casaGetUser();
-  const targetId = typeof CASA_HOSTS !== 'undefined' ? CASA_HOSTS[key]?.supabaseId : null;
+  // hostKey is usually a CASA_HOSTS slug (resolved to its real Supabase
+  // id below) — but a real host's profile page passes their actual
+  // Supabase id directly instead, since real hosts have no slug.
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key);
+  const targetId = (typeof CASA_HOSTS !== 'undefined' ? CASA_HOSTS[key]?.supabaseId : null) || (isUuid ? key : null);
   if (window.casaSupabase && user && targetId) {
     if (following) {
       await window.casaSupabase.from('follows').upsert({ follower_id: user.id, followed_id: targetId });
@@ -147,14 +151,23 @@ async function casaToggleFollow(hostKey, btn) {
 }
 
 async function casaSyncFollowsFromSupabase() {
-  if (!window.casaSupabase || typeof CASA_HOSTS === 'undefined') return;
+  if (!window.casaSupabase) return;
   const user = casaGetUser();
   if (!user) return;
   const { data } = await window.casaSupabase.from('follows').select('followed_id').eq('follower_id', user.id);
   if (!data) return;
   const followedIds = new Set(data.map(r => r.followed_id));
-  const slugs = Object.keys(CASA_HOSTS).filter(slug => CASA_HOSTS[slug].supabaseId && followedIds.has(CASA_HOSTS[slug].supabaseId));
-  localStorage.setItem(CASA_FOLLOWS_KEY, JSON.stringify(slugs));
+  // Prefer the CASA_HOSTS slug where one exists (matches how seed-host
+  // follow buttons key their state), otherwise keep the raw Supabase id
+  // for a real (non-seed) host, who has no slug at all.
+  const slugByHostId = {};
+  if (typeof CASA_HOSTS !== 'undefined') {
+    Object.keys(CASA_HOSTS).forEach(slug => {
+      if (CASA_HOSTS[slug].supabaseId) slugByHostId[CASA_HOSTS[slug].supabaseId] = slug;
+    });
+  }
+  const keys = [...followedIds].map(id => slugByHostId[id] || id);
+  localStorage.setItem(CASA_FOLLOWS_KEY, JSON.stringify(keys));
 }
 
 window.casaGetFollowedHosts = casaGetFollowedHosts;

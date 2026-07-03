@@ -88,55 +88,95 @@
 <script src="casa-supabase.js"></script>
 <script src="casa.js"></script>
 <script>
+// CASA_HOSTS only covers the 5 seed demo hosts (slugs like 'sarah-r').
+// A host who signs up for real has no slug at all — their profile url
+// carries their real Supabase id instead. Previously this page just
+// silently fell back to Sarah's demo profile for any id it didn't
+// recognise (`getCasaHost(hostId) || getCasaHost('sarah-r')`), so a real
+// host's profile link showed the wrong person entirely.
 const hostId = new URLSearchParams(location.search).get('id') || 'sarah-r';
-const host = getCasaHost(hostId) || getCasaHost('sarah-r');
+const localHost = getCasaHost(hostId);
 
-document.title = `${host.name} — Casa host`;
-document.getElementById('hpAv').textContent = host.avatar;
-document.getElementById('hpAv').className = 'hp-av ' + (host.avatarClass || '');
-document.getElementById('hpName').innerHTML = host.name.replace('.', ' <i>.</i>');
-document.getElementById('hpListName').textContent = host.name.split('.')[0];
+function renderHostProfile(host, listings) {
+  document.title = `${host.name} — Casa host`;
+  document.getElementById('hpAv').textContent = host.avatar;
+  document.getElementById('hpAv').className = 'hp-av ' + (host.avatarClass || '');
+  document.getElementById('hpName').innerHTML = host.name.includes('.') ? host.name.replace('.', ' <i>.</i>') : `<i>${host.name}</i>`;
+  document.getElementById('hpListName').textContent = (host.name || '').split(' ')[0].replace('.', '');
 
-if (casaIsFollowing(hostId)) {
-  const followBtn = document.getElementById('hpFollowBtn');
-  followBtn.classList.add('following');
-  followBtn.textContent = 'Following';
+  if (casaIsFollowing(hostId)) {
+    const followBtn = document.getElementById('hpFollowBtn');
+    followBtn.classList.add('following');
+    followBtn.textContent = 'Following';
+  }
+
+  const badges = [];
+  const verifiedTier = casaHostVerifiedTier(host);
+  if (verifiedTier === 'verified-plus') badges.push('<span class="badge moss">✓ Verified+ host</span>');
+  else if (verifiedTier === 'verified') badges.push('<span class="badge moss">✓ Verified host</span>');
+  if (host.superhost) badges.push('<span class="badge">★ Superhost</span>');
+  document.getElementById('hpMeta').innerHTML = `
+    ${badges.join(' ')}
+    ${host.location ? `<span>${host.location}</span>` : ''}
+    ${host.joined ? `<span>Joined ${host.joined}</span>` : ''}
+    ${host.responseRate ? `<span>${host.responseRate}% response rate</span>` : ''}
+    ${host.responseTime ? `<span>Replies ${host.responseTime}</span>` : ''}`;
+
+  document.getElementById('hpTrust').innerHTML = `
+    <div class="ts-item"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Identity verified</div>
+    <div class="ts-item"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> £0 Casa booking fees</div>
+    <div class="ts-item"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Direct host contact</div>`;
+
+  document.getElementById('hpBio').textContent = host.bio || 'This host hasn’t added a bio yet.';
+  document.getElementById('hpStats').innerHTML = `
+    <div class="stat-box"><div class="n">${host.rating || '—'}</div><div class="l">Rating</div></div>
+    <div class="stat-box"><div class="n">${host.reviews || 0}</div><div class="l">Reviews</div></div>
+    <div class="stat-box"><div class="n">${listings.length}</div><div class="l">Listings</div></div>
+    <div class="stat-box"><div class="n">${(host.languages || []).length}</div><div class="l">Languages</div></div>`;
+
+  document.getElementById('hpListings').innerHTML = listings.length ? listings.map(p => `
+    <a class="lc" href="property.html?id=${p.id}">
+      <div class="lc-img" style="background:${p.col}"></div>
+      <div class="lc-body">
+        <div class="lc-title">${p.title}, <i>${p.loc}</i></div>
+        <div class="pc-meta">★ ${p.rating || 'New'} · Sleeps ${p.sleeps}</div>
+        <div class="pc-price"><i>£${p.price}</i> / night</div>
+      </div>
+    </a>`).join('') : '<p class="muted">No public listings yet.</p>';
 }
 
-const badges = [];
-const verifiedTier = casaHostVerifiedTier(host);
-if (verifiedTier === 'verified-plus') badges.push('<span class="badge moss">✓ Verified+ host</span>');
-else if (verifiedTier === 'verified') badges.push('<span class="badge moss">✓ Verified host</span>');
-if (host.superhost) badges.push('<span class="badge">★ Superhost</span>');
-document.getElementById('hpMeta').innerHTML = `
-  ${badges.join(' ')}
-  <span>${host.location}</span>
-  <span>Joined ${host.joined}</span>
-  ${host.responseRate ? `<span>${host.responseRate}% response rate</span>` : ''}
-  ${host.responseTime ? `<span>Replies ${host.responseTime}</span>` : ''}`;
+if (localHost) {
+  // Known seed demo host — render instantly from local data so the page
+  // never sits blank while the network round trip below is in flight.
+  const listings = (localHost.propertyIds || []).map(id => getCasaProperty(id)).filter(Boolean);
+  renderHostProfile(localHost, listings);
+}
 
-document.getElementById('hpTrust').innerHTML = `
-  <div class="ts-item"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Identity verified</div>
-  <div class="ts-item"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> £0 Casa booking fees</div>
-  <div class="ts-item"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Direct host contact</div>`;
+// Always reconcile with live Supabase data, whether this is a real
+// (non-seed) host's id or a seed host's slug — the seed hosts are real
+// accounts too (see supabase/seed.sql), so a seed host who has since
+// published a real listing beyond their static propertyIds only shows
+// up here, not in the instant local render above.
+(async () => {
+  const realHostId = localHost?.supabaseId || hostId;
+  const realHost = typeof casaResolveHostProfile === 'function' ? await casaResolveHostProfile(realHostId) : null;
+  if (!realHost && !localHost) {
+    document.querySelector('.wrap').innerHTML = '<div style="padding:100px 24px;text-align:center"><h1 style="font-family:var(--serif);font-size:32px;margin-bottom:12px">Host not found</h1><p style="color:var(--ink-3)">This profile may not exist, or the link is incorrect.</p></div>';
+    return;
+  }
+  if (!window.casaSupabase) return;
 
-document.getElementById('hpBio').textContent = host.bio;
-document.getElementById('hpStats').innerHTML = `
-  <div class="stat-box"><div class="n">${host.rating}</div><div class="l">Rating</div></div>
-  <div class="stat-box"><div class="n">${host.reviews}</div><div class="l">Reviews</div></div>
-  <div class="stat-box"><div class="n">${host.listings}</div><div class="l">Listings</div></div>
-  <div class="stat-box"><div class="n">${host.languages.length}</div><div class="l">Languages</div></div>`;
-
-const listings = (host.propertyIds || []).map(id => getCasaProperty(id)).filter(Boolean);
-document.getElementById('hpListings').innerHTML = listings.length ? listings.map(p => `
-  <a class="lc" href="property.html?id=${p.id}">
-    <div class="lc-img" style="background:${p.col}"></div>
-    <div class="lc-body">
-      <div class="lc-title">${p.title}, <i>${p.loc}</i></div>
-      <div class="pc-meta">★ ${p.rating} · Sleeps ${p.sleeps}</div>
-      <div class="pc-price"><i>£${p.price}</i> / night</div>
-    </div>
-  </a>`).join('') : '<p class="muted">No public listings yet.</p>';
+  const { data } = await window.casaSupabase.from('properties').select('*').eq('host_id', realHostId).eq('published', true);
+  const listings = (data || []).map(row => typeof casaMapSupabaseRow === 'function' ? casaMapSupabaseRow(row) : row);
+  if (listings.length) {
+    const { data: reviews } = await window.casaSupabase.from('reviews').select('stars').in('property_id', listings.map(p => p.id));
+    if (reviews && reviews.length && realHost) {
+      realHost.rating = Math.round((reviews.reduce((s, r) => s + r.stars, 0) / reviews.length) * 10) / 10;
+      realHost.reviews = reviews.length;
+    }
+  }
+  renderHostProfile(realHost || localHost, listings);
+})();
 </script>
 </body>
 </html>
