@@ -50,6 +50,25 @@ function casaToast(message, duration = 3000) {
 
 window.casaToast = casaToast;
 
+// Shared "Share" button behaviour (property.html, profile.html, etc.)
+// — used to be a dead button with no onclick at all on every page it
+// appeared on.
+async function casaShareLink(title, url) {
+  const shareUrl = url || location.href;
+  if (navigator.share) {
+    try { await navigator.share({ title, url: shareUrl }); return; }
+    catch { /* user cancelled the native share sheet — not an error */ }
+  } else {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      casaToast('Link copied to clipboard');
+    } catch {
+      casaToast(shareUrl);
+    }
+  }
+}
+window.casaShareLink = casaShareLink;
+
 const CASA_SAVED_KEY = 'casa:saved';
 
 function casaGetSavedIds() {

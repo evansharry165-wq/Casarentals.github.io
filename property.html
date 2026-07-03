@@ -255,7 +255,7 @@
       </div>
     </div>
     <div class="actions">
-      <button><svg viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg> Share</button>
+      <button onclick="casaShareLink(listing.title + ', ' + listing.loc)"><svg viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg> Share</button>
       <button class="save-btn" id="propSaveBtn" onclick="casaToggleSaved(listing.id,this);this.querySelector('span').textContent=this.classList.contains('saved')?'Saved':'Save';"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg> <span>Save</span></button>
     </div>
   </div>
@@ -662,8 +662,18 @@ function applyListingToPage(p) {
     document.getElementById('hostNameLink').href = hostUrl;
     document.getElementById('hostDisplayName').textContent = host.name.replace('.', '');
     document.getElementById('hostMeta').textContent = `${host.joined ? 'Host since ' + host.joined.split(' ')[1] : 'Host'} · ${host.languages.join(', ')} · Replies ${host.responseTime || 'promptly'}${host.rating ? ' · ' + host.rating + ' ★' : ''}`;
-    document.getElementById('hostMsgBtn').innerHTML = `<svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg> Message ${host.name.split('.')[0]}`;
-    document.querySelector('.book-msg').innerHTML = `<svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg> Message ${host.name.split('.')[0]} first`;
+    // Messaging is enquiry-gated by design (a guest messages a host by
+    // enquiring, not via a free-standing DM) — messages.html has no way
+    // to start a conversation from scratch, so linking there directly
+    // was a dead end with no visible path forward. Sending both buttons
+    // through the real enquiry flow instead.
+    const msgHref = `booking.html?id=${listing.id}&prop=${encodeURIComponent(listing.title + ', ' + listing.loc)}&price=${listing.price}`;
+    const hostMsgBtn = document.getElementById('hostMsgBtn');
+    hostMsgBtn.href = msgHref;
+    hostMsgBtn.innerHTML = `<svg class="i" viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg> Message ${host.name.split('.')[0]}`;
+    const bookMsgBtn = document.querySelector('.book-msg');
+    bookMsgBtn.href = msgHref;
+    bookMsgBtn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg> Message ${host.name.split('.')[0]} first`;
     const hostTier = typeof casaHostVerifiedTier === 'function' ? casaHostVerifiedTier(host) : (host.verified ? 'verified' : null);
     const verifiedBadgeEl = document.getElementById('hostVerifiedBadge');
     verifiedBadgeEl.style.display = hostTier ? '' : 'none';
