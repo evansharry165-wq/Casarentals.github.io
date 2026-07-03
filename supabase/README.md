@@ -44,6 +44,21 @@ been placed in any file, commit, or chat message, per the standing rule.
   — it loads the signed-in user's actual conversations, sends/receives
   real messages, and subscribes to Supabase Realtime for live delivery.
   Report and block are both real writes.
+- **Guest-facing discovery** (`browse.html`, `map.html`, `property.html`,
+  `host-profile.html`) — a real host's published listing now actually
+  shows up. Previously these pages only ever read the 36 hardcoded seed
+  properties in `casa-properties.js`, so a newly published listing was
+  both undiscoverable in search/map and, if linked to directly,
+  `property.html` would silently render the wrong property (it always
+  fell back to the first seed listing for any unrecognised id — a
+  genuinely bad bug, not just a missing feature). `casaRefreshProperties()`
+  (in `casa-properties.js`) now fetches real rows from `properties` +
+  `reviews` + host verification fields and reconciles them into the same
+  shared `CASA_PROPERTIES` array the rest of the site already reads, so
+  every page renders instantly from local seed data first and corrects
+  itself in place once the real data lands — no page needed its core
+  rendering logic rewritten. `casaResolveHostProfile()` (in
+  `casa-hosts.js`) does the same for a real host's profile page.
 
 All of the above keep their original localStorage behaviour too (as a
 cache / for pages not yet reading from Supabase directly), so nothing

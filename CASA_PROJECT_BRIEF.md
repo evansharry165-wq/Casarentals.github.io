@@ -30,12 +30,17 @@ attractions directory, and a host dashboard that reflects real submitted
 data.
 
 The Supabase backend is live (Phase 06) — auth, listing creation,
-enquiries, saved properties, follows, reviews, and reports all write to
-real tables now, not just `localStorage`. See `supabase/README.md` for
-exactly what's wired vs. what's still local-only and why (short version:
-feed replies, blocked conversations, and messages real-time are all
-blocked on migrating the 21 seed community posts and local conversations
-into real tables — a genuine content-migration task, not a quick wire).
+enquiries, saved properties, follows, reviews, reports, and messaging all
+write to real tables now, not just `localStorage`. Guest-facing discovery
+(browse, map, property detail, host profile) now also reconciles with
+real Supabase data, so a host's real published listing is actually
+findable and correctly displayed — this also fixed a real bug where
+`property.html` silently rendered the wrong listing for any id outside
+the hardcoded seed set. See `supabase/README.md` for exactly what's
+wired vs. what's still local-only and why (short version: feed replies
+and the feed post composer are blocked on migrating the 21 seed
+community posts into real tables — a genuine content-migration task, not
+a quick wire).
 
 Don't trust old planning docs (`casa-audit.md`, `launch-plan.md`) for
 current state — they're dated snapshots from earlier in the project and are
