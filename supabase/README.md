@@ -36,6 +36,14 @@ been placed in any file, commit, or chat message, per the standing rule.
 - **Reports** (`casa.js`) — `casaReportContent` writes through to
   `reports` (target_id has no FK constraint, so this works regardless of
   whether the reported content itself is migrated).
+- **Messaging** (`booking.html`, `messages.html`, `host.html`) — fully
+  live, not just wired. Every enquiry creates a real conversation via the
+  `create_conversation_for_enquiry` Postgres function (a guest can't
+  insert the host's `conversation_participants` row directly under RLS,
+  so this runs as security definer). `messages.html` is a real inbox now
+  — it loads the signed-in user's actual conversations, sends/receives
+  real messages, and subscribes to Supabase Realtime for live delivery.
+  Report and block are both real writes.
 
 All of the above keep their original localStorage behaviour too (as a
 cache / for pages not yet reading from Supabase directly), so nothing
@@ -43,12 +51,11 @@ regresses if `window.casaSupabase` is ever unavailable.
 
 ## What's intentionally still local-only, and why
 
-- **`casaMuteUser`/`casaBlockConvo`** — these key on display-name strings
-  and local conversation ids that don't correspond to real Supabase
-  users or conversations (most demo "people" in the seed feed/message
-  data — e.g. "Marcus J.", "Laura P." — have no real auth account at
-  all). Migrating these cleanly needs the feed/messaging migration below
-  to land first.
+- **`casaMuteUser`** — keys on display-name strings, not real user ids
+  (most demo "people" in the seed feed data — e.g. "Marcus J.", "Laura
+  P." — have no real auth account at all). Migrating this cleanly needs
+  the feed post migration below to land first, so there's a real user to
+  attach a mute to.
 - **Feed replies** (`casaAddLocalReply`) — the 21 seed community posts in
   `casa-feed-posts.js` were never migrated into the `feed_posts` table
   (it exists in the schema but is empty). A reply can't get a real
@@ -56,17 +63,19 @@ regresses if `window.casaSupabase` is ever unavailable.
   the seed posts is a content-migration task in its own right (remap 21
   posts + decide how `property.html`'s "community mentions" and
   `attractions.html`'s tip feed re-source their data), not a quick wire.
+  **Deliberately deferred** — see "Recommended next phase" below.
+- **`submitPost()` in feed.html** — the "new post" composer doesn't
+  persist anywhere at all today, not even localStorage (`POSTS.unshift()`
+  is an in-memory array mutation that's gone on refresh). This needs
+  fixing as part of the feed migration, not before it — no point wiring
+  persistence for content that's about to be restructured anyway.
 - **Notifications** — low-value to migrate before the above; most calls
   are ephemeral in-session toasts today.
-- **Messages real-time/polling** — blocked by the same gap: conversations
-  and messages are still entirely local (`casa:local-convos`, created by
-  `casaSaveEnquiry`). Real-time only means something once conversations
-  are real rows Supabase can push changes for. This needs conversations
-  to be created server-side (e.g. when an enquiry is inserted) before
-  `messages.html` can be wired to Realtime or even simple polling.
 
-## Recommended next phase
+## Recommended next phase (deferred, not urgent)
 
-Migrate feed posts and conversations into real tables — that one piece
-unblocks feed replies, blocked conversations, and messages real-time all
-at once, rather than tackling them as three separate partial wires.
+Migrate the 21 seed feed posts into `feed_posts`, decide what happens to
+them once real hosts are posting alongside them (permanent seed content,
+retired once there's critical mass, or kept out of production entirely),
+and wire `submitPost()`/`casaAddLocalReply()` to real inserts. That one
+piece unblocks feed replies and muting at once.
