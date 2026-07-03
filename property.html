@@ -328,34 +328,20 @@
 
       <!-- ABOUT -->
       <div class="about">
-        <h2>About <i>the cottage</i></h2>
-        <p>A 300-year-old stone cottage tucked into the fells just outside Windermere village. Three bedrooms, sleeps six, with original oak beams, a flagstone kitchen, and a wood burner that throws heat all evening. The garden steps down through wild ferns to a beck — there's a swing, a fire pit, and a view straight to Loughrigg Fell.</p>
-        <p>We bought the place in 2024 after years of holidaying in the Lakes and slowly bringing it back to itself — re-pointing the stonework, restoring the windows, and putting the heart back into the kitchen. It's been a labour of love. We hope you'll feel it.</p>
-        <p>Walk to the pub in 10 minutes. Windermere lake is 5 minutes by car. Dogs welcome (we have two of our own). Cot and high chair available on request.</p>
-        <button class="more">Show more →</button>
+        <h2>About <i id="aboutTypeWord">the stay</i></h2>
+        <div id="aboutText"></div>
       </div>
 
       <!-- AMENITIES -->
       <div class="amenities">
         <h2>What's <i>included</i></h2>
-        <div class="am-grid">
-          <div class="am"><svg viewBox="0 0 24 24"><path d="M12 22c-4 0-7-3-7-7 0-3 2-5 4-7 0 3 2 4 3 2 1-3-1-5 2-8 0 4 3 5 4 9 1 4-2 11-6 11z"/></svg> Wood burner &amp; open fire</div>
-          <div class="am"><svg viewBox="0 0 24 24"><path d="M2 9a15 15 0 0 1 20 0"/><path d="M5 13a10 10 0 0 1 14 0"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/></svg> Fibre wifi (95 Mbps)</div>
-          <div class="am"><svg viewBox="0 0 24 24"><circle cx="6" cy="9" r="2"/><circle cx="18" cy="9" r="2"/><circle cx="9" cy="5" r="2"/><circle cx="15" cy="5" r="2"/><path d="M8 18c0-3 2-5 4-5s4 2 4 5c0 2-2 3-4 3s-4-1-4-3z"/></svg> Dogs welcome (2 max)</div>
-          <div class="am"><svg viewBox="0 0 24 24"><path d="M5 17H3v-5l2-5h14l2 5v5h-2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg> Off-street parking (2 cars)</div>
-          <div class="am"><svg viewBox="0 0 24 24"><path d="M3 12h18v4a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4z"/><path d="M5 12V6a2 2 0 0 1 2-2h2v3"/></svg> Bath with roll-top</div>
-          <div class="am"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2"/></svg> Smart TV &amp; Netflix</div>
-          <div class="am"><svg viewBox="0 0 24 24"><path d="M3 11h18M7 6V4M17 6V4M7 11V6h10v5"/></svg> Aga cooker</div>
-          <div class="am"><svg viewBox="0 0 24 24"><path d="M5 9a7 7 0 0 1 14 0v3a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z"/></svg> Garden &amp; fire pit</div>
-          <div class="am crossed"><svg viewBox="0 0 24 24"><path d="M4 12V8a4 4 0 0 1 8 0v4"/><path d="M2 16h20"/><path d="M4 18h16l-1 4H5z"/></svg> Hot tub</div>
-          <div class="am crossed"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18"/></svg> Pool</div>
-        </div>
+        <div class="am-grid" id="amenitiesGrid"></div>
       </div>
 
       <!-- CALENDAR -->
       <div class="cal-block">
         <h2><i>July</i> &amp; August</h2>
-        <div class="sub">Click two dates to set your stay. Availability comes from the host's single Casa calendar — including dates synced from Airbnb and Booking.com.</div>
+        <div class="sub">Click two dates to set your stay, then send an enquiry — the host confirms availability directly.</div>
         <div class="cal">
           <div class="cal-month">
             <div class="mh">
@@ -364,10 +350,10 @@
             </div>
             <div class="cal-grid">
               <div class="dn">M</div><div class="dn">T</div><div class="dn">W</div><div class="dn">T</div><div class="dn">F</div><div class="dn">S</div><div class="dn">S</div>
-              <div class="d muted">30</div><div class="d unavailable">1</div><div class="d unavailable">2</div><div class="d">3</div><div class="d">4</div><div class="d">5</div><div class="d">6</div>
-              <div class="d">7</div><div class="d">8</div><div class="d">9</div><div class="d">10</div><div class="d">11</div><div class="d start">12</div><div class="d in-range">13</div>
-              <div class="d in-range">14</div><div class="d in-range">15</div><div class="d in-range">16</div><div class="d in-range">17</div><div class="d in-range">18</div><div class="d end">19</div><div class="d">20</div>
-              <div class="d">21</div><div class="d">22</div><div class="d unavailable">23</div><div class="d unavailable">24</div><div class="d unavailable">25</div><div class="d unavailable">26</div><div class="d unavailable">27</div>
+              <div class="d muted">30</div><div class="d">1</div><div class="d">2</div><div class="d">3</div><div class="d">4</div><div class="d">5</div><div class="d">6</div>
+              <div class="d">7</div><div class="d">8</div><div class="d">9</div><div class="d">10</div><div class="d">11</div><div class="d">12</div><div class="d">13</div>
+              <div class="d">14</div><div class="d">15</div><div class="d">16</div><div class="d">17</div><div class="d">18</div><div class="d">19</div><div class="d">20</div>
+              <div class="d">21</div><div class="d">22</div><div class="d">23</div><div class="d">24</div><div class="d">25</div><div class="d">26</div><div class="d">27</div>
               <div class="d">28</div><div class="d">29</div><div class="d">30</div><div class="d">31</div><div class="d muted">1</div><div class="d muted">2</div><div class="d muted">3</div>
             </div>
           </div>
@@ -379,7 +365,7 @@
             <div class="cal-grid">
               <div class="dn">M</div><div class="dn">T</div><div class="dn">W</div><div class="dn">T</div><div class="dn">F</div><div class="dn">S</div><div class="dn">S</div>
               <div class="d muted">28</div><div class="d muted">29</div><div class="d muted">30</div><div class="d muted">31</div><div class="d">1</div><div class="d">2</div><div class="d">3</div>
-              <div class="d">4</div><div class="d">5</div><div class="d">6</div><div class="d unavailable">7</div><div class="d unavailable">8</div><div class="d unavailable">9</div><div class="d unavailable">10</div>
+              <div class="d">4</div><div class="d">5</div><div class="d">6</div><div class="d">7</div><div class="d">8</div><div class="d">9</div><div class="d">10</div>
               <div class="d">11</div><div class="d">12</div><div class="d">13</div><div class="d">14</div><div class="d">15</div><div class="d">16</div><div class="d">17</div>
               <div class="d">18</div><div class="d">19</div><div class="d">20</div><div class="d">21</div><div class="d">22</div><div class="d">23</div><div class="d">24</div>
               <div class="d">25</div><div class="d">26</div><div class="d">27</div><div class="d">28</div><div class="d">29</div><div class="d">30</div><div class="d">31</div>
@@ -624,7 +610,32 @@ function applyListingToPage(p) {
   const beds = document.getElementById('propBeds');
   if (beds) beds.textContent = listing.beds;
   const typeEl = document.getElementById('propType');
-  if (typeEl) typeEl.textContent = CASA_TYPE_LABELS[listing.type] || listing.type;
+  const typeLabel = CASA_TYPE_LABELS[listing.type] || listing.type || 'stay';
+  if (typeEl) typeEl.textContent = typeLabel;
+  const aboutTypeWord = document.getElementById('aboutTypeWord');
+  if (aboutTypeWord) aboutTypeWord.textContent = typeLabel.toLowerCase();
+  const aboutText = document.getElementById('aboutText');
+  if (aboutText) {
+    if (listing.description) {
+      aboutText.innerHTML = listing.description.split('\n').filter(Boolean).map(para => `<p>${para}</p>`).join('');
+    } else {
+      // No real description written yet (true for every seed listing, and
+      // any real listing before its host fills one in) — an honest
+      // fact-based summary instead of an invented story.
+      const tagLabels = (listing.tags || []).map(t => (typeof casaAmenityMeta === 'function' ? casaAmenityMeta(t).label : t).toLowerCase());
+      aboutText.innerHTML = `<p>A ${typeLabel.toLowerCase()} in ${listing.loc}, ${listing.rLabel}. Sleeps ${listing.sleeps} across ${listing.beds} bedroom${listing.beds === 1 ? '' : 's'}.${tagLabels.length ? ' Featuring ' + tagLabels.join(', ') + '.' : ''}</p><p style="color:var(--ink-3);font-style:italic">The host hasn't added a full description yet.</p>`;
+    }
+  }
+  const amenitiesGrid = document.getElementById('amenitiesGrid');
+  if (amenitiesGrid) {
+    const tags = listing.tags || [];
+    amenitiesGrid.innerHTML = tags.length
+      ? tags.map(t => {
+          const meta = typeof casaAmenityMeta === 'function' ? casaAmenityMeta(t) : { label: t, icon: '<circle cx="12" cy="12" r="3"/>' };
+          return `<div class="am"><svg viewBox="0 0 24 24">${meta.icon}</svg> ${meta.label}</div>`;
+        }).join('')
+      : '<p style="color:var(--ink-3)">No amenities listed yet.</p>';
+  }
   const priceEl = document.getElementById('propPrice');
   if (priceEl) priceEl.textContent = `£${listing.price}`;
   const cleanEl = document.getElementById('propCleaning');

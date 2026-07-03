@@ -43,6 +43,28 @@ function getCasaProperty(id) {
   return CASA_PROPERTIES.find(p => p.id === num) || CASA_PROPERTIES[0];
 }
 
+// Shared amenity key -> label/icon lookup. Keys match both the seed
+// data's `tags` arrays and list.html's am-pill data-am values, so a
+// real host's chosen amenities render the same way as seed listings.
+const CASA_AMENITY_META = {
+  woodburner: { label: 'Wood burner & open fire', icon: '<path d="M12 22c-4 0-7-3-7-7 0-3 2-5 4-7 0 3 2 4 3 2 1-3-1-5 2-8 0 4 3 5 4 9 1 4-2 11-6 11z"/>' },
+  wifi:       { label: 'Fast WiFi', icon: '<path d="M2 9a15 15 0 0 1 20 0"/><path d="M5 13a10 10 0 0 1 14 0"/><path d="M8.5 16.5a5 5 0 0 1 7 0"/><circle cx="12" cy="20" r="1"/>' },
+  pets:       { label: 'Pets welcome', icon: '<circle cx="6" cy="9" r="2"/><circle cx="18" cy="9" r="2"/><circle cx="9" cy="5" r="2"/><circle cx="15" cy="5" r="2"/><path d="M8 18c0-3 2-5 4-5s4 2 4 5c0 2-2 3-4 3s-4-1-4-3z"/>' },
+  parking:    { label: 'Off-street parking', icon: '<path d="M5 17H3v-5l2-5h14l2 5v5h-2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/>' },
+  hottub:     { label: 'Hot tub', icon: '<path d="M4 12V8a4 4 0 0 1 8 0v4"/><path d="M2 16h20"/><path d="M4 18h16l-1 4H5z"/>' },
+  garden:     { label: 'Garden', icon: '<path d="M5 9a7 7 0 0 1 14 0v3a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z"/>' },
+  ev:         { label: 'EV charging', icon: '<path d="M7 17H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-2"/><path d="M9 17l3 3 3-3"/>' },
+  offgrid:    { label: 'Off-grid / solar', icon: '<path d="M12 3 6 12h3v3h6v-3h3z"/><path d="M12 15v6"/>' },
+  accessible: { label: 'Wheelchair access', icon: '<circle cx="12" cy="5" r="2"/><path d="M5 22l3.5-7H8a4 4 0 0 1-4-4h14a4 4 0 0 1-4 4h-.5L17 22"/>' },
+  tv:         { label: 'Smart TV', icon: '<rect x="3" y="3" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>' },
+  seaview:    { label: 'Sea view', icon: '<path d="M2 12c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2"/><path d="M2 17c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2"/>' },
+  sauna:      { label: 'Sauna', icon: '<path d="M4 21V9l8-6 8 6v12"/><path d="M9 21v-6h6v6"/>' },
+  romantic:   { label: 'Romantic setup', icon: '<path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/>' },
+};
+function casaAmenityMeta(tag) {
+  return CASA_AMENITY_META[tag] || { label: tag.charAt(0).toUpperCase() + tag.slice(1), icon: '<circle cx="12" cy="12" r="3"/>' };
+}
+
 function getCasaPropertyIdByTitle(title) {
   if (!title) return 1;
   const norm = title.toLowerCase().trim();
@@ -158,6 +180,8 @@ function casaMapSupabaseRow(row) {
     id: row.id,
     hostId: row.host_id,
     title: row.title,
+    description: row.description || '',
+    houseRules: row.house_rules || '',
     loc: row.town,
     region: row.region,
     rLabel: row.region_label,
