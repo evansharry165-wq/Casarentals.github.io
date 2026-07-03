@@ -136,7 +136,7 @@ function renderHostProfile(host, listings) {
 
   document.getElementById('hpListings').innerHTML = listings.length ? listings.map(p => `
     <a class="lc" href="property.html?id=${p.id}">
-      <div class="lc-img" style="background:${p.col}"></div>
+      ${p.photos && p.photos[0] ? `<img class="lc-img" src="${p.photos[0]}" alt="" style="width:100%;object-fit:cover;display:block">` : `<div class="lc-img" style="background:${p.col}"></div>`}
       <div class="lc-body">
         <div class="lc-title">${p.title}, <i>${p.loc}</i></div>
         <div class="pc-meta">★ ${p.rating || 'New'} · Sleeps ${p.sleeps}</div>
@@ -166,7 +166,7 @@ if (localHost) {
   }
   if (!window.casaSupabase) return;
 
-  const { data } = await window.casaSupabase.from('properties').select('*').eq('host_id', realHostId).eq('published', true);
+  const { data } = await window.casaSupabase.from('properties').select('*, property_photos(url, sort_order, is_cover)').eq('host_id', realHostId).eq('published', true);
   const listings = (data || []).map(row => typeof casaMapSupabaseRow === 'function' ? casaMapSupabaseRow(row) : row);
   if (listings.length) {
     const { data: reviews } = await window.casaSupabase.from('reviews').select('stars').in('property_id', listings.map(p => p.id));

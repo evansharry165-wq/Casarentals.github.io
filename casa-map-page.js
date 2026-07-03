@@ -180,8 +180,11 @@ function casaMapEnterRegion(regionId) {
 }
 
 function casaMapStayPopupHtml(p) {
+  const img = p.photos && p.photos[0]
+    ? `<div class="cp-img" style="background-image:url('${p.photos[0]}');background-size:cover;background-position:center"></div>`
+    : `<div class="cp-img" style="background:${p.col || '#C8A882'}"></div>`;
   return `<div class="casa-popup">
-    <div class="cp-img" style="background:${p.col || '#C8A882'}"></div>
+    ${img}
     <div class="cp-body">
       <strong>${p.title}</strong>
       <div class="cp-loc"><em>${p.loc}</em> · ${p.rLabel || ''}</div>

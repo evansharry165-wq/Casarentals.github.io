@@ -47,6 +47,23 @@ been placed in any file, commit, or chat message, per the standing rule.
   — it loads the signed-in user's actual conversations, sends/receives
   real messages, and subscribes to Supabase Realtime for live delivery.
   Report and block are both real writes.
+- **Real listing photos** (`list.html`) — the photo step used to be
+  fully decorative (clicking it just showed "Photo upload available
+  once connected to backend," and every property image site-wide was a
+  solid-colour placeholder div). Hosts can now actually pick/drag real
+  image files; they upload to the `property-photos` Storage bucket on
+  publish and link into the `property_photos` table (already in
+  `schema.sql`, just never wired up). Every page that shows a property
+  image (`browse.html`, `saved.html`, `host-profile.html`,
+  `property.html`'s gallery, map pin popups) now renders the real photo
+  when one exists, falling back to the existing colour-placeholder /
+  stock-photo system otherwise — nothing regresses for the 36 seed
+  properties, which have no real photos and never will.
+  **Requires a one-time manual step**: run `supabase/storage.sql` in
+  the Supabase SQL editor to create the bucket and its policies — the
+  frontend's publishable key can't create a bucket itself (403), by
+  design. Until that's run, publishing still works, it just silently
+  skips the photo upload (toasts a per-file error, no orphaned data).
 - **Guest-facing discovery** (`browse.html`, `map.html`, `property.html`,
   `host-profile.html`) — a real host's published listing now actually
   shows up. Previously these pages only ever read the 36 hardcoded seed

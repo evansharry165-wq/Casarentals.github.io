@@ -149,6 +149,7 @@
   .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
   .photo-tile { aspect-ratio: 4/3; border-radius: 10px; position: relative; overflow: hidden; }
   .photo-tile .ph { width: 100%; height: 100%; }
+  .photo-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .photo-tile .rm { position: absolute; top: 5px; right: 5px; width: 32px; height: 32px; border-radius: 50%; background: rgba(22,20,15,0.7); border: none; color: white; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
   .photo-tile .rm svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.5; }
   .photo-tile.cover::after { content: 'Cover'; position: absolute; left: 6px; top: 6px; padding: 2px 7px; background: var(--brick); color: white; font-family: var(--mono); font-size: 9px; letter-spacing: .1em; border-radius: 4px; }
@@ -476,18 +477,13 @@
         <h2 class="step-h">Show it <i>as it is.</i></h2>
         <p class="step-tag">Bright daylight beats staged shots. The cover photo is the first thing guests see.</p>
 
-        <div class="photo-drop" onclick="toast('Photo upload available once connected to backend.')">
+        <input type="file" id="photoInput" accept="image/jpeg,image/png,image/webp" multiple style="display:none" onchange="handlePhotoFiles(this.files)">
+        <div class="photo-drop" id="photoDrop" onclick="document.getElementById('photoInput').click()" ondragover="event.preventDefault();this.style.borderColor='var(--brick)'" ondragleave="this.style.borderColor=''" ondrop="event.preventDefault();this.style.borderColor='';handlePhotoFiles(event.dataTransfer.files)">
           <div class="pi"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 16-6-6-9 11"/></svg></div>
           <h4>Drop your <i>photos</i> here</h4>
-          <p>or <span style="color:var(--brick);text-decoration:underline;text-underline-offset:3px">browse files</span> · JPEG, PNG up to 12 MB each · min. 5 photos recommended</p>
+          <p>or <span style="color:var(--brick);text-decoration:underline;text-underline-offset:3px">browse files</span> · JPEG, PNG or WebP up to 12 MB each · min. 5 photos recommended</p>
         </div>
-        <div class="photo-grid">
-          <div class="photo-tile cover"><div class="ph warm" data-label="EXTERIOR · DUSK"></div><button class="rm" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"/></svg></button></div>
-          <div class="photo-tile"><div class="ph fog" data-label="LIVING ROOM"></div><button class="rm" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"/></svg></button></div>
-          <div class="photo-tile"><div class="ph dusk" data-label="BEDROOM"></div><button class="rm" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"/></svg></button></div>
-          <div class="photo-tile"><div class="ph sage" data-label="KITCHEN"></div><button class="rm" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"/></svg></button></div>
-          <div class="photo-tile"><div class="ph cool" data-label="GARDEN"></div><button class="rm" onclick="event.stopPropagation()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"/></svg></button></div>
-        </div>
+        <div class="photo-grid" id="photoGrid"></div>
 
         <!-- Review summary -->
         <div class="review-summary" id="reviewSummary">
@@ -697,6 +693,71 @@ function pickPublish(card, mode) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// PHOTOS — held as real File objects until publish, then uploaded
+// to the "property-photos" Supabase Storage bucket and linked via
+// the property_photos table.
+// ═══════════════════════════════════════════════════════════════
+const listingPhotos = [];
+
+function renderPhotoGrid() {
+  const grid = document.getElementById('photoGrid');
+  grid.innerHTML = listingPhotos.map((p, i) => `
+    <div class="photo-tile${i === 0 ? ' cover' : ''}">
+      <img src="${p.previewUrl}" alt="">
+      <button class="rm" onclick="event.stopPropagation();removePhoto(${i})"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M6 18 18 6"/></svg></button>
+    </div>`).join('');
+}
+
+function handlePhotoFiles(fileList) {
+  const MAX_BYTES = 12 * 1024 * 1024;
+  for (const file of fileList) {
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
+      toast(`${file.name}: only JPEG, PNG or WebP allowed`);
+      continue;
+    }
+    if (file.size > MAX_BYTES) {
+      toast(`${file.name}: over 12 MB, skipped`);
+      continue;
+    }
+    listingPhotos.push({ file, previewUrl: URL.createObjectURL(file) });
+  }
+  renderPhotoGrid();
+  document.getElementById('photoInput').value = '';
+}
+
+function removePhoto(i) {
+  URL.revokeObjectURL(listingPhotos[i].previewUrl);
+  listingPhotos.splice(i, 1);
+  renderPhotoGrid();
+}
+
+// Uploads every pending file to Storage, then links each public URL
+// into property_photos. Runs after the properties row exists, since
+// the storage path and the FK both need the real property id.
+async function uploadListingPhotos(propertyId, hostId) {
+  if (!listingPhotos.length) return;
+  const rows = [];
+  for (let i = 0; i < listingPhotos.length; i++) {
+    const { file } = listingPhotos[i];
+    const ext = file.name.split('.').pop().toLowerCase();
+    const path = `${hostId}/${propertyId}/${i}-${Date.now()}.${ext}`;
+    const { error: uploadError } = await window.casaSupabase.storage
+      .from('property-photos')
+      .upload(path, file, { contentType: file.type });
+    if (uploadError) {
+      toast(`Photo ${i + 1} failed to upload: ${uploadError.message}`);
+      continue;
+    }
+    const { data: { publicUrl } } = window.casaSupabase.storage.from('property-photos').getPublicUrl(path);
+    rows.push({ property_id: propertyId, url: publicUrl, sort_order: i, is_cover: i === 0 });
+  }
+  if (rows.length) {
+    const { error } = await window.casaSupabase.from('property_photos').insert(rows);
+    if (error) toast('Some photos uploaded but failed to link: ' + error.message);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
 // STEPPERS
 // ═══════════════════════════════════════════════════════════════
 function bump(id, delta) {
@@ -794,7 +855,7 @@ async function submitListing() {
   const user = { id: session.user.id };
 
   const amenities = [...document.querySelectorAll('.am-pill.on')].map(a => a.dataset.am);
-  const { error } = await window.casaSupabase.from('properties').insert({
+  const { data: inserted, error } = await window.casaSupabase.from('properties').insert({
     host_id:         user.id,
     title:           document.getElementById('title').value,
     region:          form.region,
@@ -812,13 +873,18 @@ async function submitListing() {
     min_stay:        parseInt(document.getElementById('minstay').value),
     amenities:       amenities,
     published:       form.publishMode === 'live',
-  });
+  }).select('id').single();
 
   if (error) {
     toast('Could not publish: ' + error.message);
     document.getElementById('nextBtn').disabled = false;
     document.getElementById('nextBtn').textContent = 'Publish listing';
     return;
+  }
+
+  if (listingPhotos.length) {
+    document.getElementById('nextBtn').textContent = 'Uploading photos…';
+    await uploadListingPhotos(inserted.id, user.id);
   }
 
   // Show success

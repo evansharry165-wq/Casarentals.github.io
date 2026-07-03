@@ -146,6 +146,14 @@ function casaMapSupabaseRow(row) {
   const rating = reviewCount ? Math.round((reviews.reduce((s, r) => s + r.stars, 0) / reviewCount) * 10) / 10 : 0;
   const host = row.profiles || {};
   const badge = (host.email_verified && host.phone_verified && host.gov_id_verified) ? 'verified' : undefined;
+  const photoRows = (row.property_photos || [])
+    .slice()
+    .sort((a, b) => (b.is_cover - a.is_cover) || (a.sort_order - b.sort_order))
+    .map(ph => ph.url);
+  // Leave undefined (not []) when there are no real uploads yet — property.html's
+  // `listing.photos || casaGetPropertyGallery(...)` fallback treats an empty
+  // array as truthy, so an empty list would skip the stock-photo fallback.
+  const photos = photoRows.length ? photoRows : undefined;
   const p = {
     id: row.id,
     hostId: row.host_id,
@@ -161,6 +169,7 @@ function casaMapSupabaseRow(row) {
     tags: row.amenities || [],
     badge,
     col: casaColorForId(row.id),
+    photos,
     cleaningFee: row.cleaning_fee || Math.max(35, Math.round(row.price_per_night * 0.28)),
     minNights: row.min_stay || 1,
     instantBook: !!row.instant_book,
@@ -175,7 +184,7 @@ async function casaRefreshProperties() {
   if (!window.casaSupabase) return CASA_PROPERTIES;
   const { data, error } = await window.casaSupabase
     .from('properties')
-    .select('*, reviews(stars), profiles!properties_host_id_fkey(email_verified, phone_verified, gov_id_verified, background_check)')
+    .select('*, reviews(stars), profiles!properties_host_id_fkey(email_verified, phone_verified, gov_id_verified, background_check), property_photos(url, sort_order, is_cover)')
     .eq('published', true);
   if (error || !data) {
     console.error('casaRefreshProperties failed', error);
