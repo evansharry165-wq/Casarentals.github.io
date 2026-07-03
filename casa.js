@@ -165,7 +165,6 @@ window.casaToggleFollow = casaToggleFollow;
 const CASA_USER_KEY = 'casa:user';
 const CASA_NOTIF_KEY = 'casa:notifications';
 const CASA_RECENT_KEY = 'casa:recent';
-const CASA_ENQUIRIES_KEY = 'casa:enquiries';
 
 function casaGetUser() {
   try {
@@ -267,70 +266,15 @@ function casaGetRecentIds() {
   }
 }
 
-/* ─── Enquiries (guest → host flow) ─── */
-const CASA_LOCAL_CONVOS_KEY = 'casa:local-convos';
-
-function casaGetEnquiries() {
-  try {
-    return JSON.parse(localStorage.getItem(CASA_ENQUIRIES_KEY) || '[]');
-  } catch {
-    return [];
-  }
-}
-
-function casaSaveEnquiry(enquiry) {
-  const convId = 'enq-' + Date.now();
-  let list = casaGetEnquiries();
-  list.unshift({ id: Date.now(), status: 'pending', convId, ...enquiry });
-  localStorage.setItem(CASA_ENQUIRIES_KEY, JSON.stringify(list.slice(0, 30)));
-
-  // Create the linked conversation so the host's reply (simulated in
-  // messages.html) can flip this enquiry's status back here.
-  let convos = [];
-  try { convos = JSON.parse(localStorage.getItem(CASA_LOCAL_CONVOS_KEY) || '[]'); } catch { convos = []; }
-  const dateLine = enquiry.checkin && enquiry.checkout
-    ? `${enquiry.checkin} → ${enquiry.checkout}` : '';
-  convos.unshift({
-    id: convId,
-    name: enquiry.host || 'Host',
-    av: (enquiry.host || 'H').charAt(0).toUpperCase(),
-    avc: '',
-    prop: enquiry.property || '',
-    time: 'Just now',
-    tag: 'enquiry',
-    tagLabel: 'Awaiting reply',
-    unread: false,
-    online: false,
-    preview: enquiry.message ? enquiry.message.slice(0, 60) : 'Enquiry sent',
-    msgs: [
-      { f: 'me', t: enquiry.message || `Hi, is ${enquiry.property || 'this place'} available ${dateLine}?`, ts: new Date().toTimeString().slice(0, 5) },
-    ],
-  });
-  localStorage.setItem(CASA_LOCAL_CONVOS_KEY, JSON.stringify(convos.slice(0, 30)));
-
-  casaAddNotification({
-    type: 'enquiry',
-    title: 'Enquiry sent',
-    body: `Your message about ${enquiry.property || 'the stay'} was sent to the host.`,
-    href: `messages.html?c=${convId}`,
-  });
-}
-
-function casaMarkEnquiryReplied(convId) {
-  const list = casaGetEnquiries();
-  const item = list.find(e => e.convId === convId);
-  if (!item || item.status === 'replied') return;
-  item.status = 'replied';
-  localStorage.setItem(CASA_ENQUIRIES_KEY, JSON.stringify(list));
-}
-
-window.casaGetEnquiries = casaGetEnquiries;
-window.casaMarkEnquiryReplied = casaMarkEnquiryReplied;
+/* ─── Enquiries (guest → host flow) ───
+   Enquiries, conversations, and messages are all real Supabase tables now
+   (see supabase/schema.sql) — booking.html inserts the enquiry and calls
+   create_conversation_for_enquiry directly; host.html and messages.html
+   query Supabase directly. No local mirror needed. */
 
 /* ─── Reporting & moderation (guest/host safety) ─── */
 const CASA_REPORTS_KEY = 'casa:reports';
 const CASA_MUTED_KEY = 'casa:muted-users';
-const CASA_BLOCKED_CONVOS_KEY = 'casa:blocked-convos';
 
 function casaGetReports() {
   try { return JSON.parse(localStorage.getItem(CASA_REPORTS_KEY) || '[]'); } catch { return []; }
@@ -383,26 +327,12 @@ function casaMuteUser(name) {
   }
 }
 
-function casaGetBlockedConvos() {
-  try { return JSON.parse(localStorage.getItem(CASA_BLOCKED_CONVOS_KEY) || '[]'); } catch { return []; }
-}
-
-function casaBlockConvo(id) {
-  const list = casaGetBlockedConvos();
-  if (!list.includes(id)) {
-    list.push(id);
-    localStorage.setItem(CASA_BLOCKED_CONVOS_KEY, JSON.stringify(list));
-  }
-}
-
 window.casaGetReports = casaGetReports;
 window.casaIsReported = casaIsReported;
 window.casaReportContent = casaReportContent;
 window.casaGetMutedUsers = casaGetMutedUsers;
 window.casaIsMuted = casaIsMuted;
 window.casaMuteUser = casaMuteUser;
-window.casaGetBlockedConvos = casaGetBlockedConvos;
-window.casaBlockConvo = casaBlockConvo;
 
 window.casaGetUser = casaGetUser;
 window.casaSetUser = casaSetUser;

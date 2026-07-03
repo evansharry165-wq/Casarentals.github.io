@@ -821,12 +821,19 @@ function validate() {
 async function submitEnquiry() {
   if (!validate()) return;
 
-  const user = typeof casaGetUser === 'function' ? casaGetUser() : null;
-  if (!user) {
+  // Read the real session directly rather than the casaGetUser() cache —
+  // that cache is a convenience for synchronous UI reads (nav, etc.) and
+  // can lag behind the actual session by a beat right after switching
+  // accounts. This is a security-critical write (guest_id must exactly
+  // match auth.uid() or RLS rejects the insert), so it needs the source
+  // of truth, not the cache.
+  const { data: { session } } = await window.casaSupabase.auth.getSession();
+  if (!session) {
     if (window.casaToast) casaToast('Please sign in to send an enquiry');
     window.location.href = 'signup.html';
     return;
   }
+  const user = { id: session.user.id };
 
   const btn = document.getElementById('submitBtn');
   btn.disabled = true;
@@ -872,6 +879,26 @@ async function submitEnquiry() {
 
   const ref = 'CSA-' + String(data.id).padStart(6, '0');
 
+  // Create the real conversation (guest can't insert the host's
+  // conversation_participants row directly under RLS, so this runs as a
+  // security-definer RPC — see create_conversation_for_enquiry in
+  // supabase/schema.sql).
+  const { data: conversationId, error: convError } = await window.casaSupabase
+    .rpc('create_conversation_for_enquiry', { p_enquiry_id: data.id });
+
+  if (convError) {
+    // The enquiry itself is saved either way — don't block on this, just
+    // fall back to the inbox without a deep link.
+    console.error('create_conversation_for_enquiry failed', convError);
+  }
+
+  casaAddNotification({
+    type: 'enquiry',
+    title: 'Enquiry sent',
+    body: `Your message about ${PROPERTY.title} was sent to ${PROPERTY.host}.`,
+    href: conversationId ? `messages.html?c=${conversationId}` : 'messages.html',
+  });
+
   // Format dates for display
   const fmt = d => new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -883,15 +910,12 @@ async function submitEnquiry() {
   document.getElementById('s-guests').textContent = guestCount + ' guest' + (guestCount > 1 ? 's' : '') + (pets ? ' + pets' : '');
   document.getElementById('s-email').textContent  = email;
   document.getElementById('s-sent').textContent   = 'Sent ' + new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+  if (conversationId) {
+    document.querySelector('#successScreen a.btn-primary').href = `messages.html?c=${conversationId}`;
+  }
 
   // Show success
   document.getElementById('loadingOverlay').classList.remove('show');
-  if (typeof casaSaveEnquiry === 'function') {
-    // Also mirrors into the local casa:enquiries/casa:local-convos overlay
-    // that host.html and messages.html still read until they're migrated
-    // to query Supabase directly (see supabase/README.md).
-    casaSaveEnquiry({ host: PROPERTY.host, property: PROPERTY.title, ref, email: fname, message, checkin, checkout, nights, total, guestName: fname });
-  }
   document.getElementById('formWrap').style.display = 'none';
   document.getElementById('successScreen').classList.add('show');
   window.scrollTo({ top: 0, behavior: 'smooth' });

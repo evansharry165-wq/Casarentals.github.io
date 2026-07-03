@@ -999,11 +999,13 @@ async function submitReview() {
     store[reviewCtx.propertyId].unshift({ name: 'You', stars: reviewStarsPicked, text, date: dateLabel });
     localStorage.setItem('casa:reviews', JSON.stringify(store));
 
-    const user = typeof casaGetUser === 'function' ? casaGetUser() : null;
-    if (window.casaSupabase && user) {
+    // Read the real session directly rather than the casaGetUser() cache —
+    // author_id must exactly match auth.uid() or RLS rejects the insert.
+    const { data: { session } } = window.casaSupabase ? await window.casaSupabase.auth.getSession() : { data: {} };
+    if (window.casaSupabase && session) {
       const { error } = await window.casaSupabase.from('reviews').insert({
         property_id: Number(reviewCtx.propertyId),
-        author_id: user.id,
+        author_id: session.user.id,
         stars: reviewStarsPicked,
         body: text,
       });

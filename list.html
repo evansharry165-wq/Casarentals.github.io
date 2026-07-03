@@ -779,14 +779,19 @@ async function submitListing() {
   document.getElementById('nextBtn').disabled = true;
   document.getElementById('nextBtn').textContent = 'Publishing…';
 
-  const user = typeof casaGetUser === 'function' ? casaGetUser() : null;
-  if (!user) {
+  // Read the real session directly rather than the casaGetUser() cache —
+  // this is a security-critical write (host_id must exactly match
+  // auth.uid() or RLS rejects the insert), so it needs the source of
+  // truth, not a cache that can lag right after switching accounts.
+  const { data: { session } } = await window.casaSupabase.auth.getSession();
+  if (!session) {
     toast('Please sign in as a host to publish a listing');
     document.getElementById('nextBtn').disabled = false;
     document.getElementById('nextBtn').textContent = 'Publish listing';
     window.location.href = 'signup.html';
     return;
   }
+  const user = { id: session.user.id };
 
   const amenities = [...document.querySelectorAll('.am-pill.on')].map(a => a.dataset.am);
   const { error } = await window.casaSupabase.from('properties').insert({

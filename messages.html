@@ -207,13 +207,14 @@
       </div>
     </div>
     <div class="cl-tabs">
-      <button class="cl-tab active" data-filter="all" onclick="filterTab(this)">All <span class="ct" id="ct-all">8</span></button>
-      <button class="cl-tab" data-filter="unread" onclick="filterTab(this)">Unread <span class="ct" id="ct-unread">3</span></button>
-      <button class="cl-tab" data-filter="enquiry" onclick="filterTab(this)">Enquiries <span class="ct" id="ct-enq">3</span></button>
-      <button class="cl-tab" data-filter="stayed" onclick="filterTab(this)">Stayed <span class="ct" id="ct-stayed">3</span></button>
+      <button class="cl-tab active" data-filter="all" onclick="filterTab(this)">All <span class="ct" id="ct-all">0</span></button>
+      <button class="cl-tab" data-filter="unread" onclick="filterTab(this)">Unread <span class="ct" id="ct-unread">0</span></button>
+      <button class="cl-tab" data-filter="enquiry" onclick="filterTab(this)">Enquiries <span class="ct" id="ct-enq">0</span></button>
     </div>
     <div class="cl-scroll" id="convList"></div>
     <div class="no-res" id="noRes">No conversations match that search.</div>
+    <div class="no-res" id="emptyState" style="display:none">No messages yet. Enquiries you send or receive will show up here.</div>
+    <div class="no-res" id="signedOutState" style="display:none">Sign in to view your messages.</div>
   </aside>
 
   <main class="thread">
@@ -221,15 +222,12 @@
       <button class="th-back" onclick="closeThreadMobile()" aria-label="Back to inbox">
         <svg class="i" viewBox="0 0 24 24"><path d="M19 12H5M11 5l-7 7 7 7"/></svg>
       </button>
-      <div class="th-av" id="thAv">S</div>
+      <div class="th-av" id="thAv">·</div>
       <div class="th-who">
-        <h2 id="thName"><i>Sarah R.</i></h2>
-        <div class="meta" id="thMeta"><span class="ld"></span> Active now</div>
+        <h2 id="thName"></h2>
+        <div class="meta" id="thMeta"></div>
       </div>
       <div class="th-actions">
-        <button class="btn btn-outline btn-sm" onclick="toast('Calling — available once live')">
-          <svg class="i i-sm" viewBox="0 0 24 24"><path d="M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg> Call
-        </button>
         <button class="btn btn-ghost btn-sm" onclick="toggleThMore(event)" id="thMoreBtn">
           <svg class="i i-sm" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>
         </button>
@@ -252,7 +250,7 @@
     <div class="quick-replies" id="quickReplies"></div>
     <div class="composer">
       <div class="cw">
-        <textarea id="msgTA" placeholder="Reply to Sarah…" rows="1" oninput="onType()" onkeydown="onKey(event)"></textarea>
+        <textarea id="msgTA" placeholder="Type a message…" rows="1" oninput="onType()" onkeydown="onKey(event)"></textarea>
         <div class="ctools">
           <div style="position:relative">
             <button class="ct-btn" id="emojiBtn" onclick="toggleEmoji()" title="Emoji">
@@ -278,41 +276,25 @@
     </div>
   </main>
 
-  <aside class="side-prop" id="sideProp">
+  <aside class="side-prop" id="sideProp" style="display:none">
     <div class="sp-card">
-      <div class="sp-img"><div class="ph warm" data-label="STONE COTTAGE · WINDERMERE"></div></div>
+      <div class="sp-img"><div class="ph warm" id="spImg" data-label=""></div></div>
       <div class="sp-body">
-        <div class="sp-name">Stone Cottage, <i>Windermere</i></div>
-        <div class="sp-loc">Lake District · 4.9 ★ (23)</div>
-        <div class="sp-facts">
-          <div class="pf"><div class="n">6</div><div class="l">Guests</div></div>
-          <div class="pf"><div class="n">3</div><div class="l">Beds</div></div>
-          <div class="pf"><div class="n">2</div><div class="l">Baths</div></div>
-        </div>
+        <div class="sp-name" id="spName"></div>
+        <div class="sp-loc" id="spLoc"></div>
       </div>
     </div>
-    <div class="sp-block">
-      <h5>Your trip</h5>
-      <div class="det-row"><span>Check in</span><span class="v">Sat 12 Jul</span></div>
-      <div class="det-row"><span>Check out</span><span class="v">Sat 19 Jul</span></div>
-      <div class="det-row"><span>Guests</span><span class="v">2 + 2 kids · 1 dog</span></div>
-      <div class="det-row" style="border-top:1px solid var(--rule);padding-top:6px;margin-top:4px"><span>7 nights</span><span class="v">£1,225</span></div>
-      <div class="det-row"><span>Cleaning</span><span class="v">£60</span></div>
-      <div class="det-row save"><span>vs Booking.com</span><span>−£243</span></div>
-      <div class="det-row tot"><span>Total to Sarah</span><span class="v">£1,285</span></div>
-      <a href="property.html" class="btn btn-outline btn-sm full-btn">View property</a>
-    </div>
-    <div class="sp-block">
-      <h5>Pay Sarah</h5>
-      <p style="font-size:12.5px;color:var(--ink-2);line-height:1.5;margin-bottom:10px">Bank details shared in the thread. Pay £200 deposit to lock the dates.</p>
-      <button class="btn btn-primary btn-sm full-btn" id="depositBtn" onclick="markDeposit()">
-        <svg class="i i-sm" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg> Mark deposit paid (£200)
-      </button>
+    <div class="sp-block" id="spTripBlock" style="display:none">
+      <h5>This enquiry</h5>
+      <div class="det-row"><span>Check in</span><span class="v" id="spCheckin">—</span></div>
+      <div class="det-row"><span>Check out</span><span class="v" id="spCheckout">—</span></div>
+      <div class="det-row"><span>Guests</span><span class="v" id="spGuests">—</span></div>
+      <div class="det-row tot"><span>Total</span><span class="v" id="spTotal">—</span></div>
+      <a href="property.html" class="btn btn-outline btn-sm full-btn" id="spViewProp">View property</a>
     </div>
     <div class="sp-block" style="border-style:dashed">
       <h5 style="color:var(--brick)">Casa support</h5>
-      <p style="font-size:12px;color:var(--ink-2);line-height:1.5">Something feel off? We don't process payments but we're here to help with disputes.</p>
-      <a href="#" style="font-size:12px;color:var(--brick);text-decoration:underline;text-underline-offset:2px;display:inline-block;margin-top:8px" onclick="toast('Support — available once live');return false">Open a support ticket →</a>
+      <p style="font-size:12px;color:var(--ink-2);line-height:1.5">Casa doesn't process or hold payments — those are agreed directly between you and the host. Something feel off with this conversation? Use Report above.</p>
     </div>
   </aside>
 </div>
@@ -323,88 +305,118 @@
 <script src="casa.js"></script>
 <script>
 // ═══════════════════
-// DATA
+// DATA — real conversations from Supabase (see supabase/schema.sql:
+// create_conversation_for_enquiry). Every conversation today comes from
+// an enquiry, so enquiries is the source of conversation metadata (who's
+// the other party, which property, the trip details) — not a generic
+// participant lookup. If a non-enquiry conversation type is ever added,
+// this'll need generalizing.
 // ═══════════════════
-const CONVOS = [
-  { id:'sarah', name:'Sarah R.', ni:true, av:'S', avc:'', prop:'Stone Cottage, Windermere', time:'2 hrs', tag:'enquiry', tagLabel:'Awaiting your reply', unread:true, online:true, concierge:true, preview:"Lovely — we'd be very happy to host you…", st:'accepted', stTitle:"Sarah accepted your enquiry — ready to confirm", stBody:"Agree the price below, then pay by bank transfer to lock the dates.", meta:"Active now — usually replies within 2 hours", badge:true, qr:["That works perfectly 👍","Could you send bank details?","What time is check-in?","We'll pay the deposit today"], msgs:[
-    {f:'me', t:"Hi Sarah — we'd love to stay at the Stone Cottage for the week of <i>12–19 July</i>. Family of four (kids 5 and 8) with one well-behaved Labrador.\n\nAre those dates still available? And is there parking for two cars?", ts:'14:22', prop:true},
-    {f:'them', t:"Hi James — lovely to hear from you! The cottage <i>is</i> free 12–19 July and we'd be delighted to host you. Labrador very welcome — we have two of our own.\n\nYes, <i>off-street parking for two cars</i> right outside.", ts:'09:14'},
-    {f:'them', t:"Here's the price for your week:", ts:'09:16', payment:true},
-    {f:'me', t:"Brilliant — that all works. Could you send bank details and we'll get the deposit across this afternoon.\n\nQuick question — is there a cot for a toddler?", ts:'11:08'},
-    {f:'them', t:"Sending bank details now. There's a travel cot in the loft — I'll set it up in the small bedroom.\n\nLooking forward to having you! Full check-in instructions a week before.", ts:'11:21'},
-  ]},
-  { id:'fiona', name:'Fiona C.', ni:true, av:'F', avc:'', prop:'Blackhouse, Trotternish', time:'Yest.', tag:'enquiry', tagLabel:'Enquiry sent', unread:false, online:false, preview:"Yes, the blackhouse is free 2nd–9th August…", st:'pending', stTitle:"Awaiting Fiona's reply", stBody:"Your enquiry was sent yesterday. Fiona usually replies within a few hours.", meta:"Last seen yesterday", badge:true, qr:["Thanks — looking forward to it","What's the deposit?","Is it dog friendly?"], msgs:[
-    {f:'me', t:"Hi Fiona — interested in the Blackhouse for 2nd–9th August. 4 adults, 2 dogs. Is it available?", ts:'16:40'},
-    {f:'them', t:"Hi James — yes it's free 2nd–9th August. We require a £200 holding deposit. Off-grid solar, no phone signal — that's rather the point 😊", ts:'09:02'},
-  ]},
-  { id:'patrick', name:'Patrick M.', ni:true, av:'P', avc:'', prop:'Cliffside Cottage, Portrush', time:'2 days', tag:'confirmed', tagLabel:'Booking confirmed', unread:true, online:false, preview:"Confirming you're all set for the 14th…", st:'confirmed', stTitle:"Booking confirmed ✓", stBody:"Deposit paid. Patrick will send check-in details a week before you arrive.", meta:"Last seen 2 days ago", badge:true, qr:["Great — see you then!","What's the Wi-Fi password?","Anything we should bring?"], msgs:[
-    {f:'me', t:"Hi Patrick — enquiring about Cliffside for 14–21 Aug. 2 adults.", ts:'10:15'},
-    {f:'them', t:"Hi James — yes it's available! £165/night, sleeps 4, sea views to Scotland on a clear day. Shall I confirm?", ts:'11:30'},
-    {f:'me', t:"Perfect — please confirm. Transferring the deposit now.", ts:'14:02'},
-    {f:'them', t:"Deposit received — <i>you're confirmed!</i> Full check-in instructions a week before. Looking forward to having you.", ts:'16:45'},
-    {f:'them', t:"Just confirming you're all set for the 14th. Key under the second flowerpot on the left 🗝️", ts:'09:30'},
-  ]},
-  { id:'rhys', name:'Rhys W.', ni:true, av:'R', avc:'', prop:'Stone Farmhouse, Snowdonia', time:'5 days', tag:'enquiry', tagLabel:'Awaiting your reply', unread:true, online:false, preview:"Yes, both dogs are welcome — we have two of our own…", st:'accepted', stTitle:"Rhys has responded to your enquiry", stBody:"Review his message and reply to confirm.", meta:"Last seen 5 days ago", badge:false, qr:["Brilliant — let's confirm","What dates are best?","Can you send a price breakdown?"], msgs:[
-    {f:'me', t:"Hi Rhys — interested in the farmhouse for September. Are dogs welcome?", ts:'09:00'},
-    {f:'them', t:"Yes, both dogs welcome — we have two of our own 🐕 September is mostly open. Which dates are you thinking?", ts:'14:22'},
-  ]},
-  { id:'hannah', name:'Hannah F.', ni:true, av:'H', avc:'', prop:'The Granary, Hawkshead', time:'1 wk', tag:'stayed', tagLabel:"Stayed · Sept '25", unread:false, online:false, preview:"Thanks so much for staying — would love a review…", st:null, meta:"Last seen 1 week ago", badge:true, qr:["Left you a review ⭐","Would love to come back","Any recommendations?"], msgs:[
-    {f:'them', t:"Hope you had a wonderful stay! Would love a review when you have a moment. Hope to see you again next year 🙏", ts:'10:00'},
-    {f:'me', t:"Just left you a 5-star review — thoroughly deserved. One of the best places we've stayed in years. Thank you!", ts:'11:30'},
-    {f:'them', t:"Thank you so much James — made our morning! You're welcome back any time 😊", ts:'12:14'},
-  ]},
-  { id:'laura', name:'Laura P.', ni:false, av:'L', avc:'moss', prop:'Re: Cotswolds recommendation', time:'3 days', tag:'community', tagLabel:'Community', unread:false, online:true, preview:"Saw your post in the Cotswolds feed…", st:null, meta:"Active now", badge:false, qr:["Try Honeysuckle Cottage in Bourton","Happy to share more tips!"], msgs:[
-    {f:'them', t:"Hi! Saw your post in the Cotswolds feed. Did you find somewhere good? We're looking for August.", ts:'15:00'},
-    {f:'me', t:"For the Cotswolds, try Honeysuckle Cottage in Bourton-on-the-Water — we stayed there two years ago, brilliant.", ts:'16:22'},
-  ]},
-  { id:'daniel', name:'Daniel R.', ni:true, av:'D', avc:'', prop:'Coastal Barn, Holkham', time:'2 wks', tag:'stayed', tagLabel:"Stayed · Jun '25", unread:false, online:false, preview:"Lovely to have you — drive safely…", st:null, meta:"Last seen 2 weeks ago", badge:true, qr:["Wonderful stay — thank you!","Hope to come back next year"], msgs:[
-    {f:'them', t:"All sorted! Lovely to have you — don't forget the binoculars for the bird hide 🦆", ts:'10:00'},
-    {f:'me', t:"Absolutely brilliant stay. The marsh at dawn was something else. Already looking at dates for next year.", ts:'14:30'},
-  ]},
-  { id:'tom', name:'Tom & Anna', ni:false, av:'T', avc:'ink', prop:"Shepherd's Hut, Buttermere", time:'3 wks', tag:'stayed', tagLabel:"Stayed · '24", unread:false, online:false, preview:"Hut is back online for September…", st:null, meta:"Last seen 3 weeks ago", badge:false, qr:["Would love to come back!","What dates in September?"], msgs:[
-    {f:'them', t:"The hut is back online for September — we'd love to host you again. Early October is magical up here.", ts:'09:00'},
-    {f:'me', t:"Wonderful — we were just talking about coming back. Will check dates and message you this week.", ts:'11:45'},
-  ]},
-];
-
-/* ─── Real enquiries from booking.html create a conversation here ─── */
-function casaSyncLocalConvo(c) {
-  let local = [];
-  try { local = JSON.parse(localStorage.getItem('casa:local-convos') || '[]'); } catch { local = []; }
-  const idx = local.findIndex(x => x.id === c.id);
-  if (idx === -1) return;
-  local[idx] = { ...local[idx], msgs: c.msgs, preview: c.preview, time: c.time, tagLabel: c.tagLabel };
-  localStorage.setItem('casa:local-convos', JSON.stringify(local));
-}
-
-(function mergeLocalConvos() {
-  let local = [];
-  try { local = JSON.parse(localStorage.getItem('casa:local-convos') || '[]'); } catch { local = []; }
-  if (!local.length) return;
-  CONVOS.unshift(...local);
-  // Any enquiry that hasn't had its host reply simulated yet, kick that off now
-  // (not gated on the user having that thread open — see simulateReply below).
-  local.forEach(c => {
-    if (c.tag === 'enquiry' && c.msgs.length === 1) simulateReply(c);
-  });
-})();
-
+let USER_ID = null;
+let CONVOS = [];
+let realtimeChannel = null;
+const QUICK_REPLIES = ["Thanks, that works for me 👍","Could you tell me a bit more?","What time is check-in?","Sounds great — looking forward to it"];
 const EMOJIS = ['😊','👍','🏡','🐕','⭐','🙏','✅','🔑','🏔️','🌊','❤️','👋','😂','🎉','💯','🌿','☀️','🌧️','🍃','🦆','🐑','🍺','☕','🎒','🗝️','💷','📅','✉️','🏴󠁧󠁢󠁳󠁣󠁴󠁿','🇬🇧','🌸','🏖️'];
 
-let active = 'sarah';
+let active = null;
 let filterMode = 'all';
 let searchStr = '';
 
-// Blocked conversations never render, in this session or any future one.
-(function removeBlockedConvos() {
-  if (typeof casaGetBlockedConvos !== 'function') return;
-  const blocked = casaGetBlockedConvos();
-  if (!blocked.length) return;
-  for (let i = CONVOS.length - 1; i >= 0; i--) {
-    if (blocked.includes(CONVOS[i].id)) CONVOS.splice(i, 1);
+function verifiedTierFromProfile(p) {
+  if (!p) return null;
+  if (!(p.email_verified && p.phone_verified && p.gov_id_verified)) return null;
+  return p.background_check ? 'verified-plus' : 'verified';
+}
+function fmtDate(iso) { return new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }); }
+function fmtRelative(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return mins + 'm';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h';
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return days + 'd';
+  return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+// ── LOAD ──
+async function loadConversations() {
+  const { data: { session } } = await window.casaSupabase.auth.getSession();
+  if (!session) {
+    document.getElementById('signedOutState').style.display = 'block';
+    return;
   }
-  if (blocked.includes(active)) active = CONVOS[0]?.id || null;
-})();
+  USER_ID = session.user.id;
+
+  const [{ data: asGuest, error: e1 }, { data: asHost, error: e2 }, { data: myParts }] = await Promise.all([
+    window.casaSupabase.from('enquiries')
+      .select('id, conversation_id, check_in, check_out, guests, total_price, status, property_id, host_id, properties(title, town), profiles!enquiries_host_id_fkey(id, full_name, email_verified, phone_verified, gov_id_verified, background_check)')
+      .eq('guest_id', USER_ID).not('conversation_id', 'is', null),
+    window.casaSupabase.from('enquiries')
+      .select('id, conversation_id, check_in, check_out, guests, total_price, status, property_id, guest_id, properties(title, town), profiles!enquiries_guest_id_fkey(id, full_name, email_verified, phone_verified, gov_id_verified, background_check)')
+      .eq('host_id', USER_ID).not('conversation_id', 'is', null),
+    window.casaSupabase.from('conversation_participants').select('conversation_id, blocked').eq('user_id', USER_ID),
+  ]);
+  if (e1 || e2) { console.error('loadConversations failed', e1 || e2); return; }
+
+  const blockedIds = new Set((myParts || []).filter(p => p.blocked).map(p => p.conversation_id));
+  const map = e => ({
+    convId: e.conversation_id, enquiryId: e.id,
+    propertyId: e.property_id, propTitle: e.properties?.title || '', propTown: e.properties?.town || '',
+    checkIn: e.check_in, checkOut: e.check_out, guests: e.guests, total: e.total_price, status: e.status,
+  });
+  const fromGuestSide = (asGuest || []).map(e => ({ ...map(e), iAmHost: false, otherId: e.host_id, other: e.profiles }));
+  const fromHostSide = (asHost || []).map(e => ({ ...map(e), iAmHost: true, otherId: e.guest_id, other: e.profiles }));
+  const merged = [...fromGuestSide, ...fromHostSide].filter(c => !blockedIds.has(c.convId));
+
+  if (!merged.length) {
+    CONVOS = [];
+    document.getElementById('emptyState').style.display = 'block';
+    renderList();
+    return;
+  }
+
+  const convIds = merged.map(c => c.convId);
+  const { data: allMsgs } = await window.casaSupabase
+    .from('messages').select('*').in('conversation_id', convIds).order('created_at', { ascending: true });
+
+  CONVOS = merged.map(c => ({ ...c, msgs: (allMsgs || []).filter(m => m.conversation_id === c.convId) }))
+    .sort((a, b) => {
+      const at = a.msgs[a.msgs.length - 1]?.created_at || 0;
+      const bt = b.msgs[b.msgs.length - 1]?.created_at || 0;
+      return new Date(bt) - new Date(at);
+    });
+
+  subscribeRealtime(convIds);
+  renderList();
+
+  const qpConvo = new URLSearchParams(location.search).get('c');
+  const initial = qpConvo && CONVOS.some(c => String(c.convId) === qpConvo) ? Number(qpConvo) : (CONVOS[0]?.convId ?? null);
+  if (initial != null) switchConvo(initial);
+}
+
+function subscribeRealtime(convIds) {
+  if (realtimeChannel) window.casaSupabase.removeChannel(realtimeChannel);
+  if (!convIds.length) return;
+  realtimeChannel = window.casaSupabase.channel('inbox-' + USER_ID)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `conversation_id=in.(${convIds.join(',')})` }, (payload) => {
+      const m = payload.new;
+      if (m.sender_id === USER_ID) return; // our own sends are already appended locally
+      const c = CONVOS.find(x => x.convId === m.conversation_id);
+      if (!c) return;
+      c.msgs.push(m);
+      if (active === m.conversation_id) { markRead(m.conversation_id); renderThread(); }
+      renderList();
+      casaAddNotification({
+        type: 'reply',
+        title: `New message from ${c.other?.full_name || 'someone'}`,
+        body: m.body,
+        href: `messages.html?c=${m.conversation_id}`,
+      });
+    })
+    .subscribe();
+}
 
 // ── BUILD EMOJI ──
 document.getElementById('emojiGrid').innerHTML = EMOJIS.map(e =>
@@ -414,79 +426,91 @@ document.getElementById('emojiGrid').innerHTML = EMOJIS.map(e =>
 function renderList() {
   let shown = 0;
   document.getElementById('convList').innerHTML = CONVOS.map(c => {
-    const mf = filterMode === 'all' || (filterMode==='unread'&&c.unread) || (filterMode==='enquiry'&&c.tag==='enquiry') || (filterMode==='stayed'&&c.tag==='stayed');
-    const ms = !searchStr || c.name.toLowerCase().includes(searchStr) || c.prop.toLowerCase().includes(searchStr) || c.preview.toLowerCase().includes(searchStr);
+    const name = c.other?.full_name || (c.iAmHost ? 'Guest' : 'Host');
+    const unread = c.msgs.some(m => m.sender_id !== USER_ID && !m.read_at);
+    const last = c.msgs[c.msgs.length - 1];
+    const preview = last ? last.body : '';
+    const time = last ? fmtRelative(last.created_at) : '';
+    const tagLabel = c.status === 'pending' ? (c.iAmHost ? 'Awaiting your reply' : 'Enquiry sent') : 'Replied';
+    const mf = filterMode === 'all' || (filterMode === 'unread' && unread) || (filterMode === 'enquiry' && c.status === 'pending');
+    const ms = !searchStr || name.toLowerCase().includes(searchStr) || c.propTitle.toLowerCase().includes(searchStr) || preview.toLowerCase().includes(searchStr);
     if (mf && ms) shown++;
-    return `<div class="conv${c.id===active?' active':''}${c.unread?' unread':''}${(!mf||!ms)?' hidden':''}" onclick="switchConvo('${c.id}')">
-      <div class="conv-av${c.avc?' '+c.avc:''}">${c.av}${c.online?'<span class="online"></span>':''}<span class="udot"></span></div>
+    return `<div class="conv${c.convId===active?' active':''}${unread?' unread':''}${(!mf||!ms)?' hidden':''}" onclick="switchConvo(${c.convId})">
+      <div class="conv-av">${esc(name).charAt(0).toUpperCase()}<span class="udot"></span></div>
       <div class="conv-body">
-        <div class="conv-head"><div class="conv-name">${c.ni?`<i>${c.name}</i>`:c.name}</div><div class="conv-time">${c.time}</div></div>
-        <div class="conv-prop">${c.prop}</div>
-        <div class="conv-preview">${c.preview}</div>
-        <span class="conv-tag ${c.tag}">${c.tagLabel}</span>
+        <div class="conv-head"><div class="conv-name">${esc(name)}</div><div class="conv-time">${time}</div></div>
+        <div class="conv-prop">${esc(c.propTitle)}</div>
+        <div class="conv-preview">${esc(preview)}</div>
+        <span class="conv-tag ${c.status === 'pending' ? 'enquiry' : 'confirmed'}">${tagLabel}</span>
       </div>
     </div>`;
   }).join('');
   document.getElementById('noRes').style.display = (!shown && searchStr) ? 'block' : 'none';
   document.getElementById('ct-all').textContent = CONVOS.length;
-  document.getElementById('ct-unread').textContent = CONVOS.filter(c=>c.unread).length;
-  document.getElementById('ct-enq').textContent = CONVOS.filter(c=>c.tag==='enquiry').length;
-  document.getElementById('ct-stayed').textContent = CONVOS.filter(c=>c.tag==='stayed').length;
+  document.getElementById('ct-unread').textContent = CONVOS.filter(c => c.msgs.some(m => m.sender_id !== USER_ID && !m.read_at)).length;
+  document.getElementById('ct-enq').textContent = CONVOS.filter(c => c.status === 'pending').length;
 }
 
 // ── RENDER THREAD ──
 function renderThread() {
-  const c = CONVOS.find(x=>x.id===active);
+  const c = CONVOS.find(x => x.convId === active);
   if (!c) return;
   updateReportButtonState();
 
-  // Header
-  const avEl = document.getElementById('thAv');
-  avEl.textContent = c.av;
-  avEl.className = `th-av${c.avc?' '+c.avc:''}`;
-  document.getElementById('thName').innerHTML = `${c.ni?`<i>${c.name}</i>`:c.name}` +
-    (c.badge ? ` <span class="badge moss"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> Verified host</span>` : '');
-  let metaHtml = `${c.online?'<span class="ld"></span> Active now':'Last seen '+c.time}`;
-  if (c.concierge || (c.id === 'sarah' && typeof casaConciergeEnabled === 'function' && casaConciergeEnabled())) {
-    metaHtml += ' · <span style="font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--moss)">Uses Casa Concierge</span>';
-  }
-  document.getElementById('thMeta').innerHTML = metaHtml;
-  document.getElementById('typingAv').textContent = c.av;
+  const name = c.other?.full_name || (c.iAmHost ? 'Guest' : 'Host');
+  const tier = verifiedTierFromProfile(c.other);
 
-  // Status
+  document.getElementById('thAv').textContent = esc(name).charAt(0).toUpperCase();
+  document.getElementById('thName').innerHTML = esc(name) +
+    (tier ? ` <span class="badge moss"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> ${tier === 'verified-plus' ? 'Verified+ host' : 'Verified host'}</span>` : '');
+  document.getElementById('thMeta').textContent = c.iAmHost ? 'Guest' : `Host of ${c.propTitle}`;
+
   const st = document.getElementById('thStatus');
-  if (c.st) {
+  if (c.status === 'pending') {
     st.style.display = 'flex';
-    st.className = `th-status ${c.st}`;
-    const icons = {accepted:'<path d="m4 12 5 5 11-11"/>',pending:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',confirmed:'<path d="m4 12 5 5 11-11"/>'};
-    document.getElementById('thStatusIcon').innerHTML = `<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:white;fill:none;stroke-width:1.8">${icons[c.st]}</svg>`;
-    document.getElementById('thStatusTitle').textContent = c.stTitle;
-    document.getElementById('thStatusBody').textContent = c.stBody;
-  } else { st.style.display = 'none'; }
+    st.className = 'th-status pending';
+    document.getElementById('thStatusIcon').innerHTML = `<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:white;fill:none;stroke-width:1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>`;
+    document.getElementById('thStatusTitle').textContent = c.iAmHost ? 'Awaiting your reply' : 'Enquiry sent';
+    document.getElementById('thStatusBody').textContent = c.iAmHost ? 'Reply to confirm availability with the guest.' : `Waiting for ${name.split(' ')[0]} to reply.`;
+  } else {
+    st.style.display = 'none';
+  }
 
-  // Quick replies
-  document.getElementById('quickReplies').innerHTML = (c.qr||[]).map(r=>
+  document.getElementById('quickReplies').innerHTML = QUICK_REPLIES.map(r =>
     `<button class="qr-chip" onclick="useQR(this.dataset.v)" data-v="${r.replace(/"/g,'&quot;')}">✦ ${r}</button>`).join('');
 
-  // Messages
   const stream = document.getElementById('thStream');
   stream.innerHTML = '';
-  c.msgs.forEach((m,i) => {
+  c.msgs.forEach((m, i) => {
     const row = document.createElement('div');
-    row.className = `msg-row${m.f==='me'?' from-me':''}`;
-    row.style.animationDelay = (i * 0.05) + 's';
-    const av = m.f === 'me' ? 'J' : c.av;
-    let extra = '';
-    if (m.prop) extra = `<a class="msg-prop" href="property.html"><div class="ph warm" style="width:56px;height:56px;border-radius:7px;flex-shrink:0"></div><div><div class="pn">Stone Cottage, <i>Windermere</i></div><div class="pd">£175/night · 12–19 Jul · 2 adults · 1 dog</div></div></a>`;
-    if (m.payment) extra = `<div class="pay-card"><h5>Confirmed price — £1,285 total</h5><div class="pr"><span>£175 × 7 nights</span><span>£1,225</span></div><div class="pr"><span>Cleaning</span><span>£60</span></div><div class="pr"><span>Casa booking fee</span><span style="color:var(--moss);font-weight:500">£0</span></div><div class="pr tot"><span>Total to me, direct</span><span class="v">£1,285</span></div><div class="pf">Bank transfer — £200 deposit to hold dates, balance 4 weeks before.</div></div>`;
-    row.innerHTML = `<div class="av-sm">${av}</div><div class="bubble-wrap"><div class="msg-bubble"><p>${m.t.replace(/\n/g,'<br>')}</p><span class="meta-time">${m.ts}</span></div>${extra}</div>`;
+    const fromMe = m.sender_id === USER_ID;
+    row.className = `msg-row${fromMe ? ' from-me' : ''}`;
+    row.style.animationDelay = (i * 0.03) + 's';
+    const av = fromMe ? 'Me' : esc(name).charAt(0).toUpperCase();
+    const ts = new Date(m.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    row.innerHTML = `<div class="av-sm">${av}</div><div class="bubble-wrap"><div class="msg-bubble"><p>${esc(m.body).replace(/\n/g,'<br>')}</p><span class="meta-time">${ts}</span></div></div>`;
     stream.appendChild(row);
   });
   stream.scrollTop = stream.scrollHeight;
 
-  // Composer
+  // Sidebar
+  document.getElementById('sideProp').style.display = '';
+  document.getElementById('spName').innerHTML = esc(c.propTitle);
+  document.getElementById('spLoc').textContent = c.propTown || '';
+  document.getElementById('spImg').setAttribute('data-label', (c.propTitle + ' · ' + (c.propTown || '')).toUpperCase());
+  document.getElementById('spViewProp').href = `property.html?id=${c.propertyId || ''}`;
+  if (c.checkIn) {
+    document.getElementById('spTripBlock').style.display = '';
+    document.getElementById('spCheckin').textContent = fmtDate(c.checkIn);
+    document.getElementById('spCheckout').textContent = fmtDate(c.checkOut);
+    document.getElementById('spGuests').textContent = c.guests + ' guest' + (c.guests > 1 ? 's' : '');
+    document.getElementById('spTotal').textContent = c.total ? '£' + c.total.toLocaleString() : '—';
+  } else {
+    document.getElementById('spTripBlock').style.display = 'none';
+  }
+
   const ta = document.getElementById('msgTA');
-  ta.placeholder = `Reply to ${c.name.split(' ')[0]}…`;
+  ta.placeholder = `Reply to ${name.split(' ')[0]}…`;
   ta.value = '';
   ta.style.height = 'auto';
   document.getElementById('sendBtn').disabled = true;
@@ -495,13 +519,23 @@ function renderThread() {
 }
 
 // ── SWITCH ──
-function switchConvo(id) {
-  active = id;
-  const c = CONVOS.find(x=>x.id===id);
-  if (c) c.unread = false;
+async function switchConvo(convId) {
+  active = convId;
   renderList();
   renderThread();
   document.getElementById('msgPage').classList.add('mobile-thread-open');
+  await markRead(convId);
+}
+
+async function markRead(convId) {
+  const c = CONVOS.find(x => x.convId === convId);
+  if (!c) return;
+  const unreadMsgs = c.msgs.filter(m => m.sender_id !== USER_ID && !m.read_at);
+  if (!unreadMsgs.length) return;
+  unreadMsgs.forEach(m => m.read_at = new Date().toISOString());
+  renderList();
+  await window.casaSupabase.from('messages').update({ read_at: new Date().toISOString() })
+    .eq('conversation_id', convId).neq('sender_id', USER_ID).is('read_at', null);
 }
 
 function closeThreadMobile() {
@@ -509,55 +543,31 @@ function closeThreadMobile() {
 }
 
 // ── SEND ──
-function sendMsg() {
+async function sendMsg() {
   const ta = document.getElementById('msgTA');
   const text = ta.value.trim();
-  if (!text) return;
-  const c = CONVOS.find(x=>x.id===active);
+  if (!text || active == null) return;
+  const c = CONVOS.find(x => x.convId === active);
   if (!c) return;
-  const now = new Date();
-  const ts = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
-  c.msgs.push({f:'me', t:esc(text), ts});
-  c.preview = text.length > 55 ? text.slice(0,55)+'…' : text;
-  c.time = 'Just now';
-  casaSyncLocalConvo(c);
-  ta.value = ''; ta.style.height = 'auto';
   document.getElementById('sendBtn').disabled = true;
+
+  const { data, error } = await window.casaSupabase.from('messages')
+    .insert({ conversation_id: active, sender_id: USER_ID, body: text }).select().single();
+  if (error) { toast('Could not send: ' + error.message); document.getElementById('sendBtn').disabled = false; return; }
+
+  c.msgs.push(data);
+  const justReplied = c.iAmHost && c.status === 'pending';
+  if (justReplied) c.status = 'replied';
+
+  ta.value = ''; ta.style.height = 'auto';
   document.getElementById('charWarn').textContent = '';
   hideEmoji();
   renderThread();
   renderList();
-  // Simulate reply for Sarah thread
-  if (active === 'sarah') simulateReply(c);
-}
 
-function simulateReply(c) {
-  const replies = ["Perfect — I'll sort that for you right away.","Of course! Let me check and come back to you shortly.","That's great — looking forward to having you 🏡","No problem at all. Anything else I can help with?","Brilliant — noted! See you on the 12th."];
-  const delay = 1800 + Math.random() * 2000;
-  setTimeout(()=>{
-    const isActive = active === c.id;
-    if (isActive) {
-      document.getElementById('typingRow').classList.add('show');
-      document.getElementById('thStream').scrollTop = 99999;
-    }
-    setTimeout(()=>{
-      if (isActive) document.getElementById('typingRow').classList.remove('show');
-      const reply = replies[Math.floor(Math.random()*replies.length)];
-      const now = new Date();
-      c.msgs.push({f:'them', t:reply, ts: now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0')});
-      c.preview = reply.length > 55 ? reply.slice(0,55)+'…' : reply;
-      if (c.tag === 'enquiry') c.tagLabel = 'Awaiting your reply';
-      casaSyncLocalConvo(c);
-      if (c.tag === 'enquiry' && typeof casaMarkEnquiryReplied === 'function') casaMarkEnquiryReplied(c.id);
-      casaAddNotification({
-        type: 'reply',
-        title: `New reply from ${c.name || 'your host'}`,
-        body: reply,
-        href: `messages.html?c=${c.id}`,
-      });
-      if (active === c.id) { renderThread(); renderList(); }
-    }, 1800);
-  }, delay);
+  if (justReplied) {
+    await window.casaSupabase.from('enquiries').update({ status: 'replied' }).eq('id', c.enquiryId);
+  }
 }
 
 // ── TYPING ──
@@ -617,15 +627,6 @@ function filterTab(btn) {
   renderList();
 }
 
-// ── DEPOSIT ──
-function markDeposit() {
-  const btn = document.getElementById('depositBtn');
-  btn.innerHTML = '✓ Deposit marked as paid';
-  btn.style.background = 'var(--moss)';
-  btn.disabled = true;
-  toast('Deposit marked as paid — dates are locked 🎉');
-}
-
 // ── TOAST ──
 function toast(msg) {
   let el = document.getElementById('msgToast');
@@ -647,45 +648,44 @@ document.addEventListener('click', (e) => {
 });
 
 function reportCurrentConvo() {
-  const c = CONVOS.find(x => x.id === active);
+  const c = CONVOS.find(x => x.convId === active);
   if (!c) return;
-  const reported = casaReportContent('conversation', c.id, { reportedName: c.name });
-  toast(reported ? `${c.name} reported — our team will review this within 24 hours` : 'Already reported');
+  const name = c.other?.full_name || 'this conversation';
+  const reported = casaReportContent('conversation', c.convId, { reportedName: name });
+  toast(reported ? `${name} reported — our team will review this within 24 hours` : 'Already reported');
   closeThMore();
   updateReportButtonState();
 }
 
 function updateReportButtonState() {
-  const c = CONVOS.find(x => x.id === active);
+  const c = CONVOS.find(x => x.convId === active);
   const btn = document.getElementById('thReportBtn');
   if (!c || !btn) return;
-  const already = typeof casaIsReported === 'function' && casaIsReported('conversation', c.id);
+  const already = typeof casaIsReported === 'function' && casaIsReported('conversation', c.convId);
   btn.disabled = already;
-  btn.textContent = '';
   btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>${already ? 'Reported' : 'Report'}`;
 }
 
-function blockCurrentConvo() {
-  const c = CONVOS.find(x => x.id === active);
+async function blockCurrentConvo() {
+  const c = CONVOS.find(x => x.convId === active);
   if (!c) return;
-  if (!confirm(`Block ${c.name}? You won't see messages from them again, and this thread will leave your inbox.`)) return;
-  casaBlockConvo(c.id);
+  const name = c.other?.full_name || 'this conversation';
+  if (!confirm(`Block ${name}? You won't see messages from them again, and this thread will leave your inbox.`)) return;
+  await window.casaSupabase.from('conversation_participants').update({ blocked: true })
+    .eq('conversation_id', c.convId).eq('user_id', USER_ID);
   closeThMore();
-  toast(`${c.name} blocked`);
-  const idx = CONVOS.findIndex(x => x.id === c.id);
-  if (idx !== -1) CONVOS.splice(idx, 1);
-  active = CONVOS[0]?.id || null;
+  toast(`${name} blocked`);
+  CONVOS = CONVOS.filter(x => x.convId !== c.convId);
+  active = CONVOS[0]?.convId ?? null;
   renderList();
-  if (active) renderThread();
+  if (active != null) renderThread();
+  else document.getElementById('emptyState').style.display = 'block';
 }
 
-function esc(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ── INIT ──
-const qpConvo = new URLSearchParams(location.search).get('c');
-if (qpConvo && CONVOS.some(c => c.id === qpConvo)) switchConvo(qpConvo);
-renderList();
-renderThread();
+loadConversations();
 </script>
 </body>
 </html>

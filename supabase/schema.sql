@@ -305,6 +305,10 @@ create policy "participants send messages in their conversations" on messages
     sender_id = auth.uid()
     and exists (select 1 from conversation_participants cp where cp.conversation_id = messages.conversation_id and cp.user_id = auth.uid())
   );
+create policy "participants mark messages read" on messages
+  for update using (
+    exists (select 1 from conversation_participants cp where cp.conversation_id = messages.conversation_id and cp.user_id = auth.uid())
+  );
 
 -- enquiries: guest who sent it or host who received it, only.
 create policy "guest or host read their enquiries" on enquiries
@@ -344,3 +348,55 @@ create policy "users manage their own mutes" on muted_users for all using (user_
 
 -- notifications: strictly private to the recipient.
 create policy "users manage their own notifications" on notifications for all using (user_id = auth.uid());
+
+-- ═══════════════════════════════════════════════════════════════
+-- Conversation creation (Phase 06b — live messaging)
+--
+-- A guest can't create the host's conversation_participants row
+-- directly under RLS ("participants manage their own participant
+-- row" only allows user_id = auth.uid()), and there's no insert
+-- policy on conversations at all. This runs as security definer to
+-- atomically create the conversation, both participant rows, and the
+-- opening message from a real enquiry, then link it back. Ongoing
+-- replies from either side use plain inserts into messages (both are
+-- already legitimate participants by then).
+-- ═══════════════════════════════════════════════════════════════
+create or replace function public.create_conversation_for_enquiry(p_enquiry_id bigint)
+returns bigint
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  v_enquiry enquiries%rowtype;
+  v_conversation_id bigint;
+begin
+  select * into v_enquiry from enquiries where id = p_enquiry_id;
+  if v_enquiry.id is null then
+    raise exception 'enquiry not found';
+  end if;
+  if v_enquiry.guest_id != auth.uid() then
+    raise exception 'not authorized';
+  end if;
+  if v_enquiry.conversation_id is not null then
+    return v_enquiry.conversation_id;
+  end if;
+
+  insert into conversations (property_id) values (v_enquiry.property_id) returning id into v_conversation_id;
+
+  insert into conversation_participants (conversation_id, user_id)
+  values (v_conversation_id, v_enquiry.guest_id), (v_conversation_id, v_enquiry.host_id);
+
+  insert into messages (conversation_id, sender_id, body)
+  values (v_conversation_id, v_enquiry.guest_id, coalesce(v_enquiry.message, 'Hi, is this available?'));
+
+  update enquiries set conversation_id = v_conversation_id where id = p_enquiry_id;
+
+  return v_conversation_id;
+end;
+$$;
+
+grant execute on function public.create_conversation_for_enquiry(bigint) to authenticated;
+
+-- Realtime delivery for messages.html's live inbox (new tables aren't in
+-- the publication by default).
+alter publication supabase_realtime add table messages;
