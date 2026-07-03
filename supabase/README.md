@@ -26,11 +26,14 @@ been placed in any file, commit, or chat message, per the standing rule.
   `host_id` (this also fixed a bug: the host name shown on the page was
   previously hardcoded to "Sarah" regardless of which property was being
   booked).
-- **Saved properties & follows** (`casa.js`) — `casaToggleSaved`/
+- **Saved properties & follows** (`casa.js`, `saved.html`) — `casaToggleSaved`/
   `casaToggleFollow` write through to `saved_properties`/`follows` when
   signed in, and sync down from Supabase on sign-in. Follows are resolved
   via a `supabaseId` field added to each `CASA_HOSTS` entry, matched to
-  the demo host auth accounts.
+  the demo host auth accounts. `saved.html` itself used to be 100% static
+  HTML — 7 hardcoded demo cards shown to every visitor regardless of what
+  they'd actually saved — now it renders the signed-in guest's real
+  saved list.
 - **Reviews** (`profile.html`) — posting a review to "the property page"
   also inserts into `reviews` for real.
 - **Reports** (`casa.js`) — `casaReportContent` writes through to
