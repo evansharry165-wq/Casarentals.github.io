@@ -195,9 +195,9 @@
   <div class="dh-hero">
     <div class="top">
       <div>
-        <div class="eyebrow">Sarah's Stays · 2 listings · since Apr 2024</div>
-        <h1 style="margin-top:10px">Good morning, <i>Sarah</i>.</h1>
-        <p class="greet">You have <i>3 new enquiries</i> and a guest arriving on <i>Saturday</i>. Casa kept <i>£0</i> of your earnings this month.</p>
+        <div class="eyebrow" id="dhEyebrow">Your stays</div>
+        <h1 style="margin-top:10px" id="dhGreetName">Good morning.</h1>
+        <p class="greet" id="dhGreetBody">Loading your dashboard&hellip;</p>
       </div>
       <div class="actions">
         <a class="btn btn-outline" href="messages.html">
@@ -220,43 +220,7 @@
     </div>
 
     <!-- KPI -->
-    <div class="kpi-row">
-      <div class="kpi">
-        <div class="lbl">Earnings this month</div>
-        <div class="val"><i>£4,225</i></div>
-        <div class="delta"><svg viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg> +18% vs Jun</div>
-        <div class="spark">
-          <svg viewBox="0 0 100 30" preserveAspectRatio="none">
-            <polyline fill="none" stroke="var(--brick)" stroke-width="1.6" points="0,22 10,20 20,15 30,18 40,12 50,14 60,8 70,10 80,5 90,8 100,3"/>
-          </svg>
-        </div>
-      </div>
-      <div class="kpi">
-        <div class="lbl">Confirmed bookings</div>
-        <div class="val"><i>17</i></div>
-        <div class="delta"><svg viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg> 4 next 30 days</div>
-        <div class="spark">
-          <svg viewBox="0 0 100 30" preserveAspectRatio="none">
-            <polyline fill="none" stroke="var(--ink-3)" stroke-width="1.6" points="0,18 14,15 28,12 42,15 56,9 70,11 84,7 100,5"/>
-          </svg>
-        </div>
-      </div>
-      <div class="kpi">
-        <div class="lbl">Occupancy · next 60 days</div>
-        <div class="val"><i>74%</i></div>
-        <div class="delta"><svg viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg> +12 pts</div>
-        <div class="spark">
-          <svg viewBox="0 0 100 30" preserveAspectRatio="none">
-            <polyline fill="none" stroke="var(--brick)" stroke-width="1.6" points="0,20 16,18 32,12 48,15 64,9 80,7 100,5"/>
-          </svg>
-        </div>
-      </div>
-      <div class="kpi">
-        <div class="lbl">Avg. rating</div>
-        <div class="val" style="display:flex;align-items:baseline;gap:8px"><i>4.9</i><span style="font-size:14px;color:var(--ink-3);font-family:var(--sans);font-style:normal">/5.0 · 23 reviews</span></div>
-        <div class="delta"><svg viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg> No change</div>
-      </div>
-    </div>
+    <div class="kpi-row" id="dhKpiRow"></div>
   </div>
 
   <!-- MAIN GRID -->
@@ -268,40 +232,9 @@
       <!-- Calendar strip -->
       <div class="block">
         <div class="b-head">
-          <h2>This <i>week</i> — Stone Cottage</h2>
-          <a href="#" class="more">Open full calendar <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+          <h2>This <i>week</i></h2>
         </div>
-        <div class="cal-strip">
-          <div class="cs-day">
-            <div class="d">Mon 7</div>
-            <div class="ev book"><div class="who">Hannah F.</div><div>Day 2/4</div></div>
-          </div>
-          <div class="cs-day">
-            <div class="d">Tue 8</div>
-            <div class="ev book"><div class="who">Hannah F.</div><div>Day 3/4</div></div>
-          </div>
-          <div class="cs-day">
-            <div class="d">Wed 9</div>
-            <div class="ev book"><div class="who">Hannah F.</div><div>Checkout 10am</div></div>
-            <div class="ev blocked">Clean</div>
-          </div>
-          <div class="cs-day today">
-            <div class="d today">Thu 10 · Today</div>
-            <div class="ev open">Open</div>
-          </div>
-          <div class="cs-day">
-            <div class="d">Fri 11</div>
-            <div class="ev open">Open</div>
-          </div>
-          <div class="cs-day">
-            <div class="d">Sat 12</div>
-            <div class="ev book"><div class="who">James H.</div><div>Check in 3pm</div></div>
-          </div>
-          <div class="cs-day">
-            <div class="d">Sun 13</div>
-            <div class="ev book"><div class="who">James H.</div><div>Day 2/7</div></div>
-          </div>
-        </div>
+        <div class="cal-strip" id="dhCalStrip"></div>
       </div>
 
       <!-- Enquiries -->
@@ -323,80 +256,7 @@
             </tr>
           </thead>
           <tbody id="enqTableBody">
-            <tr>
-              <td>
-                <div class="guest">
-                  <div class="av">J</div>
-                  <div>
-                    <div class="name">James Harrison</div>
-                    <div class="sub">Family of 4 + dog</div>
-                  </div>
-                </div>
-              </td>
-              <td><div style="font-family:var(--serif);font-size:14px">Stone Cottage</div><div style="font-size:11px;color:var(--ink-3)">Windermere</div></td>
-              <td><div class="dates">12&ndash;19 Jul</div><div style="font-size:11px;color:var(--ink-3)">7 nights</div></td>
-              <td><div class="price"><i>£1,285</i></div></td>
-              <td><span class="status-pill new">New · 2h ago</span></td>
-              <td class="actions-cell">
-                <a class="btn btn-primary btn-sm" href="messages.html">Reply</a>
-                <button class="btn btn-ghost btn-sm">Decline</button>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <div class="guest">
-                  <div class="av">M</div>
-                  <div>
-                    <div class="name">Marcus &amp; Olivia</div>
-                    <div class="sub">Couple, anniversary</div>
-                  </div>
-                </div>
-              </td>
-              <td><div style="font-family:var(--serif);font-size:14px">Stone Cottage</div><div style="font-size:11px;color:var(--ink-3)">Windermere</div></td>
-              <td><div class="dates">3&ndash;5 Aug</div><div style="font-size:11px;color:var(--ink-3)">2 nights</div></td>
-              <td><div class="price"><i>£420</i></div></td>
-              <td><span class="status-pill new">New · 5h ago</span></td>
-              <td class="actions-cell">
-                <a class="btn btn-primary btn-sm" href="messages.html">Reply</a>
-                <button class="btn btn-ghost btn-sm">Decline</button>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <div class="guest">
-                  <div class="av">L</div>
-                  <div>
-                    <div class="name">Laura Phillips</div>
-                    <div class="sub">3 adults, 1 dog</div>
-                  </div>
-                </div>
-              </td>
-              <td><div style="font-family:var(--serif);font-size:14px">Slate Barn</div><div style="font-size:11px;color:var(--ink-3)">Ambleside</div></td>
-              <td><div class="dates">22&ndash;25 Aug</div><div style="font-size:11px;color:var(--ink-3)">3 nights</div></td>
-              <td><div class="price"><i>£735</i></div></td>
-              <td><span class="status-pill replied">Replied · awaiting</span></td>
-              <td class="actions-cell">
-                <a class="btn btn-outline btn-sm" href="messages.html">Open</a>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <div class="guest">
-                  <div class="av">D</div>
-                  <div>
-                    <div class="name">Daniel Roberts</div>
-                    <div class="sub">2 adults</div>
-                  </div>
-                </div>
-              </td>
-              <td><div style="font-family:var(--serif);font-size:14px">Stone Cottage</div><div style="font-size:11px;color:var(--ink-3)">Windermere</div></td>
-              <td><div class="dates">28 Sep&ndash;5 Oct</div><div style="font-size:11px;color:var(--ink-3)">7 nights</div></td>
-              <td><div class="price"><i>£1,225</i></div></td>
-              <td><span class="status-pill paid">Deposit paid</span></td>
-              <td class="actions-cell">
-                <a class="btn btn-outline btn-sm" href="messages.html">Open</a>
-              </td>
-            </tr>
+            <tr><td colspan="6" style="text-align:center;color:var(--ink-3);padding:24px">Loading&hellip;</td></tr>
           </tbody>
         </table>
         </div>
@@ -418,86 +278,15 @@
           <a href="list.html" class="more">Add a listing <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
         </div>
 
-        <div class="prop-card-h">
-          <div class="pi"><div class="ph warm" data-label="STONE COTTAGE"></div></div>
-          <div class="pb">
-            <div class="pn">Stone Cottage, <i>Windermere</i></div>
-            <div class="ploc">Lake District · Cottage · Sleeps 6 · Dogs ok</div>
-            <div class="stats">
-              <span class="stat"><strong>4.9 ★</strong> 23 reviews</span>
-              <span class="stat"><strong>£175</strong> /night</span>
-              <span class="stat"><strong>12</strong> bookings this season</span>
-              <span class="stat"><strong>78%</strong> occupancy</span>
-            </div>
-            <div class="vis-bar">
-              <span>Listing visibility</span>
-              <span class="bar"><span class="fill" style="width:88%"></span></span>
-              <span>Strong</span>
-            </div>
-          </div>
-          <div class="pa">
-            <a class="btn btn-outline btn-sm" href="property.html">View</a>
-            <a class="btn btn-ghost btn-sm" href="#">Edit</a>
-          </div>
-        </div>
-
-        <div class="prop-card-h">
-          <div class="pi"><div class="ph sage" data-label="SLATE BARN"></div></div>
-          <div class="pb">
-            <div class="pn">Slate Barn, <i>Ambleside</i></div>
-            <div class="ploc">Lake District · Barn conversion · Sleeps 4</div>
-            <div class="stats">
-              <span class="stat"><strong>4.8 ★</strong> 11 reviews</span>
-              <span class="stat"><strong>£215</strong> /night</span>
-              <span class="stat"><strong>5</strong> bookings this season</span>
-              <span class="stat"><strong>54%</strong> occupancy</span>
-            </div>
-            <div class="vis-bar">
-              <span>Listing visibility</span>
-              <span class="bar"><span class="fill" style="width:62%"></span></span>
-              <span style="color:var(--brick)">Improve photos →</span>
-            </div>
-          </div>
-          <div class="pa">
-            <a class="btn btn-outline btn-sm" href="property.html">View</a>
-            <a class="btn btn-ghost btn-sm" href="#">Edit</a>
-          </div>
-        </div>
+        <div id="dhListings"><div style="color:var(--ink-3);padding:12px 0">Loading&hellip;</div></div>
       </div>
 
-      <!-- Earnings chart -->
+      <!-- Earnings -->
       <div class="block">
         <div class="b-head">
-          <h2>Earnings &mdash; <i>last 6 months</i></h2>
-          <div style="display:flex;gap:6px">
-            <button class="chip">6M</button>
-            <button class="chip active">YTD</button>
-            <button class="chip">All</button>
-          </div>
+          <h2><i>Earnings</i></h2>
         </div>
-        <div class="chart-area">
-          <svg viewBox="0 0 600 200" preserveAspectRatio="none">
-            <!-- grid -->
-            <line x1="0" y1="50" x2="600" y2="50" stroke="rgba(22,20,15,0.06)"/>
-            <line x1="0" y1="100" x2="600" y2="100" stroke="rgba(22,20,15,0.06)"/>
-            <line x1="0" y1="150" x2="600" y2="150" stroke="rgba(22,20,15,0.06)"/>
-            <!-- area -->
-            <path d="M 0,160 L 100,135 L 200,140 L 300,90 L 400,80 L 500,60 L 600,40 L 600,200 L 0,200 Z" fill="rgba(176,85,51,0.12)"/>
-            <!-- line -->
-            <polyline fill="none" stroke="var(--brick)" stroke-width="2" points="0,160 100,135 200,140 300,90 400,80 500,60 600,40"/>
-            <!-- dots -->
-            <circle cx="0" cy="160" r="3" fill="var(--brick)"/>
-            <circle cx="100" cy="135" r="3" fill="var(--brick)"/>
-            <circle cx="200" cy="140" r="3" fill="var(--brick)"/>
-            <circle cx="300" cy="90" r="3" fill="var(--brick)"/>
-            <circle cx="400" cy="80" r="3" fill="var(--brick)"/>
-            <circle cx="500" cy="60" r="3" fill="var(--brick)"/>
-            <circle cx="600" cy="40" r="4" fill="var(--ink)" stroke="var(--brick)" stroke-width="2"/>
-          </svg>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-4);margin-top:6px">
-          <span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span><span style="color:var(--brick)">Jul · £4.2k</span>
-        </div>
+        <p style="font-size:14px;color:var(--ink-3);line-height:1.6">Casa doesn't process payments, so we don't have your earnings figures to show — guests pay you directly once you agree dates in messages, with <strong style="color:var(--ink)">£0 commission</strong> either way. Track your own bookings and income however suits you.</p>
       </div>
 
     </div>
@@ -505,84 +294,31 @@
     <!-- SIDE -->
     <aside class="dh-side">
 
-      <!-- Payout summary -->
+      <!-- How you get paid -->
       <div class="side-block payout-block">
-        <h3>Next <i>payout</i></h3>
-        <div class="meta">Direct bank transfer · arrives 19 Jul</div>
-        <div class="big"><i>£1,285</i></div>
-        <div class="pcol">
-          <div class="row"><span class="l">From</span><span class="v">James Harrison</span></div>
-          <div class="row"><span class="l">Property</span><span class="v">Stone Cottage</span></div>
-          <div class="row"><span class="l">Dates</span><span class="v">12–19 Jul</span></div>
-        </div>
-        <div class="breakdown">
-          <div class="row"><span class="l">Stay cost</span><span class="v">£1,225</span></div>
-          <div class="row"><span class="l">Cleaning</span><span class="v">£60</span></div>
-          <div class="row"><span class="l">Casa commission</span><span class="casa-fee">&minus; £0.00</span></div>
-          <div class="row" style="padding-top:10px;border-top:1px solid rgba(255,255,255,0.1);margin-top:6px"><span class="l">You keep</span><span class="v" style="font-family:var(--serif);font-style:italic;font-size:20px;color:var(--brick-2)">£1,285</span></div>
-        </div>
+        <h3>How you get <i>paid</i></h3>
+        <div class="meta">Casa never touches your money</div>
+        <p style="font-size:13.5px;line-height:1.65;color:rgba(255,255,255,0.75);margin-top:14px">Guests pay you directly once you agree dates in messages &mdash; bank transfer, cash, however you prefer. Casa charges <strong style="color:var(--brick-2)">£0 commission</strong> on every stay, always.</p>
       </div>
 
       <!-- Tasks -->
-      <div class="side-block">
-        <h3><i>3 things</i> to do</h3>
-        <div class="meta">Updated 12 mins ago</div>
-        <div class="task">
-          <div class="ti"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/></svg></div>
-          <div class="body">
-            <div class="tt">Reply to <i>James Harrison's</i> enquiry</div>
-            <div class="tm">2 hours ago · 7 night stay</div>
-          </div>
-        </div>
-        <div class="task">
-          <div class="ti" style="background:var(--moss-pale);color:var(--moss)"><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/></svg></div>
-          <div class="body">
-            <div class="tt">Confirm cleaner for <i>Sat morning</i></div>
-            <div class="tm">Before 4pm · Hannah checking out</div>
-          </div>
-        </div>
-        <div class="task">
-          <div class="ti" style="background:var(--paper-2);color:var(--ink-2)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 16-6-6-9 11"/></svg></div>
-          <div class="body">
-            <div class="tt">Upload Spring photos for <i>Slate Barn</i></div>
-            <div class="tm">Listing visibility · improve to 80%</div>
-          </div>
-        </div>
+      <div class="side-block" id="dhTasksBlock">
+        <h3><i>To</i> do</h3>
+        <div id="dhTasks" style="color:var(--ink-3);font-size:13.5px;padding-top:4px">Loading&hellip;</div>
       </div>
 
       <!-- Tip -->
       <div class="side-block tip">
         <h4>A note from <i>Casa</i></h4>
-        <p>Hosts who add 8+ photos and a longer description earn ~24% more enquiries. Slate Barn currently has 5 photos.</p>
-        <a href="#" class="tip-cta">Improve Slate Barn →</a>
+        <p>Hosts who add 8+ photos and a full description get noticeably more enquiries.</p>
+        <a href="list.html" class="tip-cta">Add a listing →</a>
       </div>
 
       <!-- Reviews snapshot -->
       <div class="side-block">
         <h3><i>Recent</i> reviews</h3>
-        <div class="meta">Across 2 listings · 4.9 ★ average</div>
-
-        <div style="padding: 12px 0; border-top: 1px solid var(--rule-2);">
-          <div style="display:flex;gap:10px;margin-bottom:6px">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--moss);color:white;display:inline-flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-size:13px">M</div>
-            <div>
-              <div style="font-size:13px;font-weight:500">Marcus J.</div>
-              <div style="font-size:10px;color:var(--ink-4);font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase">5.0 ★ · Stone Cottage · 4 days ago</div>
-            </div>
-          </div>
-          <div style="font-family:var(--serif);font-size:14px;line-height:1.5;color:var(--ink)">"Sarah was on hand without ever being in the way. <i>Saved nearly £200</i> booking direct."</div>
-        </div>
-
-        <div style="padding: 12px 0; border-top: 1px solid var(--rule-2);">
-          <div style="display:flex;gap:10px;margin-bottom:6px">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--brick);color:white;display:inline-flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-size:13px">L</div>
-            <div>
-              <div style="font-size:13px;font-weight:500">Laura P.</div>
-              <div style="font-size:10px;color:var(--ink-4);font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase">5.0 ★ · Stone Cottage · 2 wks ago</div>
-            </div>
-          </div>
-          <div style="font-family:var(--serif);font-size:14px;line-height:1.5;color:var(--ink)">"Cottage <i>smells like a real home</i>, not a holiday rental. Will be back."</div>
-        </div>
+        <div class="meta" id="dhReviewsMeta">Loading&hellip;</div>
+        <div id="dhReviewsList"></div>
       </div>
 
     </aside>
@@ -635,55 +371,202 @@ function hostSendReply(postId) {
 }
 
 // ═══════════════════════════════════════════
-// Real enquiries (from booking.html), linked to their real message thread
-// (see supabase/schema.sql: create_conversation_for_enquiry). Status
-// flips from 'pending' to 'replied' automatically once the host sends a
-// message in messages.html.
+// Real dashboard data. Everything here used to be hardcoded demo
+// content (fake earnings, fake bookings, fake payout, fake tasks) shown
+// as if it were this host's real numbers — including a real bug where
+// real enquiries were prepended above the fake rows instead of
+// replacing them, so a host would see fabricated enquiries mixed in
+// with their real ones forever. Casa doesn't process payments or track
+// availability yet, so earnings/occupancy/payouts are represented
+// honestly instead of invented.
 // ═══════════════════════════════════════════
 function fmtEnqDate(iso) {
   return new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 }
 
-async function renderRealEnquiries() {
+function dhKpiCard(lbl, val, sub) {
+  return `<div class="kpi">
+    <div class="lbl">${lbl}</div>
+    <div class="val"><i>${val}</i></div>
+    ${sub ? `<div class="delta" style="color:var(--ink-3)">${sub}</div>` : ''}
+  </div>`;
+}
+
+async function renderHostDashboard() {
   if (!window.casaSupabase) return;
   const { data: { session } } = await window.casaSupabase.auth.getSession();
   if (!session) return;
 
-  const { data: list, error } = await window.casaSupabase
+  const [{ data: profile }, { data: properties }] = await Promise.all([
+    window.casaSupabase.from('profiles').select('full_name, joined_at').eq('id', session.user.id).single(),
+    window.casaSupabase.from('properties').select('*, property_photos(url, sort_order, is_cover)').eq('host_id', session.user.id).order('id'),
+  ]);
+
+  const firstName = (profile?.full_name || 'there').split(' ')[0];
+  const listings = properties || [];
+  const joined = profile?.joined_at
+    ? new Date(profile.joined_at).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })
+    : '';
+
+  let reviews = [];
+  if (listings.length) {
+    const { data } = await window.casaSupabase
+      .from('reviews')
+      .select('property_id, stars, body, created_at, properties(title), profiles!author_id(full_name)')
+      .in('property_id', listings.map(p => p.id))
+      .order('created_at', { ascending: false });
+    reviews = data || [];
+  }
+  const avgRating = reviews.length ? (reviews.reduce((s, r) => s + r.stars, 0) / reviews.length).toFixed(1) : null;
+
+  const reviewsMetaEl = document.getElementById('dhReviewsMeta');
+  const reviewsListEl = document.getElementById('dhReviewsList');
+  if (!reviews.length) {
+    reviewsMetaEl.textContent = 'No reviews yet';
+    reviewsListEl.innerHTML = '<p style="font-size:13px;color:var(--ink-3);padding-top:8px">Reviews from real stays will show up here.</p>';
+  } else {
+    const reviewedListingCount = new Set(reviews.map(r => r.property_id)).size;
+    reviewsMetaEl.textContent = `Across ${reviewedListingCount} listing${reviewedListingCount === 1 ? '' : 's'} · ${avgRating} ★ average`;
+    reviewsListEl.innerHTML = reviews.slice(0, 3).map(r => {
+      const name = r.profiles?.full_name || 'Guest';
+      const initial = name.charAt(0).toUpperCase();
+      const when = new Date(r.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      return `<div style="padding: 12px 0; border-top: 1px solid var(--rule-2);">
+        <div style="display:flex;gap:10px;margin-bottom:6px">
+          <div style="width:28px;height:28px;border-radius:50%;background:var(--moss);color:white;display:inline-flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-size:13px">${initial}</div>
+          <div>
+            <div style="font-size:13px;font-weight:500">${name}</div>
+            <div style="font-size:10px;color:var(--ink-4);font-family:var(--mono);letter-spacing:0.08em;text-transform:uppercase">${r.stars}.0 ★ · ${r.properties?.title || ''} · ${when}</div>
+          </div>
+        </div>
+        <div style="font-family:var(--serif);font-size:14px;line-height:1.5;color:var(--ink)">"${r.body}"</div>
+      </div>`;
+    }).join('');
+  }
+
+  const { data: enquiries } = await window.casaSupabase
     .from('enquiries')
-    .select('id, conversation_id, check_in, check_out, guests, total_price, status, properties(title), profiles!enquiries_guest_id_fkey(full_name)')
+    .select('id, conversation_id, check_in, check_out, guests, total_price, status, created_at, properties(title), profiles!enquiries_guest_id_fkey(full_name)')
     .eq('host_id', session.user.id)
     .order('created_at', { ascending: false });
-  if (error || !list || !list.length) return;
+  const enquiryList = enquiries || [];
+  const newCount = enquiryList.filter(e => e.status === 'pending').length;
 
-  const nights = e => Math.round((new Date(e.check_out) - new Date(e.check_in)) / 86400000);
-  const rows = list.map(e => {
-    const name = e.profiles?.full_name || 'Guest';
-    const dateLabel = e.check_in && e.check_out ? `${fmtEnqDate(e.check_in)}–${fmtEnqDate(e.check_out)}` : '—';
-    const nightsLabel = e.check_in && e.check_out ? `${nights(e)} night${nights(e) > 1 ? 's' : ''}` : '';
-    const priceLabel = e.total_price ? `£${e.total_price.toLocaleString()}` : '—';
-    const replied = e.status !== 'pending';
-    return `<tr>
-      <td>
-        <div class="guest">
-          <div class="av">${name.charAt(0).toUpperCase()}</div>
-          <div><div class="name">${name}</div><div class="sub">Ref CSA-${String(e.id).padStart(6,'0')}</div></div>
-        </div>
-      </td>
-      <td><div style="font-family:var(--serif);font-size:14px">${e.properties?.title || ''}</div></td>
-      <td><div class="dates">${dateLabel}</div><div style="font-size:11px;color:var(--ink-3)">${nightsLabel}</div></td>
-      <td><div class="price"><i>${priceLabel}</i></div></td>
-      <td>${replied ? '<span class="status-pill replied">Replied</span>' : '<span class="status-pill new">New</span>'}</td>
-      <td class="actions-cell">
-        <a class="btn ${replied ? 'btn-outline' : 'btn-primary'} btn-sm" href="messages.html?c=${e.conversation_id}">${replied ? 'Open' : 'Reply'}</a>
-      </td>
-    </tr>`;
+  // Hero
+  document.getElementById('dhEyebrow').textContent =
+    `${firstName}'s Stays · ${listings.length} listing${listings.length === 1 ? '' : 's'}${joined ? ' · since ' + joined : ''}`;
+  document.getElementById('dhGreetName').innerHTML = `Good morning, <i>${firstName}</i>.`;
+  document.getElementById('dhGreetBody').innerHTML = newCount
+    ? `You have <i>${newCount} new enquir${newCount === 1 ? 'y' : 'ies'}</i> waiting for a reply. Casa takes <i>£0</i> commission &mdash; you keep every penny.`
+    : `No new enquiries right now. Casa takes <i>£0</i> commission &mdash; you keep every penny.`;
+
+  // KPIs — only real, derivable numbers. No fake earnings/occupancy.
+  document.getElementById('dhKpiRow').innerHTML = [
+    dhKpiCard('Total enquiries', enquiryList.length, newCount ? `${newCount} new` : 'All caught up'),
+    dhKpiCard('Listings', listings.length, listings.length ? '' : 'Add your first listing'),
+    avgRating
+      ? dhKpiCard('Avg. rating', `${avgRating}<span style="font-size:14px;color:var(--ink-3);font-family:var(--sans);font-style:normal"> /5.0 · ${reviews.length} review${reviews.length === 1 ? '' : 's'}</span>`, '')
+      : dhKpiCard('Avg. rating', '—', 'No reviews yet'),
+    dhKpiCard('Earnings', 'Paid direct', "Casa doesn't process payments"),
+  ].join('');
+
+  // Calendar strip — real confirmed enquiries mapped onto this week, not invented bookings.
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const monday = new Date(today); monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+  const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const confirmed = enquiryList.filter(e => e.status === 'confirmed' && e.check_in && e.check_out);
+  document.getElementById('dhCalStrip').innerHTML = [...Array(7)].map((_, i) => {
+    const day = new Date(monday); day.setDate(monday.getDate() + i);
+    const isToday = day.getTime() === today.getTime();
+    const stay = confirmed.find(e => day >= new Date(e.check_in + 'T00:00:00') && day <= new Date(e.check_out + 'T00:00:00'));
+    let ev = '<div class="ev open">Open</div>';
+    if (stay) {
+      const guestName = stay.profiles?.full_name || 'Guest';
+      const isCheckIn = day.getTime() === new Date(stay.check_in + 'T00:00:00').getTime();
+      const isCheckOut = day.getTime() === new Date(stay.check_out + 'T00:00:00').getTime();
+      const label = isCheckIn ? 'Check in' : isCheckOut ? 'Checkout' : 'Staying';
+      ev = `<div class="ev book"><div class="who">${guestName}</div><div>${label}</div></div>`;
+    }
+    return `<div class="cs-day${isToday ? ' today' : ''}"><div class="d${isToday ? ' today' : ''}">${dayNames[i]} ${day.getDate()}${isToday ? ' · Today' : ''}</div>${ev}</div>`;
   }).join('');
-  document.getElementById('enqTableBody').insertAdjacentHTML('afterbegin', rows);
+
+  // Enquiries table — was previously prepending real rows above fake
+  // hardcoded ones instead of replacing them; a host would see fake
+  // enquiries mixed with real ones forever. Now a full replace.
+  const nights = e => Math.round((new Date(e.check_out) - new Date(e.check_in)) / 86400000);
+  const enqTableBody = document.getElementById('enqTableBody');
+  if (!enquiryList.length) {
+    enqTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--ink-3);padding:24px">No enquiries yet.</td></tr>';
+  } else {
+    enqTableBody.innerHTML = enquiryList.map(e => {
+      const name = e.profiles?.full_name || 'Guest';
+      const dateLabel = e.check_in && e.check_out ? `${fmtEnqDate(e.check_in)}–${fmtEnqDate(e.check_out)}` : '—';
+      const nightsLabel = e.check_in && e.check_out ? `${nights(e)} night${nights(e) > 1 ? 's' : ''}` : '';
+      const priceLabel = e.total_price ? `£${e.total_price.toLocaleString()}` : '—';
+      const replied = e.status !== 'pending';
+      return `<tr>
+        <td>
+          <div class="guest">
+            <div class="av">${name.charAt(0).toUpperCase()}</div>
+            <div><div class="name">${name}</div><div class="sub">Ref CSA-${String(e.id).padStart(6, '0')}</div></div>
+          </div>
+        </td>
+        <td><div style="font-family:var(--serif);font-size:14px">${e.properties?.title || ''}</div></td>
+        <td><div class="dates">${dateLabel}</div><div style="font-size:11px;color:var(--ink-3)">${nightsLabel}</div></td>
+        <td><div class="price"><i>${priceLabel}</i></div></td>
+        <td>${replied ? '<span class="status-pill replied">Replied</span>' : '<span class="status-pill new">New</span>'}</td>
+        <td class="actions-cell">
+          <a class="btn ${replied ? 'btn-outline' : 'btn-primary'} btn-sm" href="messages.html?c=${e.conversation_id}">${replied ? 'Open' : 'Reply'}</a>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Listings — real properties, real per-property review stats, no
+  // invented bookings/occupancy figures.
+  const listingsEl = document.getElementById('dhListings');
+  if (!listings.length) {
+    listingsEl.innerHTML = '<p style="color:var(--ink-3);font-size:14px">You haven\'t listed a property yet. <a href="list.html" style="color:var(--brick)">Add your first listing →</a></p>';
+  } else {
+    listingsEl.innerHTML = listings.map(p => {
+      const propReviews = reviews.filter(r => r.property_id === p.id);
+      const rating = propReviews.length ? (propReviews.reduce((s, r) => s + r.stars, 0) / propReviews.length).toFixed(1) : null;
+      const cover = (p.property_photos || []).sort((a, b) => (b.is_cover - a.is_cover) || (a.sort_order - b.sort_order))[0]?.url;
+      const img = cover ? `<img src="${cover}" alt="" style="width:100%;height:100%;object-fit:cover">` : `<div class="ph warm" data-label="${(p.title || '').toUpperCase()}"></div>`;
+      return `<div class="prop-card-h">
+        <div class="pi">${img}</div>
+        <div class="pb">
+          <div class="pn">${p.title}, <i>${p.town}</i></div>
+          <div class="ploc">${p.region_label} · Sleeps ${p.sleeps}</div>
+          <div class="stats">
+            <span class="stat">${rating ? `<strong>${rating} ★</strong> ${propReviews.length} review${propReviews.length === 1 ? '' : 's'}` : '<strong>New</strong> · no reviews yet'}</span>
+            <span class="stat"><strong>£${p.price_per_night}</strong> /night</span>
+            <span class="stat">${p.published ? '<strong style="color:var(--moss)">Live</strong>' : '<strong style="color:var(--ink-3)">Draft</strong>'}</span>
+          </div>
+        </div>
+        <div class="pa">
+          <a class="btn btn-outline btn-sm" href="property.html?id=${p.id}">View</a>
+          <a class="btn btn-ghost btn-sm" href="#" onclick="event.preventDefault();casaToast('Editing a published listing is coming soon — for now, message us to update details.')">Edit</a>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Tasks — only real, derivable prompts.
+  const noPhotoListings = listings.filter(p => !(p.property_photos || []).length);
+  const tasks = [];
+  if (newCount) tasks.push({ icon: 'msg', text: `Reply to ${newCount} new enquir${newCount === 1 ? 'y' : 'ies'}`, sub: 'Waiting in your inbox', href: 'messages.html' });
+  noPhotoListings.slice(0, 2).forEach(p => tasks.push({ icon: 'photo', text: `Add photos to <i>${p.title}</i>`, sub: 'Listings with photos get far more enquiries', href: `property.html?id=${p.id}` }));
+  if (noPhotoListings.length > 2) tasks.push({ icon: 'photo', text: `${noPhotoListings.length - 2} more listing${noPhotoListings.length - 2 === 1 ? '' : 's'} need${noPhotoListings.length - 2 === 1 ? 's' : ''} photos`, sub: 'See "Your listings" below', href: '#dhListings' });
+  if (!listings.length) tasks.push({ icon: 'photo', text: 'List your first property', sub: 'Takes about 10 minutes', href: 'list.html' });
+  const dhTasks = document.getElementById('dhTasks');
+  dhTasks.innerHTML = tasks.length
+    ? tasks.map(t => `<div class="task"><div class="ti"><svg viewBox="0 0 24 24">${t.icon === 'msg' ? '<path d="M4 5h16v12H8l-4 4z"/>' : '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 16-6-6-9 11"/>'}</svg></div><div class="body"><div class="tt"><a href="${t.href}" style="color:inherit;text-decoration:none">${t.text}</a></div><div class="tm">${t.sub}</div></div></div>`).join('')
+    : '<div style="padding:8px 0">You\'re all caught up.</div>';
 }
 
 renderHostFeedComments();
-renderRealEnquiries();
+renderHostDashboard();
 </script>
 </body>
 </html>
