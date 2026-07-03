@@ -833,7 +833,7 @@
     <div class="side-block">
       <h3><i>Account</i></h3>
       <a href="#" class="side-link"><span>Personal info</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
-      <a href="#" class="side-link"><span>Login &amp; security</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
+      <a href="#" class="side-link" onclick="event.preventDefault(); openPwdModal()"><span>Login &amp; security</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
       <a href="#" class="side-link"><span>Notifications</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
       <a href="#" class="side-link"><span>Payment methods</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
       <a href="#" class="side-link"><span>Privacy</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
@@ -889,7 +889,67 @@
   </div>
 </div>
 
+<div id="pwdModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(22,20,15,0.45);z-index:200;align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--surface);border-radius:18px;max-width:400px;width:100%;padding:32px;">
+    <h2 style="font-family:var(--serif);font-size:26px;margin:0 0 4px;">Change <i style="font-style:italic;color:var(--brick)">password</i></h2>
+    <p style="color:var(--ink-3);font-size:14px;margin:0 0 20px;">Choose something you haven't used before.</p>
+    <div style="margin-bottom:16px;">
+      <label style="display:block;font-size:12.5px;font-weight:500;margin-bottom:6px;">New password</label>
+      <input type="password" id="pwdModalInput" placeholder="At least 8 characters" style="width:100%;padding:12px 14px;border:1px solid var(--rule-3);border-radius:10px;font-family:inherit;font-size:14px;box-sizing:border-box;">
+      <span id="pwdModalErr" style="display:none;font-size:12px;color:#C0392B;margin-top:4px;">Password must be at least 8 characters</span>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button type="button" class="btn btn-outline" style="flex:1;" onclick="closePwdModal()">Cancel</button>
+      <button type="button" class="btn btn-primary" style="flex:1;" id="pwdModalSubmit" onclick="submitPwdChange()">Update</button>
+    </div>
+  </div>
+</div>
+
 <script>
+/* ─── Change password modal ─── */
+async function openPwdModal() {
+  const { data: { session } } = window.casaSupabase ? await window.casaSupabase.auth.getSession() : { data: {} };
+  if (!session) {
+    if (window.casaToast) casaToast('Please sign in first');
+    window.location.href = 'signup.html';
+    return;
+  }
+  document.getElementById('pwdModalInput').value = '';
+  document.getElementById('pwdModalErr').style.display = 'none';
+  document.getElementById('pwdModalOverlay').style.display = 'flex';
+}
+function closePwdModal() {
+  document.getElementById('pwdModalOverlay').style.display = 'none';
+}
+async function submitPwdChange() {
+  const pwd = document.getElementById('pwdModalInput').value;
+  const errEl = document.getElementById('pwdModalErr');
+  if (pwd.length < 8) {
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  const btn = document.getElementById('pwdModalSubmit');
+  btn.disabled = true;
+  btn.textContent = 'Updating…';
+
+  const { error } = await window.casaSupabase.auth.updateUser({ password: pwd });
+
+  btn.disabled = false;
+  btn.textContent = 'Update';
+  if (error) {
+    if (window.casaToast) casaToast(error.message);
+    else alert(error.message);
+    return;
+  }
+  closePwdModal();
+  if (window.casaToast) casaToast('Password updated');
+}
+window.openPwdModal = openPwdModal;
+window.closePwdModal = closePwdModal;
+window.submitPwdChange = submitPwdChange;
+
 /* ─── My feed widget: Following / My counties / Hosts ─── */
 const FW_SETS = {
   following: [

@@ -250,7 +250,7 @@
               <input type="checkbox" checked>
               <span>Keep me signed in</span>
             </label>
-            <a href="#" class="forgot-link">Forgot password?</a>
+            <a href="#" class="forgot-link" onclick="event.preventDefault(); showForgot()">Forgot password?</a>
           </div>
 
           <button class="submit-btn" type="button" id="signinBtn" onclick="submitSignin()">
@@ -261,6 +261,25 @@
 
         <div class="auth-foot" style="margin-top: 28px">
           New to Casa? <a href="#" onclick="setMode('signup', document.querySelectorAll('.auth-tab')[0])">Create an account →</a>
+        </div>
+      </div>
+
+      <!-- FORGOT PASSWORD -->
+      <div id="forgot-form" style="display:none">
+        <h2 class="auth-h2">Reset your <i>password</i>.</h2>
+        <p class="auth-tagline">Enter the email you signed up with and we'll send a reset link.</p>
+
+        <div class="form-grid">
+          <div class="field" id="f-email3"><label>Email address</label><input type="email" id="email3" placeholder="you@example.com"><span class="field-err">Please enter your email</span></div>
+
+          <button class="submit-btn" type="button" id="forgotBtn" onclick="submitForgotPassword()">
+            Send reset link
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+        <div class="auth-foot" style="margin-top: 28px">
+          <a href="#" onclick="event.preventDefault(); document.querySelectorAll('.auth-tab')[1].click()">← Back to sign in</a>
         </div>
       </div>
 
@@ -282,8 +301,49 @@
   function setMode(mode, btn) {
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
+    document.querySelector('.auth-tabs').style.display = '';
     document.getElementById('signup-form').style.display = mode === 'signup' ? 'block' : 'none';
     document.getElementById('signin-form').style.display = mode === 'signin' ? 'block' : 'none';
+    document.getElementById('forgot-form').style.display = 'none';
+  }
+
+  function showForgot() {
+    document.querySelector('.auth-tabs').style.display = 'none';
+    document.getElementById('signup-form').style.display = 'none';
+    document.getElementById('signin-form').style.display = 'none';
+    document.getElementById('forgot-form').style.display = 'block';
+  }
+
+  async function submitForgotPassword() {
+    const email = document.getElementById('email3').value.trim();
+    if (!email.includes('@')) {
+      setFieldErr('f-email3', true);
+      return;
+    }
+    setFieldErr('f-email3', false);
+
+    const btn = document.getElementById('forgotBtn');
+    btn.classList.add('loading');
+    btn.innerHTML = 'Sending…';
+
+    const { error } = await window.casaSupabase.auth.resetPasswordForEmail(email, {
+      redirectTo: new URL('reset-password.html', location.href).toString(),
+    });
+
+    btn.classList.remove('loading');
+    if (error) {
+      btn.innerHTML = 'Send reset link <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
+      if (window.casaToast) casaToast(error.message);
+      else alert(error.message);
+      return;
+    }
+
+    document.getElementById('forgot-form').innerHTML = `
+      <h2 class="auth-h2">Check your <i>email</i>.</h2>
+      <p class="auth-tagline">If an account exists for ${email.replace(/[<>]/g, '')}, a reset link is on its way.</p>
+      <div class="auth-foot" style="margin-top: 12px">
+        <a href="#" onclick="event.preventDefault(); location.reload()">← Back to sign in</a>
+      </div>`;
   }
 
   function pickRole(role, card) {
