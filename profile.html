@@ -754,11 +754,11 @@
 
     <div class="side-block">
       <h3><i>Account</i></h3>
-      <a href="#" class="side-link"><span>Personal info</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
+      <a href="#" class="side-link" onclick="event.preventDefault(); toggleEdit()"><span>Personal info</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
       <a href="#" class="side-link" onclick="event.preventDefault(); openPwdModal()"><span>Login &amp; security</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
       <a href="#" class="side-link"><span>Notifications</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
       <a href="#" class="side-link"><span>Payment methods</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
-      <a href="#" class="side-link"><span>Privacy</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
+      <a href="privacy.html" class="side-link"><span>Privacy</span><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></a>
       <a href="#" class="side-link danger" onclick="event.preventDefault(); if(typeof casaSignOut==='function') casaSignOut();"><span>Sign out</span><svg viewBox="0 0 24 24"><path d="M9 12h12l-3-3M21 12l-3 3"/></svg></a>
     </div>
 
