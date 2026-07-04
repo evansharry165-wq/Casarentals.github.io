@@ -591,10 +591,20 @@ function casaHandleAuthRedirectToasts() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function casaBootstrap() {
   casaInitPreviewBanner();
   casaHandleAuthRedirectToasts();
   casaInitNav();
   casaLinkifyHashtags(document.body);
-
-});
+}
+// A plain 'DOMContentLoaded' listener never fires if casa.js finishes
+// loading after the event already did (e.g. a slow network request
+// ahead of it in the page, or a browser that fires the event before a
+// blocking <script> at the end of body finishes) — silently leaving
+// nav init (including the mobile hamburger menu) never called. Guard
+// against that instead of assuming script position guarantees order.
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', casaBootstrap);
+} else {
+  casaBootstrap();
+}
