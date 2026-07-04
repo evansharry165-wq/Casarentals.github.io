@@ -558,7 +558,6 @@
 </footer>
 
 <script src="casa-properties.js"></script>
-<script src="casa-availability.js"></script>
 <script src="casa-images.js"></script>
 <script src="casa-hosts.js"></script>
 <script src="casa-feed-posts.js"></script>
@@ -897,12 +896,13 @@ function highlightRange() {
   });
 }
 
-// Init with the pre-selected July 12–19 dates
-if (typeof casaAvailApplyGuestCalendar === 'function') {
-  casaAvailApplyGuestCalendar(listing.id, 2026, [7, 8], '.cal-grid');
-}
-document.getElementById('checkin').value = '2026-07-12';
-document.getElementById('checkout').value = '2026-07-19';
+// No real availability data exists yet (casa-availability.js is a
+// localStorage-only demo stub seeded with fake "already booked" ranges
+// for two specific property ids) — applying it here silently blocked
+// real guests from enquiring about real dates for those two listings,
+// and pre-filling a fake date range meant a guest who didn't notice
+// could submit an enquiry for dates they never chose. Every date starts
+// open; the guest picks their own.
 updateBooking();
 highlightRange();
 </script>

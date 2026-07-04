@@ -570,7 +570,6 @@
 </div>
 
 <script src="casa-properties.js"></script>
-<script src="casa-availability.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
 <script>
@@ -735,18 +734,6 @@ function setStep(el, state) {
 }
 
 // ═══════════════════════════════════════════
-// AVAILABILITY CHECK
-// ═══════════════════════════════════════════
-function casaDateRangeUnavailable(ciStr, coStr) {
-  if (typeof casaAvailIsUnavailable !== 'function') return false;
-  const end = new Date(coStr);
-  for (let d = new Date(ciStr); d < end; d.setDate(d.getDate() + 1)) {
-    if (casaAvailIsUnavailable(PROPERTY.id, d.getFullYear(), d.getMonth(), d.getDate())) return true;
-  }
-  return false;
-}
-
-// ═══════════════════════════════════════════
 // VALIDATION
 // ═══════════════════════════════════════════
 function validate() {
@@ -780,9 +767,6 @@ function validate() {
     } else if (nights < PROPERTY.minNights) {
       checkoutOk = false;
       checkoutMsg = `This property has a minimum stay of ${PROPERTY.minNights} nights`;
-    } else if (casaDateRangeUnavailable(ci, co)) {
-      checkoutOk = false;
-      checkoutMsg = 'Some of those dates are already booked — please choose different dates';
     }
   }
   check('f-checkout', 'checkout', () => checkoutOk, checkoutMsg);
