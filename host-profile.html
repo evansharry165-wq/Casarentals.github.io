@@ -137,7 +137,7 @@ function renderHostProfile(host, listings) {
 
   document.getElementById('hpListings').innerHTML = listings.length ? listings.map(p => `
     <a class="lc" href="property.html?id=${p.id}">
-      ${p.photos && p.photos[0] ? `<img class="lc-img" src="${p.photos[0]}" alt="" style="width:100%;object-fit:cover;display:block">` : `<div class="lc-img" style="background:${p.col}"></div>`}
+      ${p.photos && p.photos[0] ? `<img class="lc-img" src="${p.photos[0]}" alt="${(p.title || '').replace(/"/g, '&quot;')}" loading="lazy" decoding="async" style="width:100%;object-fit:cover;display:block">` : `<div class="lc-img" style="background:${p.col}"></div>`}
       <div class="lc-body">
         <div class="lc-title">${p.title}, <i>${p.loc}</i></div>
         <div class="pc-meta">★ ${p.rating || 'New'} · Sleeps ${p.sleeps}</div>
