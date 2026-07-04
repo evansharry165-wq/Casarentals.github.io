@@ -172,10 +172,6 @@ function casaMapSupabaseRow(row) {
     .slice()
     .sort((a, b) => (b.is_cover - a.is_cover) || (a.sort_order - b.sort_order))
     .map(ph => ph.url);
-  // Leave undefined (not []) when there are no real uploads yet — property.html's
-  // `listing.photos || casaGetPropertyGallery(...)` fallback treats an empty
-  // array as truthy, so an empty list would skip the stock-photo fallback.
-  const photos = photoRows.length ? photoRows : undefined;
   const p = {
     id: row.id,
     hostId: row.host_id,
@@ -193,11 +189,18 @@ function casaMapSupabaseRow(row) {
     tags: row.amenities || [],
     badge,
     col: casaColorForId(row.id),
-    photos,
     cleaningFee: row.cleaning_fee || Math.max(35, Math.round(row.price_per_night * 0.28)),
     minNights: row.min_stay || 1,
     instantBook: !!row.instant_book,
   };
+  // Real host-uploaded photos take priority. Falling back to the curated
+  // real-photo library (casa-images.js) rather than leaving `photos`
+  // empty — every page that renders a card/gallery checks `p.photos`
+  // first, so fixing it once here means every one of them gets real
+  // photos instead of a colour placeholder, without touching each page.
+  p.photos = photoRows.length ? photoRows
+    : (typeof casaGetPropertyGallery === 'function' ? casaGetPropertyGallery(p, 5) : undefined);
+  p.img = photoRows[0] || (typeof casaGetPropertyPhoto === 'function' ? casaGetPropertyPhoto(p, 1200) : undefined);
   const centre = CASA_REGION_COORDS[p.region] || CASA_REGION_COORDS['lake-district'];
   p.lat = casaSpreadCoord(centre.lat, p.id, 0);
   p.lng = casaSpreadCoord(centre.lng, p.id, 1);

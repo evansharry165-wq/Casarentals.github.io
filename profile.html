@@ -640,6 +640,7 @@
   </div>
 </div>
 
+<script src="casa-images.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
 <script src="casa.js"></script>
@@ -1018,7 +1019,8 @@ async function renderProfileReal() {
     document.getElementById('profileListingList').innerHTML = listings.length ? listings.map(p => {
       const propReviews = reviews.filter(r => r.property_id === p.id);
       const rating = propReviews.length ? (propReviews.reduce((s, r) => s + r.stars, 0) / propReviews.length).toFixed(1) : null;
-      const cover = (p.property_photos || []).sort((a, b) => (b.is_cover - a.is_cover) || (a.sort_order - b.sort_order))[0]?.url;
+      const cover = (p.property_photos || []).sort((a, b) => (b.is_cover - a.is_cover) || (a.sort_order - b.sort_order))[0]?.url
+        || (typeof casaGetPropertyPhoto === 'function' ? casaGetPropertyPhoto(p, 400) : null);
       const img = cover ? `<img src="${cover}" alt="" style="width:100%;height:100%;object-fit:cover">` : `<div class="ph warm" data-label="${(p.title || '').toUpperCase()}"></div>`;
       return `<div class="listing">
         <div class="li">${img}</div>
