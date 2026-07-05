@@ -274,9 +274,9 @@
       <div class="hero-aside rise-2">
         <p><i>Connect</i> with hosts &amp; guests across the UK. <i>Search</i> the whole country, by county or by feeling. <i>Stay</i> direct &mdash; no commission, no fees, ever.</p>
         <div class="stat-row">
-          <div class="stat"><div class="n">4,202</div><div class="l">UK stays</div></div>
+          <div class="stat"><div class="n" id="heroStatStays">—</div><div class="l">UK stays</div></div>
           <div class="stat"><div class="n">£0</div><div class="l">Booking fees</div></div>
-          <div class="stat"><div class="n">4.9</div><div class="l">Avg. rating</div></div>
+          <div class="stat"><div class="n" id="heroStatRating">—</div><div class="l">Avg. rating</div></div>
         </div>
       </div>
     </div>
@@ -336,52 +336,52 @@
         <div class="eyebrow" style="color:var(--brick);margin-bottom:8px">01 &mdash; Search</div>
         <h2><i>Search</i> the country, by county or by feeling.</h2>
       </div>
-      <a href="browse.html" class="see">See all 4,202 stays
+      <a href="browse.html" class="see">See all <span id="seeAllCount">stays</span>
         <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
       </a>
     </div>
 
     <div class="dest-grid">
-      <a href="property.html" class="dest-card dest-1">
-        <div class="ph warm" data-label="THE LAKE DISTRICT · 214 STAYS"></div>
+      <a href="browse.html?region=lake-district" class="dest-card dest-1">
+        <div class="ph warm" data-label="THE LAKE DISTRICT"></div>
         <div class="meta">
           <div class="title">The <i style="font-style:italic">Lake District</i></div>
-          <div class="sub">214 stays · from £95/night</div>
+          <div class="sub" id="destSub-lake-district">&nbsp;</div>
         </div>
       </a>
-      <a href="property.html" class="dest-card dest-2">
-        <div class="ph dusk" data-label="ISLE OF SKYE · 67 STAYS"></div>
+      <a href="browse.html?region=skye" class="dest-card dest-2">
+        <div class="ph dusk" data-label="ISLE OF SKYE"></div>
         <div class="meta">
           <div class="title">Isle of <i>Skye</i></div>
-          <div class="sub">67 stays · from £110</div>
+          <div class="sub" id="destSub-skye">&nbsp;</div>
         </div>
       </a>
-      <a href="property.html" class="dest-card dest-3">
-        <div class="ph sage" data-label="CORNWALL · 198 STAYS"></div>
+      <a href="browse.html?region=cornwall" class="dest-card dest-3">
+        <div class="ph sage" data-label="CORNWALL"></div>
         <div class="meta">
           <div class="title"><i>Cornwall</i></div>
-          <div class="sub">198 stays</div>
+          <div class="sub" id="destSub-cornwall">&nbsp;</div>
         </div>
       </a>
-      <a href="property.html" class="dest-card dest-4">
-        <div class="ph fog" data-label="THE COTSWOLDS · 87 STAYS"></div>
+      <a href="browse.html?region=cotswolds" class="dest-card dest-4">
+        <div class="ph fog" data-label="THE COTSWOLDS"></div>
         <div class="meta">
           <div class="title">The <i>Cotswolds</i></div>
-          <div class="sub">87 stays</div>
+          <div class="sub" id="destSub-cotswolds">&nbsp;</div>
         </div>
       </a>
-      <a href="property.html" class="dest-card dest-5">
-        <div class="ph ink" data-label="SNOWDONIA · 54 STAYS"></div>
+      <a href="browse.html?region=snowdonia" class="dest-card dest-5">
+        <div class="ph ink" data-label="SNOWDONIA"></div>
         <div class="meta">
           <div class="title"><i>Snowdonia</i></div>
-          <div class="sub">54 stays · from £120</div>
+          <div class="sub" id="destSub-snowdonia">&nbsp;</div>
         </div>
       </a>
-      <a href="property.html" class="dest-card dest-6">
-        <div class="ph brick" data-label="THE CAUSEWAY COAST · 29 STAYS"></div>
+      <a href="browse.html?region=causeway" class="dest-card dest-6">
+        <div class="ph brick" data-label="THE CAUSEWAY COAST"></div>
         <div class="meta">
           <div class="title">Causeway <i>Coast</i></div>
-          <div class="sub">29 stays</div>
+          <div class="sub" id="destSub-causeway">&nbsp;</div>
         </div>
       </a>
     </div>
@@ -618,5 +618,30 @@ document.querySelector('.search .seg input[type="text"]')?.addEventListener('key
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
 <script src="casa.js"></script>
+<script>
+// Real platform stats — this page used to quote a fixed "4,202 UK
+// stays / 4.9 avg rating" regardless of how many real stays/reviews
+// actually exist. These are the real counts, computed once on load.
+(async () => {
+  if (typeof casaGetPlatformStats !== 'function') return;
+  const stats = await casaGetPlatformStats();
+  if (!stats) return;
+  document.getElementById('heroStatStays').textContent = casaFormatCount(stats.stays);
+  document.getElementById('heroStatRating').textContent = stats.avgRating || 'New';
+  document.getElementById('seeAllCount').textContent = `${stats.stays} stay${stats.stays === 1 ? '' : 's'}`;
+})();
+
+(async () => {
+  if (typeof casaGetRegionStats !== 'function') return;
+  const stats = await casaGetRegionStats();
+  const regions = ['lake-district', 'skye', 'cornwall', 'cotswolds', 'snowdonia', 'causeway'];
+  regions.forEach(r => {
+    const el = document.getElementById(`destSub-${r}`);
+    if (!el) return;
+    const s = stats[r];
+    el.textContent = s ? `${s.count} stay${s.count === 1 ? '' : 's'} · from £${s.minPrice}` : 'No stays yet';
+  });
+})();
+</script>
 </body>
 </html>

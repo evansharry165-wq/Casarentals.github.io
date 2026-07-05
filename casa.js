@@ -581,6 +581,49 @@ window.casaMarkAllNotifsRead = casaMarkAllNotifsRead;
 window.casaMarkNotifRead = casaMarkNotifRead;
 window.casaRenderNotifPanel = casaRenderNotifPanel;
 
+/* ─── Real platform stats ───
+   index.html, signup.html, how-it-works.html and feed.html all
+   quoted a fixed "4,202 UK stays / 18k+ members" story regardless of
+   how many real stays/members actually exist — accurate for no launch
+   size the site will ever actually be at. These replace that with
+   real counts, using head:true count-only queries (no row bodies
+   fetched) so this stays cheap regardless of how large the tables get. */
+async function casaGetPlatformStats() {
+  if (!window.casaSupabase) return null;
+  const [{ count: stays }, { count: members }, { data: reviews }] = await Promise.all([
+    window.casaSupabase.from('properties').select('*', { count: 'exact', head: true }).eq('published', true),
+    window.casaSupabase.from('profiles').select('*', { count: 'exact', head: true }),
+    window.casaSupabase.from('reviews').select('stars'),
+  ]);
+  const reviewCount = reviews ? reviews.length : 0;
+  const avgRating = reviewCount ? (reviews.reduce((s, r) => s + r.stars, 0) / reviewCount).toFixed(1) : null;
+  return { stays: stays || 0, members: members || 0, avgRating, reviewCount };
+}
+
+function casaFormatCount(n) {
+  if (n >= 1000) return (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + 'k';
+  return String(n);
+}
+
+// One lightweight two-column fetch + client-side grouping — cheap even
+// at thousands of rows, and avoids a round trip per region. Only
+// published listings count, matching what a guest can actually find.
+async function casaGetRegionStats() {
+  if (!window.casaSupabase) return {};
+  const { data } = await window.casaSupabase.from('properties').select('region, price_per_night').eq('published', true);
+  const stats = {};
+  (data || []).forEach(p => {
+    if (!stats[p.region]) stats[p.region] = { count: 0, minPrice: Infinity };
+    stats[p.region].count++;
+    if (p.price_per_night < stats[p.region].minPrice) stats[p.region].minPrice = p.price_per_night;
+  });
+  return stats;
+}
+
+window.casaGetPlatformStats = casaGetPlatformStats;
+window.casaFormatCount = casaFormatCount;
+window.casaGetRegionStats = casaGetRegionStats;
+
 /** Show welcome / signed-in toast from URL params (?welcome=1 or ?signedin=1) */
 function casaHandleAuthRedirectToasts() {
   const qp = new URLSearchParams(location.search);
