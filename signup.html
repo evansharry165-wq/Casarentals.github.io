@@ -149,8 +149,8 @@
     </div>
 
     <div class="ap-stats">
-      <div class="s"><div class="n">4,202</div><div class="l">UK stays</div></div>
-      <div class="s"><div class="n">18k+</div><div class="l">Members</div></div>
+      <div class="s"><div class="n" id="apStatStays">—</div><div class="l">UK stays</div></div>
+      <div class="s"><div class="n" id="apStatMembers">—</div><div class="l">Members</div></div>
       <div class="s"><div class="n">£0</div><div class="l">Booking fees</div></div>
     </div>
   </div>
@@ -487,5 +487,14 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
 <script src="casa.js"></script>
+<script>
+(async () => {
+  if (typeof casaGetPlatformStats !== 'function') return;
+  const stats = await casaGetPlatformStats();
+  if (!stats) return;
+  document.getElementById('apStatStays').textContent = casaFormatCount(stats.stays);
+  document.getElementById('apStatMembers').textContent = casaFormatCount(stats.members);
+})();
+</script>
 </body>
 </html>

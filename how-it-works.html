@@ -595,11 +595,11 @@
   <div class="final-cta-inner">
     <div class="cta-side">
       <h2>Start as a <i>guest.</i></h2>
-      <p>Browse 4,202 UK stays — from stone cottages to shepherd's huts, highland blackhouses to Norfolk houseboats. All direct. All fee-free.</p>
+      <p>Browse UK stays — from stone cottages to shepherd's huts, highland blackhouses to Norfolk houseboats. All direct. All fee-free.</p>
       <div class="stats">
-        <div class="st"><span class="nm">4,202</span> &mdash; stays across the UK</div>
+        <div class="st"><span class="nm" id="hiwStatStays">—</span> &mdash; stays across the UK</div>
         <div class="st"><span class="nm">£0</span> &mdash; added to your checkout</div>
-        <div class="st"><span class="nm">4.9</span> &mdash; average property rating</div>
+        <div class="st"><span class="nm" id="hiwStatRating">—</span> &mdash; average property rating</div>
       </div>
       <a href="browse.html" class="cta-btn">
         Browse all stays
@@ -664,6 +664,14 @@
       }
     });
   });
+
+  (async () => {
+    if (typeof casaGetPlatformStats !== 'function') return;
+    const stats = await casaGetPlatformStats();
+    if (!stats) return;
+    document.getElementById('hiwStatStays').textContent = casaFormatCount(stats.stays);
+    document.getElementById('hiwStatRating').textContent = stats.avgRating || 'New';
+  })();
 </script>
 </body>
 </html>
