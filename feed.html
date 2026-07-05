@@ -268,9 +268,8 @@
       </div>
       <div class="h-meta">
         <div class="stats-row" id="statsRow">
-          <div class="stat-pill"><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/></svg><strong id="st-stays">4,202</strong> stays</div>
-          <div class="stat-pill"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><strong id="st-members">14.2k</strong> members</div>
-          <div class="stat-pill"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><strong id="st-active">1,847</strong> active this week</div>
+          <div class="stat-pill"><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8"/><path d="M5 10v10h14V10"/></svg><strong id="st-stays">—</strong> stays</div>
+          <div class="stat-pill"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><strong id="st-members">—</strong> hosts</div>
         </div>
         <div style="margin-top:8px;display:flex;gap:8px;justify-content:flex-end;align-items:center">
           <div class="search-bar">
@@ -281,18 +280,18 @@
       </div>
     </div>
     <div class="county-bar" id="countyBar">
-      <button class="county-pill active" data-county="all" onclick="setCounty(this)">All UK <span class="ct">4,202</span></button>
-      <button class="county-pill" data-county="cumbria" onclick="setCounty(this)">Cumbria <span class="ct">214</span></button>
-      <button class="county-pill" data-county="cornwall" onclick="setCounty(this)">Cornwall <span class="ct">198</span></button>
-      <button class="county-pill" data-county="yorkshire" onclick="setCounty(this)">Yorkshire <span class="ct">98</span></button>
-      <button class="county-pill" data-county="norfolk" onclick="setCounty(this)">Norfolk <span class="ct">112</span></button>
-      <button class="county-pill" data-county="highlands" onclick="setCounty(this)">Highlands <span class="ct">145</span></button>
-      <button class="county-pill" data-county="devon" onclick="setCounty(this)">Devon <span class="ct">76</span></button>
-      <button class="county-pill" data-county="cotswolds" onclick="setCounty(this)">Cotswolds <span class="ct">87</span></button>
-      <button class="county-pill" data-county="snowdonia" onclick="setCounty(this)">Snowdonia <span class="ct">54</span></button>
-      <button class="county-pill" data-county="pembrokeshire" onclick="setCounty(this)">Pembrokeshire <span class="ct">48</span></button>
-      <button class="county-pill" data-county="kent" onclick="setCounty(this)">Kent <span class="ct">41</span></button>
-      <button class="county-pill" data-county="causeway" onclick="setCounty(this)">Causeway Coast <span class="ct">29</span></button>
+      <button class="county-pill active" data-county="all" onclick="setCounty(this)">All UK <span class="ct" id="ct-pill-all">—</span></button>
+      <button class="county-pill" data-county="cumbria" onclick="setCounty(this)">Cumbria <span class="ct" id="ct-pill-cumbria">—</span></button>
+      <button class="county-pill" data-county="cornwall" onclick="setCounty(this)">Cornwall <span class="ct" id="ct-pill-cornwall">—</span></button>
+      <button class="county-pill" data-county="yorkshire" onclick="setCounty(this)">Yorkshire <span class="ct" id="ct-pill-yorkshire">—</span></button>
+      <button class="county-pill" data-county="norfolk" onclick="setCounty(this)">Norfolk <span class="ct" id="ct-pill-norfolk">—</span></button>
+      <button class="county-pill" data-county="highlands" onclick="setCounty(this)">Highlands <span class="ct" id="ct-pill-highlands">—</span></button>
+      <button class="county-pill" data-county="devon" onclick="setCounty(this)">Devon <span class="ct" id="ct-pill-devon">—</span></button>
+      <button class="county-pill" data-county="cotswolds" onclick="setCounty(this)">Cotswolds <span class="ct" id="ct-pill-cotswolds">—</span></button>
+      <button class="county-pill" data-county="snowdonia" onclick="setCounty(this)">Snowdonia <span class="ct" id="ct-pill-snowdonia">—</span></button>
+      <button class="county-pill" data-county="pembrokeshire" onclick="setCounty(this)">Pembrokeshire <span class="ct" id="ct-pill-pembrokeshire">—</span></button>
+      <button class="county-pill" data-county="kent" onclick="setCounty(this)">Kent <span class="ct" id="ct-pill-kent">—</span></button>
+      <button class="county-pill" data-county="causeway" onclick="setCounty(this)">Causeway Coast <span class="ct" id="ct-pill-causeway">—</span></button>
     </div>
   </div>
 
@@ -309,15 +308,9 @@
         <button class="side-link" data-type="tip" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="M3 20 9 10l4 6 2-3 6 7z"/></svg>Local picks<span class="ct" id="ct-tip">0</span></button>
         <button class="side-link" data-type="photo" onclick="setType(this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 16-6-6-9 11"/></svg>Photos<span class="ct" id="ct-photo">0</span></button>
       </div>
-      <div class="side-sect">
+      <div class="side-sect" id="popularHashtagsSect">
         <h5>Popular hashtags</h5>
-        <button class="side-link" onclick="filterByTag('#cottage')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">#cottage</span><span class="ct">341</span></button>
-        <button class="side-link" onclick="filterByTag('#lastminute')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">#lastminute</span><span class="ct">89</span></button>
-        <button class="side-link" onclick="filterByTag('#petfriendly')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">#petfriendly</span><span class="ct">134</span></button>
-        <button class="side-link" onclick="filterByTag('#seaview')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">#seaview</span><span class="ct">156</span></button>
-        <button class="side-link" onclick="filterByTag('#woodburner')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">#woodburner</span><span class="ct">71</span></button>
-        <button class="side-link" onclick="filterByTag('#offgrid')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">#offgrid</span><span class="ct">62</span></button>
-        <button class="side-link" onclick="filterByTag('#walks')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">#walks</span><span class="ct">48</span></button>
+        <div id="popularHashtags"><p style="font-size:12.5px;color:var(--ink-3)">Loading&hellip;</p></div>
       </div>
     </aside>
 
@@ -386,9 +379,9 @@
         <h3 id="ccTitle">All of <i>the UK</i>.</h3>
         <p class="desc" id="ccDesc">Every county, every region. The most active community for direct holiday rentals in Britain.</p>
         <div class="c-stats">
-          <div class="cs"><div class="n" id="ccStays">4,202</div><div class="l">Stays</div></div>
-          <div class="cs"><div class="n" id="ccMembers">14.2k</div><div class="l">Members</div></div>
-          <div class="cs"><div class="n" id="ccFrom">£85+</div><div class="l">/ night</div></div>
+          <div class="cs"><div class="n" id="ccStays">—</div><div class="l">Stays</div></div>
+          <div class="cs"><div class="n" id="ccMembers">—</div><div class="l">Hosts</div></div>
+          <div class="cs"><div class="n" id="ccFrom">—</div><div class="l">/ night</div></div>
         </div>
       </div>
 
@@ -453,20 +446,78 @@
   if (local.length) POSTS.unshift(...local);
 })();
 
+// Editorial copy only — no invented stats/tags/host-cards baked in.
+// Real numbers (stays, hosts, trending tags, active hosts) are computed
+// at runtime in updateSidebar() from actual Supabase data + the visible
+// post list, via casaComputeCountyStats() below.
 const COUNTY_META = {
-  all:{title:'UK',eyebrow:'Community feed — All of the UK',stays:'4,202',members:'14.2k',active:'1,847',ccTitle:'All of <i>the UK</i>.',ccDesc:'Every county, every region. The most active community in direct holiday rentals.',stays2:'4,202',members2:'14.2k',from:'£85+',tags:['#cottage 341 88','#seaview 156 75','#petfriendly 134 62','#lastminute 89 54','#woodburner 71 40','#offgrid 62 35'],hosts:[{av:'S',avC:'',name:'Sarah',prop:'Stone Cottage',stars:'4.9',online:true},{av:'F',avC:'ink',name:'Fiona M.',prop:'Blackhouse, Skye',stars:'4.9',online:true},{av:'B',avC:'',name:'Bridget',prop:'Burnham Barn',stars:'4.8',online:false},{av:'G',avC:'ink',name:'Graham & Kate',prop:'Dales Farmhouse',stars:'4.9',online:false}]},
-  cumbria:{title:'Cumbria',eyebrow:'Community feed — Cumbria & the Lake District',stays:'214',members:'1,438',active:'312',ccTitle:'Welcome to <i>Cumbria</i>.',ccDesc:'The Lake District — highest fells in England, 16 lakes, and the deepest concentration of direct-booking stays on Casa.',stays2:'214',members2:'1.4k',from:'£85+',tags:['#lakedistrict 214 100','#windermere 78 55','#cottage 61 45','#oldmanofconiston 48 38','#woodburner 42 30'],hosts:[{av:'S',avC:'',name:'Sarah',prop:'Stone Cottage',stars:'4.9',online:true},{av:'T',avC:'ink',name:'Tom & Anna',prop:"Shepherd's Hut",stars:'4.7',online:false},{av:'F',avC:'',name:'Fiona',prop:'Keswick Cottage',stars:'4.8',online:true},{av:'H',avC:'',name:'Hannah',prop:'The Granary',stars:'4.9',online:false}]},
-  cornwall:{title:'Cornwall',eyebrow:'Community feed — Cornwall',stays:'198',members:'1,204',active:'287',ccTitle:'Welcome to <i>Cornwall</i>.',ccDesc:"England's most southwesterly county — 300 miles of coastline, wild moorland, and some of Casa's most-loved properties.",stays2:'198',members2:'1.2k',from:'£90+',tags:['#cornwall 198 100','#seaview 148 72','#coastpath 89 50','#mousehole 34 28','#porthcurno 56 42'],hosts:[{av:'R',avC:'',name:'Rachel',prop:'Harbour Cottage',stars:'4.9',online:true},{av:'M',avC:'ink',name:'Martin & Sue',prop:'Tregothnan Lodge',stars:'4.8',online:false}]},
-  yorkshire:{title:'Yorkshire',eyebrow:'Community feed — Yorkshire',stays:'98',members:'612',active:'143',ccTitle:'Welcome to <i>Yorkshire</i>.',ccDesc:'The largest county in England — moorland, dales, coast, and the friendliest hosts on Casa.',stays2:'98',members2:'612',from:'£100+',tags:['#yorkshire 98 100','#yorkshiredales 74 74','#northyorkmoors 52 52','#whitby 38 38','#wharfedale 33 33'],hosts:[{av:'G',avC:'ink',name:'Graham & Kate',prop:'Dales Farmhouse',stars:'4.9',online:true},{av:'Y',avC:'',name:'Yvonne',prop:'Moorland Cottage',stars:'4.8',online:false}]},
-  norfolk:{title:'Norfolk',eyebrow:'Community feed — Norfolk',stays:'112',members:'743',active:'167',ccTitle:'Welcome to <i>Norfolk</i>.',ccDesc:'The big skies coast — salt marshes, seal colonies, and the most underrated countryside in England.',stays2:'112',members2:'743',from:'£95+',tags:['#norfolk 112 100','#wells 67 60','#burnham 45 40','#marshes 38 34','#seals 29 26'],hosts:[{av:'B',avC:'',name:'Bridget',prop:'Burnham Barn',stars:'4.8',online:true},{av:'E',avC:'',name:'Edward',prop:'Brancaster Hall',stars:'4.9',online:false}]},
-  highlands:{title:'Highlands',eyebrow:'Community feed — Scottish Highlands',stays:'145',members:'876',active:'198',ccTitle:'The Scottish <i>Highlands</i>.',ccDesc:'Remote glens, sea lochs, and starlit skies. 145 stays from bothies to lodges — all direct, all fee-free.',stays2:'145',members2:'876',from:'£110+',tags:['#highlands 145 100','#isleofskye 67 46','#glencoe 41 28','#offgrid 62 43','#wildcamping 38 26'],hosts:[{av:'F',avC:'ink',name:'Fiona M.',prop:'Blackhouse, Skye',stars:'4.9',online:true},{av:'C',avC:'',name:'Callum',prop:'Glen Coe Bothy',stars:'4.7',online:false}]},
-  devon:{title:'Devon',eyebrow:'Community feed — Devon',stays:'76',members:'451',active:'97',ccTitle:'Welcome to <i>Devon</i>.',ccDesc:'Two coastlines, Dartmoor, and Exmoor — Devon packs more landscape into one county than almost anywhere else.',stays2:'76',members2:'451',from:'£95+',tags:['#devon 76 100','#dartmoor 54 71','#northdevon 41 54','#hartland 19 25','#exmoor 38 50'],hosts:[]},
-  cotswolds:{title:'Cotswolds',eyebrow:'Community feed — Cotswolds',stays:'87',members:'534',active:'121',ccTitle:'The <i>Cotswolds</i>.',ccDesc:'Honey-stone villages, rolling wolds, and the most photographed countryside in England.',stays2:'87',members2:'534',from:'£140+',tags:['#cotswolds 87 100','#chippingcampden 41 47','#bourton 38 44','#manor 22 25','#woodburner 29 33'],hosts:[]},
-  snowdonia:{title:'Snowdonia',eyebrow:'Community feed — Snowdonia',stays:'54',members:'367',active:'89',ccTitle:'<i>Snowdonia</i>.',ccDesc:"Y Wyddfa and the highest mountains in Wales. 54 direct-booking stays from lakeshore cabins to farmhouses.",stays2:'54',members2:'367',from:'£95+',tags:['#snowdonia 54 100','#llanberis 34 63','#ywyddfa 41 76','#betws 22 41','#llyn 29 54'],hosts:[]},
-  pembrokeshire:{title:'Pembrokeshire',eyebrow:'Community feed — Pembrokeshire',stays:'48',members:'312',active:'78',ccTitle:'<i>Pembrokeshire</i>.',ccDesc:"Wales's only coastal national park. 186 miles of coast path, Skomer Island, and some of the most dramatic sea cliffs in Britain.",stays2:'48',members2:'312',from:'£85+',tags:['#pembrokeshire 48 100','#stdavids 34 71','#coastpath 67 100','#skomer 19 40','#seaview 41 85'],hosts:[]},
-  kent:{title:'Kent',eyebrow:'Community feed — Kent',stays:'41',members:'287',active:'62',ccTitle:'<i>Kent</i>.',ccDesc:'The Garden of England — oast houses, chalk downs, and a surprisingly undiscovered coastline.',stays2:'41',members2:'287',from:'£120+',tags:['#kent 41 100','#whitstable 28 68','#dungeness 19 46','#weald 22 54','#oasthouse 16 39'],hosts:[]},
-  causeway:{title:'Causeway Coast',eyebrow:'Community feed — Causeway Coast',stays:'29',members:'198',active:'44',ccTitle:'Causeway <i>Coast</i>.',ccDesc:"Northern Ireland's most dramatic 120 miles — Giant's Causeway, Dark Hedges, Carrick-a-Rede.",stays2:'29',members2:'198',from:'£110+',tags:["#causewaycoast 29 100","#giantscauseway 22 76","#darkhedges 18 62","#antrim 14 48","#bushmills 11 38"],hosts:[]},
+  all:{title:'UK',eyebrow:'Community feed — All of the UK',ccTitle:'All of <i>the UK</i>.',ccDesc:'Every county, every region. Follow hosts and guests directly.',regions:null},
+  cumbria:{title:'Cumbria',eyebrow:'Community feed — Cumbria & the Lake District',ccTitle:'Welcome to <i>Cumbria</i>.',ccDesc:'The Lake District — highest fells in England, 16 lakes, and the deepest concentration of direct-booking stays on Casa.',regions:['lake-district']},
+  cornwall:{title:'Cornwall',eyebrow:'Community feed — Cornwall',ccTitle:'Welcome to <i>Cornwall</i>.',ccDesc:"England's most southwesterly county — 300 miles of coastline, wild moorland, and some of Casa's most-loved properties.",regions:['cornwall']},
+  yorkshire:{title:'Yorkshire',eyebrow:'Community feed — Yorkshire',ccTitle:'Welcome to <i>Yorkshire</i>.',ccDesc:'The largest county in England — moorland, dales, coast, and the friendliest hosts on Casa.',regions:['yorkshire']},
+  norfolk:{title:'Norfolk',eyebrow:'Community feed — Norfolk',ccTitle:'Welcome to <i>Norfolk</i>.',ccDesc:'The big skies coast — salt marshes, seal colonies, and the most underrated countryside in England.',regions:['norfolk']},
+  highlands:{title:'Highlands',eyebrow:'Community feed — Scottish Highlands',ccTitle:'The Scottish <i>Highlands</i>.',ccDesc:'Remote glens, sea lochs, and starlit skies — bothies to lodges, all direct, all fee-free.',regions:['highlands','skye']},
+  devon:{title:'Devon',eyebrow:'Community feed — Devon',ccTitle:'Welcome to <i>Devon</i>.',ccDesc:'Two coastlines, Dartmoor, and Exmoor — Devon packs more landscape into one county than almost anywhere else.',regions:['devon']},
+  cotswolds:{title:'Cotswolds',eyebrow:'Community feed — Cotswolds',ccTitle:'The <i>Cotswolds</i>.',ccDesc:'Honey-stone villages, rolling wolds, and the most photographed countryside in England.',regions:['cotswolds']},
+  snowdonia:{title:'Snowdonia',eyebrow:'Community feed — Snowdonia',ccTitle:'<i>Snowdonia</i>.',ccDesc:"Y Wyddfa and the highest mountains in Wales — lakeshore cabins to farmhouses.",regions:['snowdonia']},
+  pembrokeshire:{title:'Pembrokeshire',eyebrow:'Community feed — Pembrokeshire',ccTitle:'<i>Pembrokeshire</i>.',ccDesc:"Wales's only coastal national park. 186 miles of coast path, Skomer Island, and some of the most dramatic sea cliffs in Britain.",regions:['pembrokeshire']},
+  kent:{title:'Kent',eyebrow:'Community feed — Kent',ccTitle:'<i>Kent</i>.',ccDesc:'The Garden of England — oast houses, chalk downs, and a surprisingly undiscovered coastline.',regions:['kent']},
+  causeway:{title:'Causeway Coast',eyebrow:'Community feed — Causeway Coast',ccTitle:'Causeway <i>Coast</i>.',ccDesc:"Northern Ireland's most dramatic 120 miles — Giant's Causeway, Dark Hedges, Carrick-a-Rede.",regions:['causeway']},
 };
+
+// Real per-county numbers, computed from Supabase + the actual visible
+// post list — not invented platform-scale figures. Cached per county
+// for the session since region/host data doesn't change mid-visit.
+const CASA_FEED_STATS_CACHE = {};
+async function casaComputeCountyStats(countyKey) {
+  if (CASA_FEED_STATS_CACHE[countyKey]) return CASA_FEED_STATS_CACHE[countyKey];
+  const meta = COUNTY_META[countyKey] || COUNTY_META.all;
+  const regionStats = typeof casaGetRegionStats === 'function' ? await casaGetRegionStats() : {};
+  const regionIds = meta.regions || Object.keys(regionStats);
+
+  let stays = 0, minPrice = null;
+  regionIds.forEach(r => {
+    const s = regionStats[r];
+    if (!s) return;
+    stays += s.count;
+    if (minPrice === null || s.minPrice < minPrice) minPrice = s.minPrice;
+  });
+
+  let hosts = [];
+  if (window.casaSupabase) {
+    let q = window.casaSupabase.from('properties').select('host_id, title, region, profiles!properties_host_id_fkey(full_name)').eq('published', true);
+    if (meta.regions) q = q.in('region', meta.regions);
+    const { data } = await q;
+    const seen = new Set();
+    (data || []).forEach(p => {
+      if (seen.has(p.host_id)) return;
+      seen.add(p.host_id);
+      const name = p.profiles?.full_name || 'Host';
+      hosts.push({ av: name.charAt(0).toUpperCase(), name, prop: p.title });
+    });
+  }
+
+  // Trending tags: real counts from the posts actually visible in this
+  // county's feed right now, not an invented platform-wide frequency.
+  const relevant = POSTS.filter(p => countyKey === 'all' || p.county === countyKey || p.county === 'all');
+  const tagCounts = {};
+  relevant.forEach(p => {
+    // Require at least one letter — seed post bodies contain date-range
+    // hashtags like "#12–19July" whose leading digits would otherwise
+    // match as a bogus "#12" tag.
+    const matches = (p.body || '').match(/#[a-z0-9]*[a-z][a-z0-9]*/gi) || [];
+    matches.forEach(t => { const k = t.toLowerCase(); tagCounts[k] = (tagCounts[k] || 0) + 1; });
+  });
+  const maxTagCount = Math.max(1, ...Object.values(tagCounts));
+  const tags = Object.entries(tagCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([tag, count]) => ({ tag, count, pct: Math.round((count / maxTagCount) * 100) }));
+
+  const result = { stays, hostCount: hosts.length, minPrice, hosts: hosts.slice(0, 4), tags };
+  CASA_FEED_STATS_CACHE[countyKey] = result;
+  return result;
+}
 
 // ═══════════════════════════════════════
 // STATE
@@ -651,40 +702,44 @@ function renderFeed() {
   document.getElementById('tab-following').textContent = all.filter(p => followed.some(f => p.name.toLowerCase().includes(f) || f.includes(p.name.toLowerCase()))).length;
 }
 
-function updateSidebar() {
-  const m = COUNTY_META[state.county] || COUNTY_META.all;
+async function updateSidebar() {
+  const county = state.county;
+  const m = COUNTY_META[county] || COUNTY_META.all;
   document.getElementById('feedEyebrow').textContent = m.eyebrow;
   document.getElementById('feedTitle').textContent   = m.title;
-  document.getElementById('st-stays').textContent    = m.stays;
-  document.getElementById('st-members').textContent  = m.members;
-  document.getElementById('st-active').textContent   = m.active;
   document.getElementById('ccTitle').innerHTML       = m.ccTitle;
   document.getElementById('ccDesc').textContent      = m.ccDesc;
-  document.getElementById('ccStays').textContent     = m.stays2;
-  document.getElementById('ccMembers').textContent   = m.members2;
-  document.getElementById('ccFrom').textContent      = m.from;
 
-  // Trending tags with bar chart
-  document.getElementById('trendingTags').innerHTML = m.tags.map(t => {
-    const parts = t.split(' ');
-    const tag = parts[0], count = parts[1], pct = parts[2] || '50';
-    return `<div class="trend-tag" onclick="filterByTag('${tag}')">
-      <span class="tt">${tag}</span>
-      <span class="tc"><span class="bar"><span class="fill" style="width:${pct}%"></span></span>${count}</span>
-    </div>`;
-  }).join('');
+  const stats = await casaComputeCountyStats(county);
+  // Bail if the user has switched county again while this was in flight.
+  if (state.county !== county) return;
 
-  // Active hosts with online indicator
-  document.getElementById('activeHosts').innerHTML = m.hosts.length
-    ? m.hosts.map(h => `<div class="host-row">
-        <div class="av ${h.avC}">${h.av}</div>
+  document.getElementById('st-stays').textContent   = stats.stays;
+  document.getElementById('st-members').textContent = stats.hostCount;
+  document.getElementById('ccStays').textContent    = stats.stays;
+  document.getElementById('ccMembers').textContent  = stats.hostCount;
+  document.getElementById('ccFrom').textContent     = stats.minPrice != null ? `£${stats.minPrice}+` : '—';
+
+  // Trending tags — real counts from the posts actually visible here.
+  document.getElementById('trendingTags').innerHTML = stats.tags.length
+    ? stats.tags.map(t => `<div class="trend-tag" onclick="filterByTag('${t.tag}')">
+        <span class="tt">${t.tag}</span>
+        <span class="tc"><span class="bar"><span class="fill" style="width:${t.pct}%"></span></span>${t.count}</span>
+      </div>`).join('')
+    : `<p style="font-size:12.5px;color:var(--ink-3)">No tagged posts yet.</p>`;
+
+  // Real hosts with real published listings in this area. No fabricated
+  // "online now" presence claim — that's not a real feature.
+  document.getElementById('activeHosts').innerHTML = stats.hosts.length
+    ? stats.hosts.map(h => `<div class="host-row">
+        <div class="av">${h.av}</div>
         <div class="hi">
           <div class="hn"><i>${h.name}</i></div>
-          <div class="hm">${h.online?'<span class="online-dot"></span>Active now':'Last seen recently'} · ${h.stars}★</div>
+          <div class="hm">${h.prop}</div>
         </div>
         <button class="follow-btn${casaIsFollowing(h.name)?' following':''}" onclick="toggleFollow(this,'${h.name.replace(/'/g,"\\'")}')">${casaIsFollowing(h.name)?'Following':'Follow'}</button>
       </div>`).join('')
-    : `<p style="font-size:12.5px;color:var(--ink-3)">No active hosts yet — be first to join!</p>`;
+    : `<p style="font-size:12.5px;color:var(--ink-3)">No hosts here yet — be first to join!</p>`;
 }
 
 // ═══════════════════════════════════════
@@ -963,6 +1018,39 @@ if (qp.get('county')) {
 }
 updateSidebar();
 renderFeed();
+
+// Real per-pill counts, computed once from the same region stats used
+// throughout — replaces the fixed "All UK 4,202 / Cumbria 214 / ..."
+// numbers that had nothing to do with the real database.
+(async () => {
+  if (typeof casaGetRegionStats !== 'function') return;
+  const regionStats = await casaGetRegionStats();
+  const total = Object.values(regionStats).reduce((s, r) => s + r.count, 0);
+  document.getElementById('ct-pill-all').textContent = total;
+  Object.entries(COUNTY_META).forEach(([key, meta]) => {
+    if (key === 'all') return;
+    const el = document.getElementById(`ct-pill-${key}`);
+    if (!el) return;
+    const count = (meta.regions || []).reduce((s, r) => s + (regionStats[r]?.count || 0), 0);
+    el.textContent = count;
+  });
+})();
+
+// "Popular hashtags" sidebar — real counts from the actual visible
+// posts, not the fixed "#cottage 341 / #seaview 156 / ..." platform-
+// scale numbers that had no connection to real content.
+(() => {
+  const tagCounts = {};
+  POSTS.forEach(p => {
+    const matches = (p.body || '').match(/#[a-z0-9]*[a-z][a-z0-9]*/gi) || [];
+    matches.forEach(t => { const k = t.toLowerCase(); tagCounts[k] = (tagCounts[k] || 0) + 1; });
+  });
+  const top = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 7);
+  const el = document.getElementById('popularHashtags');
+  el.innerHTML = top.length
+    ? top.map(([tag, count]) => `<button class="side-link" onclick="filterByTag('${tag}')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">${tag}</span><span class="ct">${count}</span></button>`).join('')
+    : `<p style="font-size:12.5px;color:var(--ink-3)">No tagged posts yet.</p>`;
+})();
 
 function applyFeedComposeDraft() {
   let draft = null;
