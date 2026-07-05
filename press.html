@@ -33,7 +33,7 @@
     <div class="info-grid">
       <div class="info-card">
         <h3>Quick <i>facts</i></h3>
-        <p><strong>Founded:</strong> 2025, London<br><strong>Market:</strong> United Kingdom<br><strong>Model:</strong> £19/mo host listing · 0% commission · £0 guest fees<br><strong>Listings:</strong> 4,200+ stays across England, Scotland, Wales &amp; NI</p>
+        <p><strong>Founded:</strong> 2025, London<br><strong>Market:</strong> United Kingdom<br><strong>Model:</strong> £19/mo host listing · 0% commission · £0 guest fees<br><strong>Listings:</strong> <span id="pressListingCount">—</span> across England, Scotland, Wales &amp; NI</p>
       </div>
       <div class="info-card">
         <h3>Boilerplate</h3>
@@ -59,6 +59,13 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
 <script src="casa.js"></script>
-<script>document.getElementById('pressHero').style.backgroundImage=`url('${casaGetRegionPhoto('lake-district',1400)}')`;</script>
+<script>
+document.getElementById('pressHero').style.backgroundImage=`url('${casaGetRegionPhoto('lake-district',1400)}')`;
+(async () => {
+  if (typeof casaGetPlatformStats !== 'function') return;
+  const stats = await casaGetPlatformStats();
+  if (stats) document.getElementById('pressListingCount').textContent = `${stats.stays} stays`;
+})();
+</script>
 </body>
 </html>
