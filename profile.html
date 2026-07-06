@@ -357,6 +357,7 @@
 <div class="profile-subnav">
   <div class="wrap inner">
     <a href="#about" class="stab active">About</a>
+    <a href="#history" class="stab">Recently viewed <span class="ct" id="subnavHistoryCt">—</span></a>
     <a href="#stays" class="stab guest-only">Enquiries <span class="ct" id="subnavEnquiriesCt">—</span></a>
     <a href="#listings" class="stab host-only">Listings <span class="ct" id="subnavListingsCt">—</span></a>
     <a href="#reviews" class="stab">Reviews <span class="ct guest-only" id="subnavReviewsGuestCt">—</span><span class="ct host-only" id="subnavReviewsHostCt">—</span></a>
@@ -412,6 +413,15 @@
           <select><option selected>Within 2 hours</option><option>Within 6 hours</option><option>Within 24 hours</option></select>
         </div>
       </div>
+    </div>
+
+    <!-- RECENTLY VIEWED -->
+    <div class="pf-block" id="history">
+      <div class="b-head">
+        <h2>Recently <i>viewed</i></h2>
+        <a href="browse.html" style="font-size:13px;color:var(--brick);text-decoration:underline;text-underline-offset:3px">Browse more →</a>
+      </div>
+      <div class="stays-grid" id="recentGrid"></div>
     </div>
 
     <!-- Verifications -->
@@ -640,6 +650,7 @@
   </div>
 </div>
 
+<script src="casa-properties.js"></script>
 <script src="casa-images.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
@@ -1130,7 +1141,44 @@ async function saveProfileChanges() {
 }
 window.saveProfileChanges = saveProfileChanges;
 
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function recentCardHtml(p) {
+  const photo = p.photos && p.photos[0];
+  const loc = p.rLabel || p.loc || p.town || '';
+  const price = p.price ?? p.price_per_night;
+  return `<a class="stay-card" href="property.html?id=${p.id}">
+    <div class="si">${photo ? `<img class="ph" src="${esc(photo)}" alt="${esc(p.title)}" loading="lazy" decoding="async">` : `<div class="ph warm" data-label="${esc((p.title || '').toUpperCase())}"></div>`}</div>
+    <div class="sb">
+      <div class="nm">${esc(p.title)}, <i>${esc(loc)}</i></div>
+      <div class="when">${price ? `£${price} / night` : ''}</div>
+    </div>
+  </a>`;
+}
+
+// View history is tracked locally (casaTrackView, on every property.html visit)
+// regardless of sign-in state, so this reads from localStorage rather than
+// the account — this is what makes the profile feel "unlocked" with real
+// browsing history the moment you land on it, not a fabricated stat.
+async function renderRecentlyViewed() {
+  const grid = document.getElementById('recentGrid');
+  if (!grid) return;
+  const ids = typeof casaGetRecentIds === 'function' ? casaGetRecentIds() : [];
+  if (!ids.length) {
+    grid.innerHTML = '<p style="color:var(--ink-3)">No stays viewed yet. <a href="browse.html" style="color:var(--brick)">Start browsing →</a></p>';
+    document.getElementById('subnavHistoryCt').textContent = '0';
+    return;
+  }
+  if (typeof casaRefreshProperties === 'function') await casaRefreshProperties();
+  const props = ids.map(id => CASA_PROPERTIES.find(p => p.id === id)).filter(Boolean);
+  document.getElementById('subnavHistoryCt').textContent = props.length;
+  grid.innerHTML = props.length
+    ? props.slice(0, 6).map(recentCardHtml).join('')
+    : '<p style="color:var(--ink-3)">No stays viewed yet. <a href="browse.html" style="color:var(--brick)">Start browsing →</a></p>';
+}
+
 renderProfileReal();
+renderRecentlyViewed();
 </script>
 
 <footer class="casa-foot">
