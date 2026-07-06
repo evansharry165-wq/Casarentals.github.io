@@ -389,7 +389,6 @@ window.casaSetUser = casaSetUser;
 window.casaIsLoggedIn = casaIsLoggedIn;
 window.casaAddNotification = casaAddNotification;
 window.casaTrackView = casaTrackView;
-window.casaSaveEnquiry = casaSaveEnquiry;
 
 /* ─── Hashtag routing ─── */
 function casaTagUrl(tag) {
@@ -673,10 +672,19 @@ let casaBootstrapDone = false;
 function casaBootstrap() {
   if (casaBootstrapDone) return;
   casaBootstrapDone = true;
-  casaInitPreviewBanner();
-  casaHandleAuthRedirectToasts();
-  casaInitNav();
-  casaLinkifyHashtags(document.body);
+  // Each step wrapped separately (not one big try/catch) so a bug in the
+  // preview banner or a toast can never again take casaInitNav() down
+  // with it — that's exactly how a single dangling reference elsewhere in
+  // this file (a leftover `window.casaSaveEnquiry = casaSaveEnquiry`
+  // export for a function that no longer existed) silently broke nav
+  // auth-state rendering on every page for this entire project, with no
+  // visible error: it threw at the top level while *parsing* casa.js,
+  // which aborted every line after it in the file, including this whole
+  // bootstrap block — so casaInitNav() was never even reached.
+  try { casaInitPreviewBanner(); } catch (e) { console.error('casaInitPreviewBanner failed', e); }
+  try { casaHandleAuthRedirectToasts(); } catch (e) { console.error('casaHandleAuthRedirectToasts failed', e); }
+  try { casaInitNav(); } catch (e) { console.error('casaInitNav failed', e); }
+  try { casaLinkifyHashtags(document.body); } catch (e) { console.error('casaLinkifyHashtags failed', e); }
 }
 // Never rely on a single trigger for this — it's what makes the nav
 // (including whether you look signed in at all) reflect reality, so a
