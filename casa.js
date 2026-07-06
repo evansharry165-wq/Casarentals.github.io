@@ -476,6 +476,9 @@ function casaInitNav() {
     if (!e.target.closest('#casaNotifWrap')) {
       document.getElementById('casaNotifWrap')?.classList.remove('open');
     }
+    if (!e.target.closest('.casa-account-wrap')) {
+      nav.querySelector('.casa-account-wrap')?.classList.remove('open');
+    }
     if (!e.target.closest('.casa-nav') && nav.classList.contains('mobile-open')) {
       nav.classList.remove('mobile-open');
       document.body.classList.remove('casa-nav-open');
@@ -497,18 +500,79 @@ function casaRenderAuthNav() {
 
   if (user) {
     if (signIn) signIn.style.display = 'none';
+    const profileHref = user.role === 'host' ? 'host.html' : 'profile.html';
     if (primaryJoin) {
       primaryJoin.textContent = user.role === 'host' ? 'Dashboard' : 'Profile';
-      primaryJoin.href = user.role === 'host' ? 'host.html' : 'profile.html';
+      primaryJoin.href = profileHref;
       primaryJoin.dataset.casaAuth = '1';
     }
-    const avatar = document.createElement('a');
-    avatar.href = user.role === 'host' ? 'host.html' : 'profile.html';
-    avatar.className = 'nav-avatar';
-    avatar.title = user.name || user.email;
-    avatar.dataset.casaAuth = '1';
-    avatar.textContent = casaUserInitial(user);
-    right.appendChild(avatar);
+
+    // A real account portal, not just a link — this is the one place on
+    // every page a signed-in user can reach their profile/saved/messages
+    // or sign out, so it needs to read as a deliberate gateway, not a
+    // decorative circle. Built with DOM APIs (not innerHTML) for the
+    // name/email since that's real user-entered profile data.
+    const wrap = document.createElement('div');
+    wrap.className = 'casa-account-wrap';
+    wrap.dataset.casaAuth = '1';
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'nav-avatar';
+    btn.id = 'casaAccountBtn';
+    btn.setAttribute('aria-label', 'Account menu');
+    btn.textContent = casaUserInitial(user);
+    wrap.appendChild(btn);
+
+    const panel = document.createElement('div');
+    panel.className = 'casa-account-panel';
+
+    const head = document.createElement('div');
+    head.className = 'casa-account-head';
+    const nm = document.createElement('div');
+    nm.className = 'nm';
+    nm.textContent = user.name || 'Your account';
+    const em = document.createElement('div');
+    em.className = 'em';
+    em.textContent = user.email || '';
+    head.append(nm, em);
+    panel.appendChild(head);
+
+    const list = document.createElement('div');
+    list.className = 'casa-account-list';
+    const items = [
+      { href: profileHref, label: user.role === 'host' ? 'Host dashboard' : 'Profile', icon: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>' },
+    ];
+    if (user.role !== 'host') items.push({ href: 'saved.html', label: 'Saved stays', icon: '<path d="M6 4h12v17l-6-4-6 4z"/>' });
+    items.push({ href: 'messages.html', label: 'Messages', icon: '<path d="M21 12a8 8 0 0 1-11.4 7.3L4 21l1.7-5.6A8 8 0 1 1 21 12z"/>' });
+    items.forEach(it => {
+      const a = document.createElement('a');
+      a.className = 'casa-account-item';
+      a.href = it.href;
+      a.innerHTML = `<svg viewBox="0 0 24 24">${it.icon}</svg>`;
+      a.append(document.createTextNode(' ' + it.label));
+      list.appendChild(a);
+    });
+    const sep = document.createElement('div');
+    sep.className = 'casa-account-sep';
+    list.appendChild(sep);
+    const signOutBtn = document.createElement('button');
+    signOutBtn.type = 'button';
+    signOutBtn.className = 'casa-account-item danger';
+    signOutBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>';
+    signOutBtn.append(document.createTextNode(' Sign out'));
+    signOutBtn.addEventListener('click', () => casaSignOut());
+    list.appendChild(signOutBtn);
+    panel.appendChild(list);
+    wrap.appendChild(panel);
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      document.getElementById('casaNotifWrap')?.classList.remove('open');
+      wrap.classList.toggle('open');
+    });
+
+    right.appendChild(wrap);
   } else {
     if (signIn) { signIn.style.display = ''; signIn.href = 'signup.html'; }
     if (primaryJoin) { primaryJoin.textContent = 'Join free'; primaryJoin.href = 'signup.html'; }
