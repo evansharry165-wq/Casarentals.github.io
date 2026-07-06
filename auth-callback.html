@@ -73,6 +73,31 @@ async function resendConfirmation() {
 }
 window.resendConfirmation = resendConfirmation;
 
+// OAuth sign-in (Google/Apple) has no chance to run signup.html's role
+// picker before the redirect — signup.html stashes the picked role here
+// beforehand, only for a genuinely new profile (still on the 'guest'
+// default the handle_new_user trigger assigns, since OAuth never passes
+// role metadata). An existing user signing back in keeps their real role.
+async function finishSignIn(user) {
+  const pendingRole = localStorage.getItem('casa:pending-oauth-role');
+  localStorage.removeItem('casa:pending-oauth-role');
+  let role = user.role;
+  if (pendingRole && pendingRole !== 'guest' && user.role === 'guest' && window.casaSupabase) {
+    const { data: { session } } = await window.casaSupabase.auth.getSession();
+    if (session) {
+      const { error } = await window.casaSupabase.from('profiles').update({ role: pendingRole }).eq('id', session.user.id);
+      if (!error) role = pendingRole;
+    }
+  }
+  wrap.innerHTML = `
+    <div class="cb-icon ok"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></div>
+    <h1>You're <i>confirmed.</i></h1>
+    <p>Taking you in&hellip;</p>`;
+  setTimeout(() => {
+    window.location.href = role === 'host' ? 'list.html?welcome=1' : 'browse.html?welcome=1';
+  }, 1200);
+}
+
 if (err) {
   showError('');
 } else {
@@ -84,13 +109,7 @@ if (err) {
     tries++;
     if (user) {
       clearInterval(poll);
-      wrap.innerHTML = `
-        <div class="cb-icon ok"><svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg></div>
-        <h1>You're <i>confirmed.</i></h1>
-        <p>Taking you in&hellip;</p>`;
-      setTimeout(() => {
-        window.location.href = user.role === 'host' ? 'list.html?welcome=1' : 'browse.html?welcome=1';
-      }, 1200);
+      finishSignIn(user);
     } else if (tries > 20) {
       clearInterval(poll);
       wrap.innerHTML = `

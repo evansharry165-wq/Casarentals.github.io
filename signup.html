@@ -187,7 +187,7 @@
           </div>
         </div>
 
-        <div class="providers">
+        <div class="providers" id="signupProviders">
           <button class="prov-btn"><span class="pi"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h5.9c-.3 1.4-1 2.5-2.2 3.3v2.7h3.6c2.1-2 3.2-4.8 3.2-8.2z"/><path fill="#34A853" d="M12 23c2.9 0 5.3-1 7.1-2.6l-3.6-2.7c-1 .7-2.2 1.1-3.5 1.1-2.7 0-5-1.8-5.8-4.3H2.5v2.7C4.3 20.7 7.9 23 12 23z"/><path fill="#FBBC05" d="M6.2 14.4c-.2-.7-.4-1.4-.4-2.4s.1-1.6.4-2.4V6.9H2.5C1.6 8.4 1 10.1 1 12s.6 3.6 1.6 5.1l3.7-2.7z"/><path fill="#EA4335" d="M12 5.4c1.5 0 2.9.5 4 1.5l3-3C17.2 2.1 14.8 1 12 1 7.9 1 4.3 3.3 2.5 6.9l3.7 2.7C7 7.2 9.3 5.4 12 5.4z"/></svg></span> Continue with Google</button>
           <button class="prov-btn"><span class="pi"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 12.2c0-2.5 2-3.7 2.1-3.8-1.2-1.7-3-1.9-3.6-1.9-1.5-.2-3 .9-3.7.9-.8 0-2-.9-3.2-.9-1.7 0-3.2 1-4 2.5-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.5 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-2.4-.9-2.4-3.6zM14.7 4.7c.7-.8 1.1-1.9 1-3-1 0-2.2.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1 .1 2.1-.5 2.8-1.4z"/></svg></span> Continue with Apple</button>
         </div>
@@ -230,7 +230,7 @@
         <h2 class="auth-h2">Welcome <i>back</i>.</h2>
         <p class="auth-tagline">Pick up where you left off &mdash; new replies, saved stays, and your enquiries.</p>
 
-        <div class="providers">
+        <div class="providers" id="signinProviders">
           <button class="prov-btn"><span class="pi"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h5.9c-.3 1.4-1 2.5-2.2 3.3v2.7h3.6c2.1-2 3.2-4.8 3.2-8.2z"/><path fill="#34A853" d="M12 23c2.9 0 5.3-1 7.1-2.6l-3.6-2.7c-1 .7-2.2 1.1-3.5 1.1-2.7 0-5-1.8-5.8-4.3H2.5v2.7C4.3 20.7 7.9 23 12 23z"/><path fill="#FBBC05" d="M6.2 14.4c-.2-.7-.4-1.4-.4-2.4s.1-1.6.4-2.4V6.9H2.5C1.6 8.4 1 10.1 1 12s.6 3.6 1.6 5.1l3.7-2.7z"/><path fill="#EA4335" d="M12 5.4c1.5 0 2.9.5 4 1.5l3-3C17.2 2.1 14.8 1 12 1 7.9 1 4.3 3.3 2.5 6.9l3.7 2.7C7 7.2 9.3 5.4 12 5.4z"/></svg></span> Sign in with Google</button>
           <button class="prov-btn"><span class="pi"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 12.2c0-2.5 2-3.7 2.1-3.8-1.2-1.7-3-1.9-3.6-1.9-1.5-.2-3 .9-3.7.9-.8 0-2-.9-3.2-.9-1.7 0-3.2 1-4 2.5-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.5 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8-.1 0-2.4-.9-2.4-3.6zM14.7 4.7c.7-.8 1.1-1.9 1-3-1 0-2.2.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1 .1 2.1-.5 2.8-1.4z"/></svg></span> Sign in with Apple</button>
         </div>
@@ -238,10 +238,10 @@
         <div class="divider"><span class="l"></span><span>or use email</span><span class="l"></span></div>
 
         <div class="form-grid">
-          <div class="field" id="f-email2"><label>Email address</label><input type="email" id="email2" placeholder="you@example.com" value="james@harrison.co.uk"><span class="field-err">Please enter your email</span></div>
+          <div class="field" id="f-email2"><label>Email address</label><input type="email" id="email2" placeholder="you@example.com"><span class="field-err">Please enter your email</span></div>
           <div class="field"><label>Password</label>
             <div class="pwd-wrap">
-              <input type="password" id="pwd2" placeholder="••••••••" value="••••••••">
+              <input type="password" id="pwd2" placeholder="••••••••">
               <button class="pwd-toggle" onclick="togglePwd('pwd2', this)">Show</button>
             </div>
           </div>
@@ -467,19 +467,37 @@
     window.location.href = (role === 'host' ? 'host.html' : 'index.html') + '?signedin=1';
   }
 
-  // ── OAuth buttons (demo) ──
-  document.querySelectorAll('.prov-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const provider = this.textContent.includes('Google') ? 'Google' : 'Apple';
-      this.textContent = 'Connecting to ' + provider + '…';
-      this.disabled = true;
-      // TO WIRE: await supabase.auth.signInWithOAuth({ provider: provider.toLowerCase() });
-      setTimeout(() => {
-        this.textContent = provider + ' — available when live';
-        this.disabled = false;
-      }, 1800);
+  // ── OAuth buttons ──
+  // The role picker only exists in the signup tab — an OAuth redirect
+  // leaves and comes back via auth-callback.html, so a *new* user's
+  // picked role has to survive the round trip via localStorage rather
+  // than a JS variable. Only the signup tab's buttons set this; the
+  // sign-in tab's buttons must never touch an existing user's role.
+  function wireOAuthButtons(containerId, { persistRole }) {
+    document.querySelectorAll(`#${containerId} .prov-btn`).forEach(btn => {
+      const originalLabel = btn.textContent.trim();
+      btn.addEventListener('click', async function() {
+        const provider = originalLabel.includes('Google') ? 'google' : 'apple';
+        const label = provider === 'google' ? 'Google' : 'Apple';
+        this.textContent = 'Connecting to ' + label + '…';
+        this.disabled = true;
+        if (persistRole) localStorage.setItem('casa:pending-oauth-role', currentRole);
+        const { error } = await window.casaSupabase.auth.signInWithOAuth({
+          provider,
+          options: { redirectTo: new URL('auth-callback.html', location.href).toString() },
+        });
+        if (error) {
+          if (persistRole) localStorage.removeItem('casa:pending-oauth-role');
+          this.textContent = originalLabel;
+          this.disabled = false;
+          if (window.casaToast) casaToast(label + ' sign-in isn\'t set up yet: ' + error.message);
+        }
+        // On success, signInWithOAuth navigates away — nothing else runs here.
+      });
     });
-  });
+  }
+  wireOAuthButtons('signupProviders', { persistRole: true });
+  wireOAuthButtons('signinProviders', { persistRole: false });
 
   // Welcome / signed-in toasts: handled by casa.js (?welcome=1, ?signedin=1)
 </script>
