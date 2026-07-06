@@ -634,20 +634,27 @@ function casaHandleAuthRedirectToasts() {
   }
 }
 
+let casaBootstrapDone = false;
 function casaBootstrap() {
+  if (casaBootstrapDone) return;
+  casaBootstrapDone = true;
   casaInitPreviewBanner();
   casaHandleAuthRedirectToasts();
   casaInitNav();
   casaLinkifyHashtags(document.body);
 }
-// A plain 'DOMContentLoaded' listener never fires if casa.js finishes
-// loading after the event already did (e.g. a slow network request
-// ahead of it in the page, or a browser that fires the event before a
-// blocking <script> at the end of body finishes) — silently leaving
-// nav init (including the mobile hamburger menu) never called. Guard
-// against that instead of assuming script position guarantees order.
+// Never rely on a single trigger for this — it's what makes the nav
+// (including whether you look signed in at all) reflect reality, so a
+// missed event here is a real, user-visible bug, not a cosmetic one.
+// A plain 'DOMContentLoaded' listener alone can silently never fire if
+// casa.js finishes loading/parsing after that event already passed
+// (slow request ahead of it, browser/caching quirks, etc.) — the
+// casaBootstrapDone guard makes it safe to attach every one of these
+// and let whichever fires first win.
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', casaBootstrap);
 } else {
   casaBootstrap();
 }
+document.addEventListener('DOMContentLoaded', casaBootstrap);
+window.addEventListener('load', casaBootstrap);
