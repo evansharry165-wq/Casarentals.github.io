@@ -81,9 +81,11 @@ When in doubt, check the actual code and git history, not a document.
   - `casa:reviews` — **live** (`reviews`); the feed cross-post
     (`casa:local-feed-posts`) is still local-only
   - `casa:reports` — **live** (`reports`)
-  - `casa:local-replies`, `casa:muted-users`, `casa:blocked-convos`,
-    `casa:notifications` — **still local-only**, blocked on migrating the
-    seed feed posts and conversations into real tables first
+  - Community feed (`feed_posts`, `feed_replies`, `muted_users`) — **live**.
+    The 21 fabricated seed posts were deleted rather than migrated (no
+    real accounts behind their invented authors); the feed now starts
+    empty and grows from real posts only. See `supabase/README.md`.
+  - `casa:blocked-convos`, `casa:notifications` — **still local-only**
 - **Commit in small, real increments** and push as each logical piece
   lands, not one giant commit at the end.
 

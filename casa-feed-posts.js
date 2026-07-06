@@ -1,72 +1,96 @@
-/** Shared community feed post catalogue — used by feed, property (tagged mentions) */
-const POSTS = [
-  {id:1,county:'cumbria',type:'avail',role:'host',av:'S',avC:'',name:'Sarah R.',ni:'Stone Cottage',badge:'Host',when:'2 hrs ago',where:'Windermere, Cumbria',likes:34,replyCount:3,body:`Just got a cancellation — <span class="tag">#12–19July</span> is now open at Stone Cottage. Sleeps 6, wood burner, dogs welcome. <span class="tag">#lastminute</span> <span class="tag">#lakedistrict</span> <span class="tag">#cottage</span>`,prop:{name:'Stone Cottage',loc:'Windermere',rating:'4.9',sleeps:6,beds:3,tags:'Pets ok',price:175,col:'warm'}},
-  {id:2,county:'cumbria',type:'looking',role:'guest',av:'L',avC:'guest',name:'Laura P.',ni:'seeking August',badge:'Guest',when:'5 hrs ago',where:'Looking in Cumbria',likes:8,replyCount:4,body:`Group of 8 looking for the <span class="tag">#LakeDistrict</span> for the <strong style="font-family:var(--serif);font-style:italic;color:var(--brick);font-weight:400">August bank holiday</strong> (27–31 Aug). Dog-friendly, parking for 3 cars, walking distance to a pub. Budget ~<strong style="font-family:var(--serif);font-style:italic;color:var(--brick);font-weight:400">£250/night</strong>. Hosts — drop your details below 👇 <span class="tag">#groups</span>`,cta:true},
-  {id:3,county:'cumbria',type:'review',role:'guest',av:'M',avC:'guest',name:'Marcus J.',badge:'Guest',when:'Yesterday',where:'Hawkshead, Cumbria',likes:52,replyCount:2,review:{stars:5,text:`"Just back from a week at <em>The Granary</em>. Hannah was the easiest host we've ever booked with — quick to reply, generous with local tips. The walk down to Tarn Hows is 20 minutes from the front door. <em>Cannot recommend this enough.</em>"`,meta:'Stayed 22–29 Jun · 4 adults, 1 dog · £1,365 total'},prop:{name:'The Granary',loc:'Hawkshead',rating:'4.9 · 56',sleeps:5,beds:3,price:195,col:'brick'}},
-  {id:4,county:'cumbria',type:'photo',role:'host',av:'T',avC:'ink',name:'Tom & Anna',ni:"Shepherd's Hut",badge:'Host',when:'Yesterday',where:'Buttermere, Cumbria',likes:87,replyCount:14,body:`Buttermere this morning — the fells in the cloud and not a soul on the lake. <span class="tag">#June</span> here is the secret time. Hut open from <span class="tag">#15July</span>. <span class="tag">#buttermere</span> <span class="tag">#offgrid</span>`,images:['cool','sage','dusk']},
-  {id:5,county:'cumbria',type:'tip',role:'guest',av:'H',avC:'guest',name:'Hannah F.',badge:'Guest',when:'2 days ago',where:'Coniston, Cumbria',likes:128,replyCount:3,body:`For anyone going to <span class="tag">#Coniston</span> — if you can get there before 8am, the climb up the <strong>Old Man</strong> from Walna Scar is magic. Park at the top of Walna Scar Road (free), not the village (£10). <span class="tag">#walks</span> <span class="tag">#oldmanofconiston</span>`},
-  {id:6,county:'cumbria',type:'avail',role:'host',av:'F',avC:'',name:'Fiona C.',ni:'Keswick Cottage',badge:'Host',when:'3 days ago',where:'Keswick, Cumbria',likes:18,replyCount:5,body:`Mid-week deals all of <span class="tag">#September</span> at the Keswick cottage — 3 nights for the price of 2. Sleeps 4, family-friendly, walking distance to town. DM for dates. <span class="tag">#keswick</span> <span class="tag">#midweek</span>`},
-  {id:7,county:'cornwall',type:'review',role:'guest',av:'J',avC:'guest',name:'James T.',badge:'Guest',when:'1 hr ago',where:'Porthcurno, Cornwall',likes:41,replyCount:7,review:{stars:5,text:`"Cliffside Cottage is everything the photos promised and more — the sea view from the bedroom is extraordinary. Booked direct via Casa and saved over £200 vs Airbnb. <em>Will be back every year.</em>"`,meta:'Stayed 5–12 Jun · 2 adults · £1,470 total'},prop:{name:'Cliffside Cottage',loc:'Porthcurno',rating:'4.9 · 41',sleeps:4,beds:2,price:210,col:'dusk'}},
-  {id:8,county:'cornwall',type:'avail',role:'host',av:'R',avC:'',name:'Rachel B.',ni:'Harbour Cottage',badge:'Host',when:'4 hrs ago',where:'Mousehole, Cornwall',likes:22,replyCount:8,body:`Late cancellation — <span class="tag">#20–27July</span> free at Harbour Cottage. Sea views, two minutes from the harbour wall. Sleeps 3. <strong style="font-family:var(--serif);font-style:italic;color:var(--brick);font-weight:400">£155/night</strong> direct. <span class="tag">#cornwall</span> <span class="tag">#seaview</span> <span class="tag">#lastminute</span>`,prop:{name:'Harbour Cottage',loc:'Mousehole',rating:'4.9 · 63',sleeps:3,beds:2,price:155,col:'cool'}},
-  {id:9,county:'cornwall',type:'tip',role:'guest',av:'A',avC:'guest',name:'Alice M.',badge:'Guest',when:'Yesterday',where:'Zennor, Cornwall',likes:67,replyCount:19,body:`Zennor is one of those Cornish places that still hasn't been discovered. The walk along the coast path to St Ives is 3 hours each way — utterly empty in the mornings. Start early, finish at Heron Inn. <span class="tag">#cornwall</span> <span class="tag">#coastpath</span>`},
-  {id:10,county:'cornwall',type:'photo',role:'host',av:'M',avC:'ink',name:'Martin & Sue',ni:'Tregothnan Lodge',badge:'Host',when:'2 days ago',where:'Truro, Cornwall',likes:94,replyCount:11,body:`The lodge garden this morning — roses in full bloom and the estuary still. August still has availability. <span class="tag">#cornwall</span> <span class="tag">#garden</span>`,images:['sage','warm']},
-  {id:11,county:'cornwall',type:'looking',role:'guest',av:'P',avC:'guest',name:'Pete H.',badge:'Guest',when:'3 days ago',where:'Looking in Cornwall',likes:5,replyCount:9,body:`Couple looking for a romantic coastal cottage for 5 nights in <span class="tag">#lateSeptember</span>. Sea views essential. Budget £150–200/night. Dog-friendly a bonus. <span class="tag">#cornwall</span> <span class="tag">#couples</span>`,cta:true},
-  {id:12,county:'highlands',type:'photo',role:'host',av:'F',avC:'ink',name:'Fiona M.',ni:'Blackhouse, Trotternish',badge:'Host',when:'Just now',where:'Isle of Skye',likes:112,replyCount:2,body:`The Old Man of Storr at 6am — we had the whole ridge to ourselves. Blackhouse still has July availability. <span class="tag">#isleofskye</span> <span class="tag">#storr</span> <span class="tag">#offgrid</span>`,images:['cool','fog','dusk']},
-  {id:13,county:'highlands',type:'avail',role:'host',av:'C',avC:'',name:'Callum D.',ni:'Glen Coe Bothy',badge:'Host',when:'3 hrs ago',where:'Glencoe, Highlands',likes:19,replyCount:6,body:`Two weeks free in August at Glen Coe Bothy — the best walking in Scotland, arguably. Wood burner, off-grid, sleeps 3. <strong style="font-family:var(--serif);font-style:italic;color:var(--brick);font-weight:400">£130/night</strong>. <span class="tag">#glencoe</span> <span class="tag">#highlands</span> <span class="tag">#offgrid</span>`,prop:{name:'Glen Coe Bothy',loc:'Glencoe',rating:'4.7 · 15',sleeps:3,beds:2,price:130,col:'fog'}},
-  {id:14,county:'highlands',type:'tip',role:'guest',av:'N',avC:'guest',name:'Neil F.',badge:'Guest',when:'Yesterday',where:'Cairngorms',likes:88,replyCount:3,body:`The Lairig Ghru is Scotland's most dramatic mountain pass and 90% of tourists have never heard of it. 27 miles Aviemore to Braemar, camp wild overnight. Do it before it gets discovered. <span class="tag">#cairngorms</span> <span class="tag">#wildcamping</span>`},
-  {id:15,county:'highlands',type:'review',role:'guest',av:'S',avC:'guest',name:'Sophie W.',badge:'Guest',when:'2 days ago',where:'Torridon, Highlands',likes:44,replyCount:8,review:{stars:5,text:`"Croft House is the most remote and most beautiful place we've ever stayed. Callum was exceptional — left us a hamper, pointed us to the best walks, checked in once. <em>This is what hospitality is supposed to feel like.</em>"`,meta:'Stayed 8–15 May · 4 adults · £1,155 total'},prop:{name:'Croft House',loc:'Torridon',rating:'4.9 · 27',sleeps:4,beds:2,price:165,col:'warm'}},
-  {id:16,county:'norfolk',type:'avail',role:'host',av:'B',avC:'',name:'Bridget H.',ni:'Burnham Overy Barn',badge:'Host',when:'6 hrs ago',where:'Burnham Overy, Norfolk',likes:28,replyCount:9,body:`September is wide open at Burnham Overy — the marshes in autumn are extraordinary. Barn sleeps 6, sea view, bring the dog. <strong style="font-family:var(--serif);font-style:italic;color:var(--brick);font-weight:400">£195/night</strong>. <span class="tag">#norfolk</span> <span class="tag">#petfriendly</span>`,prop:{name:'Burnham Overy Barn',loc:'Burnham Overy',rating:'4.8 · 33',sleeps:6,beds:3,price:195,col:'warm'}},
-  {id:17,county:'norfolk',type:'tip',role:'guest',av:'C',avC:'guest',name:'Charlie R.',badge:'Guest',when:'Yesterday',where:'Wells-next-the-Sea',likes:73,replyCount:27,body:`Wells at 7am in October — the beach is completely empty, the boats are coming in, and the bacon rolls at the Quayside Cafe are £3.50. This is why you come to Norfolk in autumn. <span class="tag">#norfolk</span> <span class="tag">#wells</span>`},
-  {id:18,county:'norfolk',type:'review',role:'guest',av:'D',avC:'guest',name:'Diana K.',badge:'Guest',when:'3 days ago',where:'Brancaster, Norfolk',likes:39,replyCount:5,review:{stars:5,text:`"Brancaster Hall is everything you dream a Norfolk manor should be. 12 of us for a long weekend — exactly as large and as beautiful as the photos. <em>Effortless.</em>"`,meta:'Stayed 14–17 Apr · 12 adults · £4,050 total'},prop:{name:'Brancaster Hall',loc:'Brancaster',rating:'4.9 · 17',sleeps:12,beds:6,price:450,col:'ink'}},
-  {id:19,county:'yorkshire',type:'photo',role:'host',av:'G',avC:'ink',name:'Graham & Kate',ni:'Dales Farmhouse',badge:'Host',when:'2 hrs ago',where:'Wharfedale, Yorkshire',likes:56,replyCount:12,body:`The Dales at their finest this morning — buttercups and the sound of nothing. Late June availability just opened. <span class="tag">#yorkshire</span> <span class="tag">#yorkshiredales</span>`,images:['warm','sage']},
-  {id:20,county:'yorkshire',type:'avail',role:'host',av:'Y',avC:'',name:'Yvonne S.',ni:'Moorland Cottage',badge:'Host',when:'5 hrs ago',where:'Goathland, N. Yorkshire',likes:15,replyCount:4,body:`Two weeks free in August at the cottage — right on the edge of the moors, walking from the door. Wood burner, pets welcome. <strong style="font-family:var(--serif);font-style:italic;color:var(--brick);font-weight:400">£160/night</strong>. <span class="tag">#northyorkmoors</span>`,prop:{name:'Moorland Cottage',loc:'Goathland',rating:'4.8 · 28',sleeps:4,beds:2,price:160,col:'warm'}},
-  {id:21,county:'all',type:'tip',role:'guest',av:'O',avC:'guest',name:'Oliver B.',badge:'Guest',when:'1 hr ago',where:'UK-wide',likes:201,replyCount:67,body:`Hot take: the best UK coastal walks are in north Devon, not Cornwall. Hartland Quay to Clovelly — nobody talks about it, completely empty, and the cliffs are genuinely terrifying. <span class="tag">#devon</span> <span class="tag">#coastpath</span>`},
-];
+/** Community feed posts — real Supabase-backed (feed_posts / feed_replies).
+    Used by feed.html, property.html (mentions), attractions.html (tips),
+    host.html (reply-from-dashboard). No seed/demo posts: the 21 that used
+    to live here had fabricated authors, likes, and reply counts with no
+    matching real accounts, so the feed starts genuinely empty until real
+    users post. */
 
-const REPLIES = {
-  1: [
-    {av:'L', avC:'guest', name:'Laura P.', role:'Guest', time:'1 hr ago', body:"Is there any chance of 19–26 July instead? Would love to bring the whole family.", likes:3},
-    {av:'S', avC:'', name:'Sarah R.', role:'Host · Stone Cottage', time:'45 min ago', body:"Hi Laura — yes, 19–26 is available too. Drop me a message and I'll send the details over directly 🏡", likes:7},
-    {av:'J', avC:'guest', name:'James M.', role:'Guest', time:'30 min ago', body:"Do you allow under 5s? We have a 2-year-old and wondering about the stairs.", likes:1},
-  ],
-  2: [
-    {av:'S', avC:'', name:'Sarah R.', role:'Host · Stone Cottage', time:'4 hrs ago', body:"Hi Laura! Stone Cottage could work — sleeps 6 so a bit under your 8, but we have a self-contained studio next door that I could open too. Happy to discuss. DM me 🙌", likes:11},
-    {av:'F', avC:'', name:'Fiona C.', role:'Host · Keswick Cottage', time:'3 hrs ago', body:"Keswick cottage sleeps 8 exactly — August bank holiday is free, dogs welcome, parking for 3 cars, pub is literally 200m. DM me and I'll send the full details.", likes:18},
-    {av:'T', avC:'ink', name:'Tom & Anna', role:"Host · Shepherd's Hut", time:'2 hrs ago', body:"We only sleep 2 so not quite right for your group, but follow us — sometimes we have a weekend where two nearby places are free at the same time 👋", likes:5},
-    {av:'H', avC:'guest', name:'Hannah F.', role:'Guest', time:'1 hr ago', body:"Laura — we stayed at Fiona's Keswick cottage last August bank holiday. 10/10 would recommend.", likes:14},
-  ],
-  3: [
-    {av:'H', avC:'', name:'Hannah R.', role:'Host · The Granary', time:'23 hrs ago', body:"Thank you so much Marcus — really made our morning reading this 😊 You're welcome back any time.", likes:21},
-    {av:'O', avC:'guest', name:'Olivia K.', role:'Guest', time:'20 hrs ago', body:"This is exactly what made us join Casa. Real reviews from real people, not a star rating from an algorithm.", likes:9},
-  ],
-  5: [
-    {av:'R', avC:'guest', name:'Rob T.', role:'Guest', time:'2 days ago', body:"Done this walk twice — agree completely. The views from the summit at 7am are completely otherworldly.", likes:12},
-    {av:'S', avC:'', name:'Sarah R.', role:'Host · Stone Cottage', time:'2 days ago', body:"We always tell our guests about this walk. Takes about 3.5 hours at a comfortable pace — bring waterproofs even in July up on the top.", likes:8},
-    {av:'M', avC:'guest', name:'Marcus J.', role:'Guest', time:'1 day ago', body:"Did this last week based on this post. Thank you!! The sunrise from the ridge was genuinely one of the best things we've ever done.", likes:19},
-  ],
-  12: [
-    {av:'N', avC:'guest', name:'Neil F.', role:'Guest', time:'3 hrs ago', body:"This photo is extraordinary. Where exactly was this taken from? The angle on The Storr is unlike anything I've seen.", likes:14},
-    {av:'F', avC:'ink', name:'Fiona M.', role:"Host · Blackhouse", time:'2 hrs ago', body:"About 400m north of the main viewpoint — there's an unmarked path on the left side going up. The crowds don't usually make it that far.", likes:23},
-  ],
-  14: [
-    {av:'C', avC:'', name:'Callum D.', role:'Host · Glen Coe Bothy', time:'22 hrs ago', body:"Neil — we have guests who wild camp on this route and come back to the bothy for the second night. If you fancy that combo, the bothy is 2 miles from the southern end of the Lairig.", likes:11},
-    {av:'A', avC:'guest', name:'Alice M.', role:'Guest', time:'20 hrs ago', body:"Doing this in September. Any advice on the wild camping spots? Looking for something with a bit of shelter.", likes:6},
-    {av:'N', avC:'guest', name:'Neil F.', role:'Guest', time:'18 hrs ago', body:"Alice — there's a bealach about 12 miles in that has a natural windbreak on the east side. Perfect for a tarp. Avoid the exposed sections near Pools of Dee.", likes:17},
-  ],
-};
+async function casaFetchFeedPosts({ region, type, authorId, propertyId } = {}) {
+  if (!window.casaSupabase) return [];
+  let q = window.casaSupabase
+    .from('feed_posts')
+    .select('id, type, region, property_id, body, image_urls, review_stars, created_at, author:profiles!feed_posts_author_id_fkey(id, full_name, role, avatar_url)')
+    .order('created_at', { ascending: false });
+  if (region && region !== 'all') q = q.eq('region', region);
+  if (type) q = q.eq('type', type);
+  if (authorId) q = q.eq('author_id', authorId);
+  if (propertyId) q = q.eq('property_id', propertyId);
+  const { data, error } = await q;
+  if (error) { console.error('casaFetchFeedPosts failed', error); return []; }
+  return data || [];
+}
 
-/* ─── Locally-added replies (e.g. from the host dashboard) merge in here ─── */
-function casaGetLocalReplies() {
-  try { return JSON.parse(localStorage.getItem('casa:local-replies') || '{}'); } catch { return {}; }
+async function casaFetchRepliesForPost(postId) {
+  if (!window.casaSupabase) return [];
+  const { data, error } = await window.casaSupabase
+    .from('feed_replies')
+    .select('id, body, created_at, author:profiles!feed_replies_author_id_fkey(id, full_name, role, avatar_url)')
+    .eq('post_id', postId)
+    .order('created_at', { ascending: true });
+  if (error) { console.error('casaFetchRepliesForPost failed', error); return []; }
+  return data || [];
 }
-function casaGetRepliesForPost(postId) {
-  const base = REPLIES[postId] || [];
-  const local = casaGetLocalReplies()[postId] || [];
-  return [...base, ...local];
+
+async function casaCreateFeedPost({ type, region, propertyId, body, reviewStars }) {
+  if (!window.casaSupabase) return null;
+  const { data: { session } } = await window.casaSupabase.auth.getSession();
+  if (!session) return null;
+  const { data, error } = await window.casaSupabase
+    .from('feed_posts')
+    .insert({
+      author_id: session.user.id,
+      type,
+      region: region || 'all',
+      property_id: propertyId || null,
+      body,
+      review_stars: reviewStars || null,
+    })
+    .select('id, type, region, property_id, body, image_urls, review_stars, created_at, author:profiles!feed_posts_author_id_fkey(id, full_name, role, avatar_url)')
+    .single();
+  if (error) { console.error('casaCreateFeedPost failed', error); return null; }
+  return data;
 }
-function casaAddLocalReply(postId, reply) {
-  const store = casaGetLocalReplies();
-  if (!store[postId]) store[postId] = [];
-  store[postId].push(reply);
-  localStorage.setItem('casa:local-replies', JSON.stringify(store));
+
+// One cheap query for every post's reply count, grouped client-side —
+// avoids a round trip per post just to show a badge number.
+async function casaFetchFeedReplyCounts() {
+  if (!window.casaSupabase) return {};
+  const { data, error } = await window.casaSupabase.from('feed_replies').select('post_id');
+  if (error) { console.error('casaFetchFeedReplyCounts failed', error); return {}; }
+  const counts = {};
+  (data || []).forEach(r => { counts[r.post_id] = (counts[r.post_id] || 0) + 1; });
+  return counts;
 }
+
+async function casaCreateFeedReply(postId, body) {
+  if (!window.casaSupabase) return null;
+  const { data: { session } } = await window.casaSupabase.auth.getSession();
+  if (!session) return null;
+  const { data, error } = await window.casaSupabase
+    .from('feed_replies')
+    .insert({ post_id: postId, author_id: session.user.id, body })
+    .select('id, body, created_at, author:profiles!feed_replies_author_id_fkey(id, full_name, role, avatar_url)')
+    .single();
+  if (error) { console.error('casaCreateFeedReply failed', error); return null; }
+  return data;
+}
+
+function casaEscapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+}
+
+// Real post/reply bodies are now free-text from real users, not baked-in
+// seed HTML — always escape before highlighting hashtags, since this is
+// rendered via innerHTML in several places (feed.html, attractions.html,
+// property.html, host.html).
+function casaFormatFeedBody(text) {
+  return casaEscapeHtml(text).replace(/(#[a-z0-9]*[a-z][a-z0-9]*)/gi, '<span class="tag">$1</span>');
+}
+
+window.casaFetchFeedPosts = casaFetchFeedPosts;
+window.casaFetchFeedReplyCounts = casaFetchFeedReplyCounts;
+window.casaFetchRepliesForPost = casaFetchRepliesForPost;
+window.casaCreateFeedPost = casaCreateFeedPost;
+window.casaCreateFeedReply = casaCreateFeedReply;
+window.casaEscapeHtml = casaEscapeHtml;
+window.casaFormatFeedBody = casaFormatFeedBody;

@@ -335,38 +335,44 @@
 // ═══════════════════════════════════════════
 // Guest questions on this host's own feed posts,
 // with a real reply box (Phase 04: reply from the
-// dashboard, not only from feed.html).
+// dashboard, not only from feed.html). Reads the real signed-in host's
+// own feed_posts/feed_replies — previously hardcoded to "Sarah R."
+// regardless of who was actually signed in.
 // ═══════════════════════════════════════════
-const HOST_NAME = 'Sarah R.';
-
-function renderHostFeedComments() {
-  if (typeof POSTS === 'undefined' || typeof casaGetRepliesForPost !== 'function') return;
-  const myPosts = POSTS.filter(p => p.role === 'host' && p.name === HOST_NAME);
-  const withReplies = myPosts
-    .map(p => ({ post: p, replies: casaGetRepliesForPost(p.id) }))
-    .filter(x => x.replies.length);
+async function renderHostFeedComments() {
   const block = document.getElementById('feedCommentsBlock');
+  if (!window.casaSupabase) { block.style.display = 'none'; return; }
+  const { data: { session } } = await window.casaSupabase.auth.getSession();
+  if (!session) { block.style.display = 'none'; return; }
+
+  const mine = await casaFetchFeedPosts({ authorId: session.user.id });
+  const withReplies = (await Promise.all(mine.map(async post => ({
+    post,
+    replies: await casaFetchRepliesForPost(post.id),
+  })))).filter(x => x.replies.length);
+
   if (!withReplies.length) { block.style.display = 'none'; return; }
   block.style.display = '';
   document.getElementById('hostFeedComments').innerHTML = withReplies.map(({ post, replies }) => `
     <div class="hct">
-      <div class="hct-post">On <strong>${post.ni || post.name}</strong>'s post: <span>${(post.body || '').replace(/<[^>]+>/g, '').slice(0, 90)}${(post.body || '').length > 90 ? '…' : ''}</span></div>
+      <div class="hct-post">Your post: <span>${casaFormatFeedBody((post.body || '').slice(0, 90) + (post.body && post.body.length > 90 ? '…' : ''))}</span></div>
       <div class="hct-replies">
-        ${replies.map(r => `<div class="hct-reply"><span class="who">${r.name}</span> ${r.body}</div>`).join('')}
+        ${replies.map(r => `<div class="hct-reply"><span class="who">${casaEscapeHtml(r.author?.full_name || 'Guest')}</span> ${casaFormatFeedBody(r.body)}</div>`).join('')}
       </div>
       <div class="hct-compose">
-        <textarea placeholder="Reply as ${HOST_NAME}…" id="hct-ta-${post.id}"></textarea>
+        <textarea placeholder="Reply…" id="hct-ta-${post.id}"></textarea>
         <button class="btn btn-primary btn-sm" onclick="hostSendReply(${post.id})">Reply</button>
       </div>
     </div>
   `).join('');
 }
 
-function hostSendReply(postId) {
+async function hostSendReply(postId) {
   const ta = document.getElementById('hct-ta-' + postId);
   const text = ta.value.trim();
   if (!text) { ta.focus(); return; }
-  casaAddLocalReply(postId, { av: 'S', avC: '', name: HOST_NAME, role: 'Host', time: 'Just now', body: text, likes: 0 });
+  const reply = await casaCreateFeedReply(postId, text);
+  if (!reply) { casaToast('Could not post reply — please try again'); return; }
   casaToast('Reply posted to the feed');
   renderHostFeedComments();
 }

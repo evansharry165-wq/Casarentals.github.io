@@ -749,21 +749,15 @@ if (qpId && listing.id !== qpId) {
   list.insertAdjacentHTML('afterbegin', html);
 })();
 
-/* ─── From the community: feed posts that mention this property ─── */
-(function loadCommunityMentions() {
-  if (typeof POSTS === 'undefined') return;
-  const title = (listing.title || '').toLowerCase().trim();
-  const mentions = POSTS.filter(p => {
-    if (!p.prop || !p.prop.name) return false;
-    const name = p.prop.name.toLowerCase().trim();
-    return name === title || name.includes(title) || title.includes(name);
-  });
+/* ─── From the community: real feed posts that reference this property ─── */
+(async function loadCommunityMentions() {
+  const mentions = await casaFetchFeedPosts({ propertyId: listing.id });
   if (!mentions.length) return;
   document.getElementById('communityMentionsSection').style.display = '';
   document.getElementById('communityMentions').innerHTML = mentions.map(p => `
     <a class="cm-post" href="feed.html?post=${p.id}">
-      <div class="cm-head"><span class="who">${p.name}</span><span class="when">${p.when}</span></div>
-      <div class="cm-body">${p.review ? p.review.text : p.body || ''}</div>
+      <div class="cm-head"><span class="who">${casaEscapeHtml(p.author?.full_name || 'Guest')}</span><span class="when">${casaRelativeTime(p.created_at)}</span></div>
+      <div class="cm-body">${casaFormatFeedBody(p.body)}</div>
     </a>
   `).join('');
 })();

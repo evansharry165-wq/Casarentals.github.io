@@ -651,6 +651,7 @@
 </div>
 
 <script src="casa-properties.js"></script>
+<script src="casa-feed-posts.js"></script>
 <script src="casa-images.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
@@ -824,16 +825,14 @@ async function submitReview() {
   }
 
   if (toFeed) {
-    let local = [];
-    try { local = JSON.parse(localStorage.getItem('casa:local-feed-posts') || '[]'); } catch { /* ignore */ }
-    local.unshift({
-      id: Date.now(), county: 'all', type: 'review', role: 'guest',
-      av: 'Y', avC: 'guest', name: 'You', badge: 'Guest', when: 'Just now',
-      where: reviewCtx.propertyName, likes: 0, replyCount: 0,
-      propertyId: Number(reviewCtx.propertyId) || undefined,
-      review: { stars: reviewStarsPicked, text: `"${text}"`, meta: `Reviewed ${dateLabel}` },
+    const post = await casaCreateFeedPost({
+      type: 'review',
+      region: 'all',
+      propertyId: Number(reviewCtx.propertyId) || null,
+      body: text,
+      reviewStars: reviewStarsPicked,
     });
-    localStorage.setItem('casa:local-feed-posts', JSON.stringify(local));
+    if (!post) casaToast('Review saved, but could not cross-post to the feed');
   }
 
   // Update the stay card in place

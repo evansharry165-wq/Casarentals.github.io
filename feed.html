@@ -320,7 +320,7 @@
       <!-- COMPOSE -->
       <div class="compose-card">
         <div class="compose-top">
-          <div class="compose-av">J</div>
+          <div class="compose-av" id="composeAv">?</div>
           <textarea class="compose-ta" id="composeTA" placeholder="Share with the community — availability, a tip, a recent stay, or a local gem…" oninput="onCompose(this)" rows="2"></textarea>
         </div>
         <div class="hashtag-suggest" id="hashtagSuggest"></div>
@@ -425,6 +425,7 @@
 </footer>
 
 <script src="casa-properties.js"></script>
+<script src="casa-hosts.js"></script>
 <script src="casa-feed-posts.js"></script>
 <script src="casa-images.js"></script>
 <script src="casa-map-geo.js"></script>
@@ -438,13 +439,6 @@
 // DATA
 // ═══════════════════════════════════════
 
-
-/* ─── Merge in reviews shared to the feed from profile.html's review flow ─── */
-(function loadLocalFeedPosts() {
-  let local = [];
-  try { local = JSON.parse(localStorage.getItem('casa:local-feed-posts') || '[]'); } catch { /* ignore */ }
-  if (local.length) POSTS.unshift(...local);
-})();
 
 // Editorial copy only — no invented stats/tags/host-cards baked in.
 // Real numbers (stays, hosts, trending tags, active hosts) are computed
@@ -493,17 +487,17 @@ async function casaComputeCountyStats(countyKey) {
       if (seen.has(p.host_id)) return;
       seen.add(p.host_id);
       const name = p.profiles?.full_name || 'Host';
-      hosts.push({ av: name.charAt(0).toUpperCase(), name, prop: p.title });
+      hosts.push({ av: name.charAt(0).toUpperCase(), name, prop: p.title, hostId: p.host_id });
     });
   }
 
   // Trending tags: real counts from the posts actually visible in this
   // county's feed right now, not an invented platform-wide frequency.
-  const relevant = POSTS.filter(p => countyKey === 'all' || p.county === countyKey || p.county === 'all');
+  const relevant = ALL_POSTS.filter(p => countyKey === 'all' || p.region === countyKey || p.region === 'all');
   const tagCounts = {};
   relevant.forEach(p => {
-    // Require at least one letter — seed post bodies contain date-range
-    // hashtags like "#12–19July" whose leading digits would otherwise
+    // Require at least one letter — bodies can contain date-range
+    // fragments like "#12–19July" whose leading digits would otherwise
     // match as a bogus "#12" tag.
     const matches = (p.body || '').match(/#[a-z0-9]*[a-z][a-z0-9]*/gi) || [];
     matches.forEach(t => { const k = t.toLowerCase(); tagCounts[k] = (tagCounts[k] || 0) + 1; });
@@ -526,23 +520,58 @@ let state = {county:'all', type:'all', filter:'all', sort:'recent', tag:null, se
 const openReplies = new Set();
 const likedPosts = new Set();
 const savedPosts = new Set();
+let ALL_POSTS = [];
+const repliesCache = {};
+
+// Flattens a feed_posts row (with its joined author profile) into the
+// shape renderPost/getFiltered expect, and seeds a real reply count from
+// the one-time count map fetched alongside it.
+function normalizePost(row, replyCount) {
+  return {
+    id: row.id,
+    type: row.type,
+    region: row.region || 'all',
+    propertyId: row.property_id || null,
+    body: row.body || '',
+    reviewStars: row.review_stars || null,
+    imageUrls: row.image_urls || [],
+    createdAt: row.created_at,
+    authorId: row.author?.id,
+    authorName: row.author?.full_name || 'Guest',
+    authorRole: row.author?.role || 'guest',
+    likes: 0,
+    replyCount: replyCount || 0,
+  };
+}
+
+// Resolves casaGetFollowedHosts()'s mix of CASA_HOSTS slugs (demo hosts)
+// and raw Supabase ids (real hosts) down to a Set of real profile ids, so
+// it can be matched against a real post's author.id.
+function getFollowedProfileIds() {
+  const ids = new Set();
+  casaGetFollowedHosts().forEach(key => {
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(key)) { ids.add(key); return; }
+    if (typeof CASA_HOSTS !== 'undefined' && CASA_HOSTS[key]?.supabaseId) ids.add(CASA_HOSTS[key].supabaseId);
+  });
+  return ids;
+}
 
 // ═══════════════════════════════════════
 // GETFILTERED
 // ═══════════════════════════════════════
 function getFiltered() {
-  const muted = casaGetMutedUsers();
-  let ps = POSTS.filter(p => !muted.includes(p.name));
-  ps = ps.filter(p => state.county === 'all' || p.county === state.county || p.county === 'all');
+  const muted = casaGetMutedUserIds();
+  let ps = ALL_POSTS.filter(p => !muted.includes(p.authorId));
+  ps = ps.filter(p => state.county === 'all' || p.region === state.county || p.region === 'all');
   if (state.type !== 'all') ps = ps.filter(p => p.type === state.type);
-  if (state.filter === 'hosts') ps = ps.filter(p => p.role === 'host');
-  if (state.filter === 'guests') ps = ps.filter(p => p.role === 'guest');
+  if (state.filter === 'hosts') ps = ps.filter(p => p.authorRole === 'host');
+  if (state.filter === 'guests') ps = ps.filter(p => p.authorRole === 'guest');
   if (state.filter === 'following') {
-    const followed = casaGetFollowedHosts().map(n => n.toLowerCase());
-    ps = ps.filter(p => followed.some(f => p.name.toLowerCase().includes(f) || f.includes(p.name.toLowerCase())));
+    const followed = getFollowedProfileIds();
+    ps = ps.filter(p => followed.has(p.authorId));
   }
   if (state.tag) ps = ps.filter(p => (p.body||'').toLowerCase().includes(state.tag.toLowerCase().replace('#','')));
-  if (state.search) { const q = state.search.toLowerCase(); ps = ps.filter(p => (p.body||'').toLowerCase().includes(q) || p.name.toLowerCase().includes(q) || (p.where||'').toLowerCase().includes(q)); }
+  if (state.search) { const q = state.search.toLowerCase(); ps = ps.filter(p => (p.body||'').toLowerCase().includes(q) || p.authorName.toLowerCase().includes(q)); }
   if (state.sort === 'liked') ps = [...ps].sort((a,b) => b.likes - a.likes);
   return ps;
 }
@@ -559,71 +588,40 @@ function renderPost(p, i) {
   const liked = likedPosts.has(p.id);
   const saved = savedPosts.has(p.id);
   const repliesOpen = openReplies.has(p.id);
-  const rs = casaGetRepliesForPost(p.id);
 
-  const propId = p.prop ? (p.propId || getCasaPropertyIdByTitle(p.prop.name)) : null;
+  const listing = p.propertyId && typeof CASA_PROPERTIES !== 'undefined' ? CASA_PROPERTIES.find(x => x.id === p.propertyId) : null;
   let propImg = '';
-  if (propId && typeof getCasaProperty === 'function' && typeof casaGetPropertyPhoto === 'function') {
-    const listing = getCasaProperty(propId);
-    if (listing) {
-      const url = casaGetPropertyPhoto(listing, 420);
-      propImg = `<img class="casa-photo-img" src="${url}" alt="${p.prop.name}, ${p.prop.loc}" loading="lazy">`;
-    }
+  if (listing && typeof casaGetPropertyPhoto === 'function') {
+    const url = casaGetPropertyPhoto(listing, 420);
+    propImg = url ? `<img class="casa-photo-img" src="${url}" alt="${casaEscapeHtml(listing.title)}, ${casaEscapeHtml(listing.loc)}" loading="lazy">` : '';
   }
-  if (!propImg && p.prop) propImg = `<div class="ph ${p.prop.col}"></div>`;
-  const propH = p.prop ? `<a class="post-prop" href="property.html?id=${propId}"><div class="pi">${propImg}</div><div class="pinfo"><div class="pname">${p.prop.name}, <i>${p.prop.loc}</i></div><div class="pdets"><span>★ ${p.prop.rating}</span><span>·</span><span>Sleeps ${p.prop.sleeps} · ${p.prop.beds} bed</span>${p.prop.tags?`<span>·</span><span>${p.prop.tags}</span>`:''}</div></div><div class="price">£${p.prop.price}<span>/night</span></div></a>` : '';
-  const imgH = p.images ? `<div class="post-images ${p.images.length===1?'one':p.images.length===2?'two':'three'}">${p.images.map((c,ix)=>{
-    if (typeof casaGetRegionPhoto === 'function' && p.county && p.county !== 'all') {
-      const url = casaGetRegionPhoto(p.county, 900);
-      return `<img class="casa-photo-img" src="${url}" alt="${p.county.replace(/-/g,' ')} scenery" loading="lazy">`;
-    }
-    return `<div class="ph ${c}"></div>`;
-  }).join('')}</div>` : '';
-  const revH = p.review ? `<div class="post-review-card"><div class="review-stars">${renderStars(p.review.stars)}</div><div class="review-text">${p.review.text}</div><div class="review-meta">${p.review.meta}</div></div>` : '';
-  const ctaH = p.cta ? `<div class="looking-cta"><p>Are you a host? <i>Reply with your availability below</i> — guests are waiting.</p><a href="messages.html">Message directly</a></div>` : '';
-  const enquireH = p.prop ? `<a class="pa pa-enquire" href="booking.html?id=${propId}&prop=${encodeURIComponent(p.prop.name + ', ' + p.prop.loc)}&price=${p.prop.price}">Enquire →</a>` : '';
+  if (!propImg && listing) propImg = `<div class="ph ${listing.col || 'warm'}"></div>`;
+  const propH = listing ? `<a class="post-prop" href="property.html?id=${listing.id}"><div class="pi">${propImg}</div><div class="pinfo"><div class="pname">${casaEscapeHtml(listing.title)}, <i>${casaEscapeHtml(listing.loc)}</i></div><div class="pdets"><span>★ ${listing.rating ? listing.rating.toFixed(1) : 'New'}</span><span>·</span><span>Sleeps ${listing.sleeps}</span></div></div><div class="price">£${listing.price}<span>/night</span></div></a>` : '';
+  const imgH = p.imageUrls && p.imageUrls.length ? `<div class="post-images ${p.imageUrls.length===1?'one':p.imageUrls.length===2?'two':'three'}">${p.imageUrls.map(u=>`<img class="casa-photo-img" src="${u}" loading="lazy">`).join('')}</div>` : '';
+  const revH = p.reviewStars ? `<div class="post-review-card"><div class="review-stars">${renderStars(p.reviewStars)}</div><div class="review-text">${casaFormatFeedBody(p.body)}</div><div class="review-meta">${casaRelativeTime(p.createdAt)}</div></div>` : '';
+  const ctaH = p.type === 'looking' ? `<div class="looking-cta"><p>Are you a host? <i>Reply with your availability below</i> — guests are waiting.</p><a href="messages.html">Message directly</a></div>` : '';
+  const enquireH = listing ? `<a class="pa pa-enquire" href="booking.html?id=${listing.id}&prop=${encodeURIComponent(listing.title + ', ' + listing.loc)}&price=${listing.price}">Enquire →</a>` : '';
   const mapHref = typeof casaMapUrlForFeedPost === 'function'
-    ? casaMapUrlForFeedPost(p.id, p.county)
+    ? casaMapUrlForFeedPost(p.id, p.region)
     : `map.html?post=${p.id}`;
-  const mapH = p.county !== 'all' ? `<a class="pa pa-map" href="${mapHref}"><svg viewBox="0 0 24 24"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg> Map</a>` : '';
+  const mapH = p.region !== 'all' ? `<a class="pa pa-map" href="${mapHref}"><svg viewBox="0 0 24 24"><path d="M12 2C8.1 2 5 5.1 5 9c0 5.2 7 13 7 13s7-7.8 7-13c0-3.9-3.1-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg> Map</a>` : '';
 
-  // Replies HTML
-  const repliesH = rs.length ? `
-    <div class="replies-section${repliesOpen?' open':''}" id="replies-${p.id}">
-      ${rs.map((r,ri) => `
-        <div class="reply">
-          <div class="av sm ${r.avC}">${r.av}</div>
-          <div class="reply-bubble">
-            <div class="rh"><span class="rn">${r.name.includes('<i>') ? r.name : `<i>${r.name.split(' ')[0]}</i> ${r.name.split(' ').slice(1).join(' ')}`}</span><span style="font-size:11px;color:var(--ink-4);margin-left:4px">${r.role}</span><span class="rt" style="margin-left:auto">${r.time}</span></div>
-            <div class="rb">${r.body}</div>
-            <button class="reply-like" onclick="likeReply(this)"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg> ${r.likes}</button>
-          </div>
-        </div>`).join('')}
-      <div class="reply-compose">
-        <div class="av sm">J</div>
-        <textarea class="rc-input" placeholder="Reply to this thread…" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
-        <button class="rc-send" onclick="sendReply(this,${p.id})">Reply</button>
-      </div>
-    </div>` : `
-    <div class="replies-section${repliesOpen?' open':''}" id="replies-${p.id}">
-      <div class="reply-compose">
-        <div class="av sm">J</div>
-        <textarea class="rc-input" placeholder="Be the first to reply…" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
-        <button class="rc-send" onclick="sendReply(this,${p.id})">Reply</button>
-      </div>
-    </div>`;
+  const roleClass = p.authorRole === 'guest' ? ' guest' : '';
+  const avInitial = casaEscapeHtml((p.authorName || '?').charAt(0).toUpperCase());
+  const badge = p.authorRole === 'host' ? 'Host' : 'Guest';
+  const regionLabel = (COUNTY_META[p.region] || {}).title || 'UK';
 
   return `<article class="post" style="animation-delay:${i*.04}s" id="post-${p.id}">
     <div class="post-head">
-      <div class="av ${p.avC}">${p.av}</div>
+      <div class="av${roleClass}">${avInitial}</div>
       <div class="post-who">
         <div class="post-name">
-          <span class="nm">${p.name}${p.ni?` <i>${p.ni}</i>`:''}</span>
-          ${ROLE_BADGE[p.badge]||''}
+          <span class="nm">${casaEscapeHtml(p.authorName)}</span>
+          ${ROLE_BADGE[badge]||''}
           ${TYPE_BADGE[p.type]||''}
         </div>
         <div class="post-meta">
-          <span class="when">${p.when}</span><span class="sep">·</span><span>${p.where}</span>
+          <span class="when">${casaRelativeTime(p.createdAt)}</span><span class="sep">·</span><span>${casaEscapeHtml(regionLabel)}</span>
         </div>
       </div>
       <div style="position:relative">
@@ -633,12 +631,12 @@ function renderPost(p, i) {
         <div class="more-menu">
           <button class="mm-item" onclick="sharePost(${p.id})"><svg viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>Share this post</button>
           <button class="mm-item" onclick="savePostMenu(${p.id},this)"><svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg>Save post</button>
-          <button class="mm-item"${casaIsReported('post', p.id) ? ' disabled' : ''} onclick="reportPost(${p.id},'${p.name.replace(/'/g, "\\'")}',this)"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>${casaIsReported('post', p.id) ? 'Reported' : 'Report'}</button>
-          <button class="mm-item danger" onclick="muteUser('${p.name.replace(/'/g, "\\'")}')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>Mute user</button>
+          <button class="mm-item"${casaIsReported('post', p.id) ? ' disabled' : ''} onclick="reportPost(${p.id},'${p.authorName.replace(/'/g, "\\'")}',this)"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>${casaIsReported('post', p.id) ? 'Reported' : 'Report'}</button>
+          <button class="mm-item danger" onclick="muteUser('${p.authorId}','${p.authorName.replace(/'/g, "\\'")}')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>Mute user</button>
         </div>
       </div>
     </div>
-    ${p.body ? `<div class="post-body"><p>${p.body}</p></div>` : ''}
+    ${p.body && !p.reviewStars ? `<div class="post-body"><p>${casaFormatFeedBody(p.body)}</p></div>` : ''}
     ${revH}${imgH}${propH}${ctaH}
     <div class="post-actions">
       <button class="pa${liked?' liked':''}" onclick="likePost(this,${p.id})">
@@ -647,8 +645,8 @@ function renderPost(p, i) {
       </button>
       <button class="pa${repliesOpen?' active':''}" onclick="toggleReplies(${p.id},this)">
         <svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.4 7.3L4 21l1.7-5.6A8 8 0 1 1 21 12z"/></svg>
-        <span class="pa-count">${p.replyCount}</span>
-        ${rs.length ? `<svg viewBox="0 0 24 24" style="width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;margin-left:2px;transition:transform .2s" id="replyChevron-${p.id}"><path d="M6 9l6 6 6-6"/></svg>` : ''}
+        <span class="pa-count" id="replyCount-${p.id}">${p.replyCount}</span>
+        <svg viewBox="0 0 24 24" style="width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;margin-left:2px;transition:transform .2s" id="replyChevron-${p.id}"><path d="M6 9l6 6 6-6"/></svg>
       </button>
       <button class="pa" onclick="sharePost(${p.id})">
         <svg viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>
@@ -660,7 +658,7 @@ function renderPost(p, i) {
       </button>
       ${enquireH}${mapH}
     </div>
-    ${repliesH}
+    <div class="replies-section${repliesOpen?' open':''}" id="replies-${p.id}"></div>
   </article>`;
 }
 
@@ -677,6 +675,7 @@ function renderFeed() {
   }
 
   container.innerHTML = visible.map((p,i) => renderPost(p,i)).join('');
+  visible.forEach(p => { if (openReplies.has(p.id)) renderRepliesSection(p.id); });
   container.querySelectorAll('.post-body .tag').forEach(tag => {
     tag.addEventListener('click', (e) => {
       e.preventDefault();
@@ -688,7 +687,7 @@ function renderFeed() {
   document.getElementById('loadMoreWrap').style.display = visible.length < ps.length ? 'block' : 'none';
 
   // Counts
-  const all = POSTS.filter(p => state.county==='all' || p.county===state.county || p.county==='all');
+  const all = ALL_POSTS.filter(p => state.county==='all' || p.region===state.county || p.region==='all');
   document.getElementById('ct-all').textContent    = all.length;
   document.getElementById('ct-avail').textContent  = all.filter(p=>p.type==='avail').length;
   document.getElementById('ct-looking').textContent= all.filter(p=>p.type==='looking').length;
@@ -696,10 +695,10 @@ function renderFeed() {
   document.getElementById('ct-tip').textContent    = all.filter(p=>p.type==='tip').length;
   document.getElementById('ct-photo').textContent  = all.filter(p=>p.type==='photo').length;
   document.getElementById('tab-all').textContent   = all.length;
-  document.getElementById('tab-hosts').textContent = all.filter(p=>p.role==='host').length;
-  document.getElementById('tab-guests').textContent= all.filter(p=>p.role==='guest').length;
-  const followed = casaGetFollowedHosts().map(n => n.toLowerCase());
-  document.getElementById('tab-following').textContent = all.filter(p => followed.some(f => p.name.toLowerCase().includes(f) || f.includes(p.name.toLowerCase()))).length;
+  document.getElementById('tab-hosts').textContent = all.filter(p=>p.authorRole==='host').length;
+  document.getElementById('tab-guests').textContent= all.filter(p=>p.authorRole==='guest').length;
+  const followed = getFollowedProfileIds();
+  document.getElementById('tab-following').textContent = all.filter(p => followed.has(p.authorId)).length;
 }
 
 async function updateSidebar() {
@@ -729,16 +728,22 @@ async function updateSidebar() {
     : `<p style="font-size:12.5px;color:var(--ink-3)">No tagged posts yet.</p>`;
 
   // Real hosts with real published listings in this area. No fabricated
-  // "online now" presence claim — that's not a real feature.
+  // "online now" presence claim — that's not a real feature. Follow
+  // state/toggle key off the host's real Supabase id, not their display
+  // name — a name isn't a stable identity to follow.
+  const followedNow = getFollowedProfileIds();
   document.getElementById('activeHosts').innerHTML = stats.hosts.length
-    ? stats.hosts.map(h => `<div class="host-row">
-        <div class="av">${h.av}</div>
+    ? stats.hosts.map(h => {
+        const following = followedNow.has(h.hostId);
+        return `<div class="host-row">
+        <div class="av">${casaEscapeHtml(h.av)}</div>
         <div class="hi">
-          <div class="hn"><i>${h.name}</i></div>
-          <div class="hm">${h.prop}</div>
+          <div class="hn"><i>${casaEscapeHtml(h.name)}</i></div>
+          <div class="hm">${casaEscapeHtml(h.prop)}</div>
         </div>
-        <button class="follow-btn${casaIsFollowing(h.name)?' following':''}" onclick="toggleFollow(this,'${h.name.replace(/'/g,"\\'")}')">${casaIsFollowing(h.name)?'Following':'Follow'}</button>
-      </div>`).join('')
+        <button class="follow-btn${following?' following':''}" onclick="toggleFollow(this,'${h.hostId}')">${following?'Following':'Follow'}</button>
+      </div>`;
+      }).join('')
     : `<p style="font-size:12.5px;color:var(--ink-3)">No hosts here yet — be first to join!</p>`;
 }
 
@@ -788,7 +793,7 @@ function loadMore() { state.page += 6; renderFeed(); }
 
 function likePost(btn, id) {
   const ct = document.getElementById('likes-'+id);
-  const post = POSTS.find(p=>p.id===id);
+  const post = ALL_POSTS.find(p=>p.id===id);
   if (!post) return;
   if (likedPosts.has(id)) { likedPosts.delete(id); btn.classList.remove('liked'); post.likes--; }
   else { likedPosts.add(id); btn.classList.add('liked'); post.likes++; }
@@ -805,34 +810,70 @@ function savePostMenu(id, btn) {
   closeMenus();
 }
 
-function toggleReplies(id, btn) {
+function renderRepliesSection(postId) {
+  const section = document.getElementById('replies-'+postId);
+  if (!section) return;
+  const rs = repliesCache[postId] || [];
+  const myInitial = casaEscapeHtml((casaGetUser()?.name || '?').charAt(0).toUpperCase());
+  section.innerHTML = `
+    ${rs.map(r => {
+      const name = r.author?.full_name || 'Guest';
+      const role = r.author?.role === 'host' ? 'Host' : 'Guest';
+      const roleClass = r.author?.role === 'guest' ? ' guest' : '';
+      return `<div class="reply">
+          <div class="av sm${roleClass}">${casaEscapeHtml(name.charAt(0).toUpperCase())}</div>
+          <div class="reply-bubble">
+            <div class="rh"><span class="rn">${casaEscapeHtml(name)}</span><span style="font-size:11px;color:var(--ink-4);margin-left:4px">${role}</span><span class="rt" style="margin-left:auto">${casaRelativeTime(r.created_at)}</span></div>
+            <div class="rb">${casaFormatFeedBody(r.body)}</div>
+          </div>
+        </div>`;
+    }).join('')}
+    <div class="reply-compose">
+      <div class="av sm">${myInitial}</div>
+      <textarea class="rc-input" placeholder="${rs.length ? 'Reply to this thread…' : 'Be the first to reply…'}" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+      <button class="rc-send" onclick="sendReply(this,${postId})">Reply</button>
+    </div>`;
+}
+
+async function toggleReplies(id, btn) {
   const section = document.getElementById('replies-'+id);
   const chevron = document.getElementById('replyChevron-'+id);
   if (!section) return;
-  if (openReplies.has(id)) { openReplies.delete(id); section.classList.remove('open'); btn.classList.remove('active'); if(chevron) chevron.style.transform=''; }
-  else { openReplies.add(id); section.classList.add('open'); btn.classList.add('active'); if(chevron) chevron.style.transform='rotate(180deg)'; }
+  if (openReplies.has(id)) {
+    openReplies.delete(id); section.classList.remove('open'); btn.classList.remove('active'); if(chevron) chevron.style.transform='';
+    return;
+  }
+  openReplies.add(id); section.classList.add('open'); btn.classList.add('active'); if(chevron) chevron.style.transform='rotate(180deg)';
+  if (!repliesCache[id]) {
+    section.innerHTML = '<p style="font-size:12.5px;color:var(--ink-3);padding:8px 0">Loading replies…</p>';
+    repliesCache[id] = await casaFetchRepliesForPost(id);
+  }
+  renderRepliesSection(id);
 }
 
-function sendReply(btn, postId) {
+async function sendReply(btn, postId) {
   const ta = btn.previousElementSibling;
   const text = ta.value.trim();
   if (!text) { ta.focus(); return; }
-  casaAddLocalReply(postId, {av:'J', avC:'guest', name:'You', role:'Guest', time:'Just now', body: text.replace(/</g,'&lt;'), likes:0});
-  const section = document.getElementById('replies-'+postId);
-  const replyEl = document.createElement('div');
-  replyEl.className = 'reply';
-  replyEl.style.animation = 'rise .25s ease both';
-  replyEl.innerHTML = `<div class="av sm">J</div><div class="reply-bubble"><div class="rh"><span class="rn"><i>You</i></span><span style="font-size:11px;color:var(--ink-4);margin-left:4px">Just now</span></div><div class="rb">${text.replace(/</g,'&lt;')}</div><button class="reply-like" onclick="likeReply(this)"><svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.6"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg> 0</button></div>`;
-  section.insertBefore(replyEl, section.querySelector('.reply-compose'));
-  ta.value = ''; ta.style.height = 'auto';
-  const post = POSTS.find(p=>p.id===postId);
-  if (post) post.replyCount++;
-}
+  const { data: { session } } = window.casaSupabase ? await window.casaSupabase.auth.getSession() : { data: {} };
+  if (!session) { toast('Please sign in to reply'); window.location.href = 'signup.html'; return; }
 
-function likeReply(btn) {
-  btn.classList.toggle('liked');
-  const n = parseInt(btn.textContent.trim())||0;
-  btn.innerHTML = btn.innerHTML.replace(/\d+/, btn.classList.contains('liked') ? n+1 : n-1);
+  btn.disabled = true;
+  const reply = await casaCreateFeedReply(postId, text);
+  btn.disabled = false;
+  if (!reply) { toast('Could not post reply — please try again'); return; }
+
+  if (!repliesCache[postId]) repliesCache[postId] = [];
+  repliesCache[postId].push(reply);
+  renderRepliesSection(postId);
+  ta.value = ''; ta.style.height = 'auto';
+
+  const post = ALL_POSTS.find(p=>p.id===postId);
+  if (post) {
+    post.replyCount++;
+    const ctEl = document.getElementById('replyCount-'+postId);
+    if (ctEl) ctEl.textContent = post.replyCount;
+  }
 }
 
 function sharePost(id) {
@@ -861,9 +902,9 @@ function reportPost(postId, authorName, btn) {
   closeMenus();
 }
 
-function muteUser(name) {
+async function muteUser(userId, name) {
   if (!confirm(`Mute ${name}? You won't see their posts in your feed again.`)) return;
-  casaMuteUser(name);
+  await casaMuteUserId(userId);
   closeMenus();
   toast(`${name} muted`);
   renderFeed();
@@ -927,57 +968,42 @@ function pickType(btn, type) {
   document.getElementById('activePill').dataset.ptype = type;
 }
 
-function submitPost() {
+async function submitPost() {
   const ta = document.getElementById('composeTA');
   const text = ta.value.trim();
   if (text.length < 10) return;
+
+  const { data: { session } } = window.casaSupabase ? await window.casaSupabase.auth.getSession() : { data: {} };
+  if (!session) { toast('Please sign in to post'); window.location.href = 'signup.html'; return; }
+
   const type = document.getElementById('activePill').dataset.ptype || 'tip';
   let draftProp = null;
   try {
     draftProp = JSON.parse(localStorage.getItem('casa:feed-draft') || 'null');
   } catch { /* ignore */ }
   const propertyId = draftProp?.propertyId || (qp.get('property') ? Number(qp.get('property')) : null);
-  const propListing = propertyId && typeof getCasaProperty === 'function' ? getCasaProperty(propertyId) : null;
+  const region = state.county === 'all' ? (draftProp?.county || 'all') : state.county;
 
-  const newPost = {
-    id: Date.now(),
-    county: state.county === 'all' ? (draftProp?.county || 'cumbria') : state.county,
-    type, role: type==='avail'?'host':'guest',
-    av:'J', avC:'guest',
-    name:'You', badge: type==='avail'?'Host':'Guest',
-    when:'Just now',
-    where: draftProp?.where || COUNTY_META[state.county]?.title || 'UK',
-    likes:0, replyCount:0,
-    propertyId: propertyId || undefined,
-    prop: propListing ? {
-      name: propListing.title,
-      loc: propListing.loc,
-      rating: propListing.rating,
-      sleeps: propListing.sleeps,
-      beds: propListing.beds,
-      price: propListing.price,
-      col: propListing.col,
-    } : undefined,
-    body: text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-              .replace(/(#\w+)/g,'<span class="tag">$1</span>'),
-  };
+  const postBtn = document.getElementById('postBtn');
+  postBtn.disabled = true;
+  const row = await casaCreateFeedPost({ type, region, propertyId, body: text });
+  if (!row) { toast('Could not post — please try again'); postBtn.disabled = false; return; }
 
-  POSTS.unshift(newPost);
+  ALL_POSTS.unshift(normalizePost(row));
   if (typeof casaMapPersistFeedPost === 'function') {
     casaMapPersistFeedPost({
-      id: newPost.id,
-      county: newPost.county,
-      type: newPost.type,
-      name: newPost.name,
+      id: row.id,
+      county: region,
+      type,
+      name: row.author?.full_name || 'You',
       body: text,
-      where: newPost.where,
+      where: COUNTY_META[region]?.title || 'UK',
       propertyId: propertyId || undefined,
     });
   }
   localStorage.removeItem('casa:feed-draft');
   ta.value = '';
   ta.style.height = 'auto';
-  document.getElementById('postBtn').disabled = true;
   document.getElementById('hashtagSuggest').classList.remove('show');
   renderFeed();
   toast('Posted to the ' + (COUNTY_META[state.county]?.title || 'UK') + ' feed ✓');
@@ -987,14 +1013,27 @@ function submitPost() {
 // ═══════════════════════════════════════
 // LIVE BANNER — demo after 15s
 // ═══════════════════════════════════════
-function loadLive() {
+async function loadLive() {
   document.getElementById('liveBanner').classList.remove('show');
+  ALL_POSTS = await loadAllPosts();
+  renderFeed();
   toast('Feed refreshed');
 }
 
-setTimeout(() => {
-  document.getElementById('liveBanner').classList.add('show');
-}, 15000);
+// Real check for newer posts than what's already loaded, not a fake
+// "new posts" claim on a fixed timer — only shows the banner when there
+// actually is something new.
+async function checkForNewPosts() {
+  if (!ALL_POSTS.length || !window.casaSupabase) return;
+  const newest = ALL_POSTS[0]?.createdAt;
+  if (!newest) return;
+  const { count } = await window.casaSupabase
+    .from('feed_posts')
+    .select('id', { count: 'exact', head: true })
+    .gt('created_at', newest);
+  if (count) document.getElementById('liveBanner').classList.add('show');
+}
+setInterval(checkForNewPosts, 45000);
 
 // ═══════════════════════════════════════
 // TOAST
@@ -1016,8 +1055,48 @@ if (qp.get('county')) {
   const btn = document.querySelector(`.county-pill[data-county="${qp.get('county')}"]`);
   if (btn) { document.querySelectorAll('.county-pill').forEach(p=>p.classList.remove('active')); btn.classList.add('active'); state.county = qp.get('county'); }
 }
-updateSidebar();
-renderFeed();
+
+async function loadAllPosts() {
+  const [rows, replyCounts] = await Promise.all([
+    casaFetchFeedPosts(),
+    casaFetchFeedReplyCounts(),
+  ]);
+  return rows.map(row => normalizePost(row, replyCounts[row.id]));
+}
+
+function renderPopularHashtags() {
+  const tagCounts = {};
+  ALL_POSTS.forEach(p => {
+    const matches = (p.body || '').match(/#[a-z0-9]*[a-z][a-z0-9]*/gi) || [];
+    matches.forEach(t => { const k = t.toLowerCase(); tagCounts[k] = (tagCounts[k] || 0) + 1; });
+  });
+  const top = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 7);
+  const el = document.getElementById('popularHashtags');
+  el.innerHTML = top.length
+    ? top.map(([tag, count]) => `<button class="side-link" onclick="filterByTag('${tag}')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">${tag}</span><span class="ct">${count}</span></button>`).join('')
+    : `<p style="font-size:12.5px;color:var(--ink-3)">No tagged posts yet.</p>`;
+}
+
+(async function initFeed() {
+  const composeAv = document.getElementById('composeAv');
+  if (composeAv) composeAv.textContent = casaEscapeHtml((casaGetUser()?.name || '?').charAt(0).toUpperCase());
+  if (typeof casaRefreshProperties === 'function') await casaRefreshProperties();
+  ALL_POSTS = await loadAllPosts();
+  updateSidebar();
+  renderFeed();
+  renderPopularHashtags();
+
+  // Deep-link to a specific post — run after the real fetch above lands,
+  // not on a fixed timer that could fire before the network round trip.
+  if (qp.get('post')) {
+    const el = document.getElementById('post-' + qp.get('post'));
+    if (el) {
+      el.scrollIntoView({behavior:'smooth',block:'center'});
+      el.style.outline='2px solid var(--brick)'; el.style.outlineOffset='2px';
+      setTimeout(()=>el.style.outline='',2500);
+    }
+  }
+})();
 
 // Real per-pill counts, computed once from the same region stats used
 // throughout — replaces the fixed "All UK 4,202 / Cumbria 214 / ..."
@@ -1034,22 +1113,6 @@ renderFeed();
     const count = (meta.regions || []).reduce((s, r) => s + (regionStats[r]?.count || 0), 0);
     el.textContent = count;
   });
-})();
-
-// "Popular hashtags" sidebar — real counts from the actual visible
-// posts, not the fixed "#cottage 341 / #seaview 156 / ..." platform-
-// scale numbers that had no connection to real content.
-(() => {
-  const tagCounts = {};
-  POSTS.forEach(p => {
-    const matches = (p.body || '').match(/#[a-z0-9]*[a-z][a-z0-9]*/gi) || [];
-    matches.forEach(t => { const k = t.toLowerCase(); tagCounts[k] = (tagCounts[k] || 0) + 1; });
-  });
-  const top = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 7);
-  const el = document.getElementById('popularHashtags');
-  el.innerHTML = top.length
-    ? top.map(([tag, count]) => `<button class="side-link" onclick="filterByTag('${tag}')"><span style="font-family:var(--serif);font-style:italic;color:var(--brick)">${tag}</span><span class="ct">${count}</span></button>`).join('')
-    : `<p style="font-size:12.5px;color:var(--ink-3)">No tagged posts yet.</p>`;
 })();
 
 function applyFeedComposeDraft() {
@@ -1073,14 +1136,6 @@ function applyFeedComposeDraft() {
   document.querySelector('.compose-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 applyFeedComposeDraft();
-
-// Deep-link to specific post
-if (qp.get('post')) {
-  setTimeout(() => {
-    const el = document.getElementById('post-' + qp.get('post'));
-    if (el) { el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.outline='2px solid var(--brick)'; el.style.outlineOffset='2px'; setTimeout(()=>el.style.outline='',2500); }
-  }, 400);
-}
 </script>
 </body>
 </html>

@@ -121,10 +121,18 @@
 <script src="casa.js"></script>
 <script>
 let attCounty = 'all';
+let ALL_TIPS = [];
 
-function getAllTips() {
-  const local = (function() { try { return JSON.parse(localStorage.getItem('casa:local-feed-posts') || '[]'); } catch { return []; } })();
-  return [...local, ...POSTS].filter(p => p.type === 'tip');
+async function getAllTips() {
+  const posts = await casaFetchFeedPosts({ type: 'tip' });
+  return posts.map(p => ({
+    id: p.id,
+    county: p.region,
+    name: p.author?.full_name || 'Guest',
+    badge: p.author?.role === 'host' ? 'Host' : 'Guest',
+    when: casaRelativeTime(p.created_at),
+    body: p.body || '',
+  }));
 }
 
 function renderFilters(tips) {
@@ -137,13 +145,12 @@ function renderFilters(tips) {
 
 function setAttCounty(c) {
   attCounty = c;
-  renderAttractions();
+  paintAttractions();
 }
 
-function renderAttractions() {
-  const tips = getAllTips();
-  renderFilters(tips);
-  const shown = attCounty === 'all' ? tips : tips.filter(t => t.county === attCounty || t.county === 'all');
+function paintAttractions() {
+  renderFilters(ALL_TIPS);
+  const shown = attCounty === 'all' ? ALL_TIPS : ALL_TIPS.filter(t => t.county === attCounty || t.county === 'all');
   const grid = document.getElementById('attGrid');
   if (!shown.length) {
     grid.innerHTML = `<div class="att-empty"><h3>No tips here yet</h3><p>Be the first to share one for this region.</p></div>`;
@@ -152,20 +159,23 @@ function renderAttractions() {
   grid.innerHTML = shown.map(t => `
     <a class="att-card" href="feed.html?post=${t.id}">
       <div class="ac-head">
-        <div class="av ${t.avC || ''}">${t.av || (t.name || '?')[0]}</div>
+        <div class="av${t.badge === 'Guest' ? ' guest' : ''}">${casaEscapeHtml((t.name || '?')[0])}</div>
         <div>
-          <div class="ac-who">${t.name}</div>
-          <div class="ac-when">${t.when}</div>
+          <div class="ac-who">${casaEscapeHtml(t.name)}</div>
+          <div class="ac-when">${casaEscapeHtml(t.when)}</div>
         </div>
       </div>
-      <div class="ac-where"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>${t.where || ''}</div>
-      <div class="ac-body">${t.body || ''}</div>
+      <div class="ac-body">${casaFormatFeedBody(t.body)}</div>
       <div class="ac-foot">
-        <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg> ${t.likes || 0}
         <span style="margin-left:auto">Open in feed →</span>
       </div>
     </a>
   `).join('');
+}
+
+async function renderAttractions() {
+  ALL_TIPS = await getAllTips();
+  paintAttractions();
 }
 
 document.getElementById('attWhere').addEventListener('input', checkAttValid);
@@ -176,31 +186,16 @@ function checkAttValid() {
   document.getElementById('attSubmit').disabled = !(where.length > 1 && body.length >= 15);
 }
 
-function submitAttraction() {
+async function submitAttraction() {
   const where = document.getElementById('attWhere').value.trim();
   const body = document.getElementById('attBody').value.trim();
   if (where.length < 2 || body.length < 15) return;
-  const user = typeof casaGetUser === 'function' ? casaGetUser() : null;
-  const name = user?.name || 'You';
 
-  let local = [];
-  try { local = JSON.parse(localStorage.getItem('casa:local-feed-posts') || '[]'); } catch { local = []; }
-  local.unshift({
-    id: Date.now(),
-    county: 'all',
-    type: 'tip',
-    role: user?.role || 'guest',
-    av: name.charAt(0).toUpperCase(),
-    avC: 'guest',
-    name,
-    badge: user?.role === 'host' ? 'Host' : 'Guest',
-    when: 'Just now',
-    where,
-    likes: 0,
-    replyCount: 0,
-    body,
-  });
-  localStorage.setItem('casa:local-feed-posts', JSON.stringify(local));
+  const { data: { session } } = window.casaSupabase ? await window.casaSupabase.auth.getSession() : { data: {} };
+  if (!session) { casaToast('Please sign in to post a tip'); window.location.href = 'signup.html'; return; }
+
+  const post = await casaCreateFeedPost({ type: 'tip', region: 'all', body: `${where} — ${body}` });
+  if (!post) { casaToast('Could not post — please try again'); return; }
 
   document.getElementById('attWhere').value = '';
   document.getElementById('attBody').value = '';

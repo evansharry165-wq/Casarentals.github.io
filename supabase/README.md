@@ -84,33 +84,36 @@ All of the above keep their original localStorage behaviour too (as a
 cache / for pages not yet reading from Supabase directly), so nothing
 regresses if `window.casaSupabase` is ever unavailable.
 
-## What's intentionally still local-only, and why
-
-- **`casaMuteUser`** — keys on display-name strings, not real user ids
-  (most demo "people" in the seed feed data — e.g. "Marcus J.", "Laura
-  P." — have no real auth account at all). Migrating this cleanly needs
-  the feed post migration below to land first, so there's a real user to
-  attach a mute to.
-- **Feed replies** (`casaAddLocalReply`) — the 21 seed community posts in
-  `casa-feed-posts.js` were never migrated into the `feed_posts` table
-  (it exists in the schema but is empty). A reply can't get a real
-  `post_id` foreign key until its parent post is a real row. Migrating
-  the seed posts is a content-migration task in its own right (remap 21
-  posts + decide how `property.html`'s "community mentions" and
-  `attractions.html`'s tip feed re-source their data), not a quick wire.
-  **Deliberately deferred** — see "Recommended next phase" below.
-- **`submitPost()` in feed.html** — the "new post" composer doesn't
-  persist anywhere at all today, not even localStorage (`POSTS.unshift()`
-  is an in-memory array mutation that's gone on refresh). This needs
-  fixing as part of the feed migration, not before it — no point wiring
-  persistence for content that's about to be restructured anyway.
-- **Notifications** — low-value to migrate before the above; most calls
-  are ephemeral in-session toasts today.
+- **Community feed** (`feed.html`, `attractions.html`, `property.html`,
+  `host.html`, `profile.html`) — the 21 seed posts in `casa-feed-posts.js`
+  were fabricated content (invented authors like "Marcus J."/"Laura P."
+  with no real account, plus made-up likes/reply counts) and had never
+  been migrated into `feed_posts`. Rather than migrate fake people into
+  the real database, they were deleted outright — the community feed now
+  starts genuinely empty and grows from real posts only. `feed.html`'s
+  composer (`submitPost`), reply box (`sendReply`), and mute action
+  (`muteUser`) all write through to `feed_posts`/`feed_replies`/
+  `muted_users` for real now, keyed by the real signed-in user's id (mute
+  used to key on a display-name string, which only worked for fabricated
+  seed "people" — real posts need a real id to attach a mute to).
+  `attractions.html`'s tip composer and `property.html`'s "community
+  mentions" section both read/write the same real `feed_posts` rows
+  (filtered by `type='tip'` and `property_id` respectively) instead of
+  their own separate localStorage copies. `profile.html`'s "cross-post a
+  review to the feed" checkbox does the same. `host.html`'s "guest
+  questions on your posts" widget was hardcoded to a fake host name
+  ("Sarah R.") regardless of who was actually signed in — it now reads
+  the real signed-in host's own posts and replies.
+  **Note**: `feed_posts.body`/`feed_replies.body` are real free-text user
+  input now, not developer-authored seed HTML — anywhere they're
+  rendered uses `casaEscapeHtml`/`casaFormatFeedBody` (in
+  `casa-feed-posts.js`) before going into `innerHTML`, to avoid an XSS
+  hole that didn't exist when this content was hardcoded.
+- **Notifications** — still local-only; low-value to migrate next, most
+  calls are ephemeral in-session toasts today.
 
 ## Recommended next phase (deferred, not urgent)
 
-Migrate the 21 seed feed posts into `feed_posts`, decide what happens to
-them once real hosts are posting alongside them (permanent seed content,
-retired once there's critical mass, or kept out of production entirely),
-and wire `submitPost()`/`casaAddLocalReply()` to real inserts. That one
-piece unblocks feed replies and muting at once.
+Real image upload for feed posts (the "Photo" post type has no working
+upload path yet — a post can be that type, it just won't have any
+images), and notifications.

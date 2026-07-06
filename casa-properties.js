@@ -65,17 +65,6 @@ function casaAmenityMeta(tag) {
   return CASA_AMENITY_META[tag] || { label: tag.charAt(0).toUpperCase() + tag.slice(1), icon: '<circle cx="12" cy="12" r="3"/>' };
 }
 
-function getCasaPropertyIdByTitle(title) {
-  if (!title) return 1;
-  const norm = title.toLowerCase().trim();
-  const exact = CASA_PROPERTIES.find(p => p.title.toLowerCase() === norm);
-  if (exact) return exact.id;
-  const partial = CASA_PROPERTIES.find(p =>
-    norm.includes(p.title.toLowerCase()) || p.title.toLowerCase().includes(norm)
-  );
-  return partial ? partial.id : 1;
-}
-
 function casaPropertyUrl(id) {
   return `property.html?id=${id}`;
 }

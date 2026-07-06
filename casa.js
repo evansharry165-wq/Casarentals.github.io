@@ -343,28 +343,46 @@ function casaReportContent(targetType, targetId, meta = {}) {
   return true;
 }
 
-function casaGetMutedUsers() {
+// Keyed by real profile id (uuid), not display name — a name isn't a
+// stable identity once posts come from real accounts. Read-through
+// localStorage cache synced from the muted_users table, same pattern as
+// casaSyncSavedFromSupabase/casaSyncFollowsFromSupabase.
+function casaGetMutedUserIds() {
   try { return JSON.parse(localStorage.getItem(CASA_MUTED_KEY) || '[]'); } catch { return []; }
 }
 
-function casaIsMuted(name) {
-  return casaGetMutedUsers().includes(name);
+function casaIsMutedId(userId) {
+  return casaGetMutedUserIds().includes(userId);
 }
 
-function casaMuteUser(name) {
-  const list = casaGetMutedUsers();
-  if (!list.includes(name)) {
-    list.push(name);
+async function casaMuteUserId(mutedUserId) {
+  const list = casaGetMutedUserIds();
+  if (!list.includes(mutedUserId)) {
+    list.push(mutedUserId);
     localStorage.setItem(CASA_MUTED_KEY, JSON.stringify(list));
   }
+  const user = casaGetUser();
+  if (window.casaSupabase && user) {
+    const { error } = await window.casaSupabase.from('muted_users').insert({ user_id: user.id, muted_user_id: mutedUserId });
+    if (error) console.error('casaMuteUserId: Supabase sync failed', error);
+  }
+}
+
+async function casaSyncMutedFromSupabase() {
+  if (!window.casaSupabase) return;
+  const user = casaGetUser();
+  if (!user) return;
+  const { data } = await window.casaSupabase.from('muted_users').select('muted_user_id').eq('user_id', user.id);
+  if (data) localStorage.setItem(CASA_MUTED_KEY, JSON.stringify(data.map(r => r.muted_user_id)));
 }
 
 window.casaGetReports = casaGetReports;
 window.casaIsReported = casaIsReported;
 window.casaReportContent = casaReportContent;
-window.casaGetMutedUsers = casaGetMutedUsers;
-window.casaIsMuted = casaIsMuted;
-window.casaMuteUser = casaMuteUser;
+window.casaGetMutedUserIds = casaGetMutedUserIds;
+window.casaIsMutedId = casaIsMutedId;
+window.casaMuteUserId = casaMuteUserId;
+window.casaSyncMutedFromSupabase = casaSyncMutedFromSupabase;
 
 window.casaGetUser = casaGetUser;
 window.casaSetUser = casaSetUser;
@@ -535,6 +553,7 @@ async function casaSyncUserFromSession(session) {
   casaRenderAuthNav();
   casaSyncSavedFromSupabase();
   casaSyncFollowsFromSupabase();
+  casaSyncMutedFromSupabase();
 }
 
 function casaInitSupabaseAuthSync() {
@@ -604,6 +623,22 @@ function casaFormatCount(n) {
   if (n >= 1000) return (n / 1000).toFixed(n % 1000 === 0 ? 0 : 1) + 'k';
   return String(n);
 }
+
+// Real created_at timestamps (feed posts/replies) need a human "2 hrs
+// ago" label — no fabricated seed data left to hardcode one against.
+function casaRelativeTime(isoString) {
+  const then = new Date(isoString).getTime();
+  const diffMs = Date.now() - then;
+  const min = Math.floor(diffMs / 60000);
+  if (min < 1) return 'Just now';
+  if (min < 60) return `${min} min${min === 1 ? '' : 's'} ago`;
+  const hrs = Math.floor(min / 60);
+  if (hrs < 24) return `${hrs} hr${hrs === 1 ? '' : 's'} ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return days === 1 ? 'Yesterday' : `${days} days ago`;
+  return new Date(isoString).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: hrs > 24 * 300 ? 'numeric' : undefined });
+}
+window.casaRelativeTime = casaRelativeTime;
 
 // One lightweight two-column fetch + client-side grouping — cheap even
 // at thousands of rows, and avoids a round trip per region. Only
