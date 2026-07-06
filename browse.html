@@ -313,6 +313,9 @@
       <button class="fb-pill" id="fp-sea" onclick="togglePill(this,'sea')">🌊 Sea view</button>
       <button class="fb-pill" id="fp-tub" onclick="togglePill(this,'tub')">♨️ Hot tub</button>
       <button class="fb-pill" id="fp-offgrid" onclick="togglePill(this,'offgrid')">🌿 Off-grid</button>
+      <button class="fb-pill" id="fp-romantic" onclick="togglePill(this,'romantic')">💕 Romantic</button>
+      <button class="fb-pill" id="fp-garden" onclick="togglePill(this,'garden')">🌳 Garden</button>
+      <button class="fb-pill" id="fp-sauna" onclick="togglePill(this,'sauna')">🧖 Sauna</button>
       <div class="fb-right">
         <span class="fb-count" id="fbCount">8 stays</span>
         <select class="fb-sort" id="sortSelect" onchange="sortAndRender()">
@@ -525,7 +528,7 @@ function applyFilters() {
   list = list.filter(p => matchesCategory(p, activeType));
 
   const activePills = [...document.querySelectorAll('.fb-pill.active[id^="fp-"]')].map(b => b.id.replace('fp-', ''));
-  const pillTag = { pets: 'pets', fire: 'woodburner', sea: 'seaview', tub: 'hottub', offgrid: 'offgrid' };
+  const pillTag = { pets: 'pets', fire: 'woodburner', sea: 'seaview', tub: 'hottub', offgrid: 'offgrid', romantic: 'romantic', garden: 'garden', sauna: 'sauna' };
   activePills.forEach(p => {
     const tag = pillTag[p];
     if (tag) list = list.filter(pr => (pr.tags || []).includes(tag));
