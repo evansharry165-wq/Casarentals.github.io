@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="casa.css?v=2">
+<link rel="stylesheet" href="casa-tech.css?v=4">
 <style>
   /* Host nav variant */
   .host-mode-badge { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 10px; background: var(--ink); color: var(--paper); border-radius: 999px; }
@@ -170,7 +171,7 @@
   .badge.verified-badge svg { stroke: var(--brick); }
 </style>
 </head>
-<body>
+<body class="tech">
 
 <nav class="casa-nav solid">
   <a class="brand-lockup" href="index.html">
@@ -588,5 +589,6 @@ async function renderHostDashboard() {
 renderHostFeedComments();
 renderHostDashboard();
 </script>
+<script src="casa-tech.js?v=4"></script>
 </body>
 </html>

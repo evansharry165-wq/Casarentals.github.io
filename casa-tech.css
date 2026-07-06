@@ -1,0 +1,266 @@
+/* ──────────────────────────────────────────────────────────
+   CASA · WARM HIGH-TECH material layer
+   Keeps the warm-earth colourway from casa.css; adds the
+   high-tech feel: glass depth · warm glow · ambient light · motion.
+
+   OPT-IN: add class="tech" to <body> and load this AFTER casa.css.
+   Everything is scoped under body.tech so untouched pages are unaffected.
+   ────────────────────────────────────────────────────────── */
+
+body.tech {
+  /* glass + edges */
+  --glass:    rgba(255,255,255,0.55);
+  --glass-2:  rgba(255,255,255,0.35);
+  --glass-hi: rgba(255,255,255,0.72);
+  --edge-hi:  rgba(255,255,255,0.9);
+
+  /* warm glow */
+  --brick-glow: rgba(176,85,51,0.30);
+  --moss-glow:  rgba(77,92,64,0.28);
+
+  /* layered warm depth */
+  --lift-1: 0 1px 0 var(--edge-hi) inset, 0 2px 6px rgba(60,40,25,0.05), 0 12px 28px -14px rgba(60,40,25,0.18);
+  --lift-2: 0 1px 0 var(--edge-hi) inset, 0 8px 18px rgba(60,40,25,0.08), 0 30px 60px -22px rgba(60,40,25,0.28);
+
+  position: relative;
+}
+
+/* ── Ambient warm light + faint tech grid ──
+   Sits behind page content without touching any element's z-index:
+   the base --paper background lives on <html> (from casa.css), body.tech
+   goes transparent, and these fixed layers paint at z-index:-1 — above the
+   html paper, below all body content. Nav/dropdown stacking stays intact. */
+body.tech { background: transparent; }
+.casa-aura {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background:
+    radial-gradient(56% 44% at 84% 2%, rgba(176,85,51,0.14), transparent 68%),
+    radial-gradient(44% 40% at 4% 20%, rgba(184,150,86,0.12), transparent 70%),
+    radial-gradient(70% 55% at 50% 118%, rgba(77,92,64,0.09), transparent 72%);
+  transition: transform .3s ease-out;
+}
+.casa-grid {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(22,20,15,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22,20,15,0.03) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(125% 80% at 50% 0%, #000 0%, transparent 70%);
+  -webkit-mask-image: radial-gradient(125% 80% at 50% 0%, #000 0%, transparent 70%);
+}
+
+/* ── Frosted nav ── */
+body.tech .casa-nav {
+  background: rgba(244,239,229,0.72);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+/* ── Reveal-on-scroll (added by casa-tech.js) ── */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
+.reveal.in { opacity: 1; transform: none; }
+.reveal.d1 { transition-delay: .06s; } .reveal.d2 { transition-delay: .12s; }
+.reveal.d3 { transition-delay: .18s; } .reveal.d4 { transition-delay: .24s; }
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .casa-aura { transition: none !important; }
+}
+/* Safety net: if JS can't run, never leave .reveal content hidden */
+@media (scripting: none) {
+  .reveal { opacity: 1 !important; transform: none !important; }
+}
+
+/* ── Reusable material utilities ── */
+body.tech .glass {
+  background: var(--glass);
+  border: 1px solid var(--edge-hi);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: var(--lift-1);
+}
+body.tech .depth  { box-shadow: var(--lift-1); }
+body.tech .depth-2 { box-shadow: var(--lift-2); }
+body.tech .glow-brick { box-shadow: 0 6px 20px var(--brick-glow), inset 0 1px 0 rgba(255,255,255,0.4); }
+
+/* ── Live status pill (reused on cards / hero) ── */
+body.tech .live-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink-2); padding: 5px 10px; border-radius: var(--r-pill);
+  background: var(--glass-hi); border: 1px solid var(--edge-hi);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+body.tech .live-pill .g { width: 5px; height: 5px; border-radius: 50%; background: var(--moss); box-shadow: 0 0 8px var(--moss-glow); animation: casa-pulse 2.4s ease-in-out infinite; }
+@keyframes casa-pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
+
+/* ── Primary actions get a warm glow ── */
+body.tech .btn-primary,
+body.tech .search-go,
+body.tech .nav-search .go,
+body.tech .nav-center .nc-btn,
+body.tech .featured-banner .fb-cta,
+body.tech .submit-btn {
+  box-shadow: 0 6px 20px var(--brick-glow), inset 0 1px 0 rgba(255,255,255,0.35);
+  transition: transform .15s, box-shadow .15s, background .15s;
+}
+body.tech .btn-primary:hover,
+body.tech .search-go:hover,
+body.tech .nav-search .go:hover,
+body.tech .featured-banner .fb-cta:hover,
+body.tech .submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 30px var(--brick-glow), inset 0 1px 0 rgba(255,255,255,0.45);
+}
+
+/* ── Pills / chips → frosted glass ──
+   :not(.active) is REQUIRED: `body.tech .fb-pill` (0,2,1) outweighs
+   `.fb-pill.active` (0,2,0), so without it the dark active fill is lost. */
+body.tech .region-pill:not(.active),
+body.tech .fb-pill:not(.active),
+body.tech .chip:not(.active),
+body.tech .fb-sort,
+body.tech .county-pill:not(.active),
+body.tech .type-pill:not(.active),
+body.tech .hs-pill:not(.active),
+body.tech .att-pill:not(.active) {
+  background: var(--glass);
+  border-color: var(--edge-hi);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 1px 2px rgba(60,40,25,0.05);
+}
+body.tech .region-pill:not(.active):hover,
+body.tech .fb-pill:not(.active):hover,
+body.tech .chip:not(.active):hover,
+body.tech .county-pill:not(.active):hover,
+body.tech .type-pill:not(.active):hover { box-shadow: 0 4px 12px rgba(60,40,25,0.10); }
+
+/* ── Search consoles (home + nav + feed) → glass with depth ── */
+body.tech .search,
+body.tech .nav-search,
+body.tech .feed-head .search-bar {
+  background: var(--glass);
+  border-color: var(--edge-hi);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: var(--lift-1);
+}
+body.tech .search:focus-within,
+body.tech .feed-head .search-bar:focus-within { box-shadow: var(--lift-2); }
+body.tech .post-btn { box-shadow: 0 6px 20px var(--brick-glow), inset 0 1px 0 rgba(255,255,255,0.35); transition: transform .15s, box-shadow .15s, background .15s; }
+body.tech .post-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 30px var(--brick-glow); }
+
+/* ── Property cards (browse / similar) → depth + smoother lift ── */
+body.tech .pc .pc-image { box-shadow: var(--lift-1); transition: box-shadow .3s, transform .3s; }
+body.tech .pc:hover { transform: translateY(-4px); }
+body.tech .pc:hover .pc-image { box-shadow: var(--lift-2); }
+body.tech .pc-image img,
+body.tech .pc-image .casa-photo { transition: transform .5s cubic-bezier(.22,1,.36,1); }
+body.tech .pc:hover .pc-image img,
+body.tech .pc:hover .pc-image .casa-photo { transform: scale(1.05); }
+
+/* ── Feed cards (post / composer / aside widgets) → glass + depth ── */
+body.tech .post,
+body.tech .compose-card,
+body.tech .aside-block {
+  background: var(--glass);
+  border-color: var(--edge-hi);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--lift-1);
+}
+body.tech .post { transition: transform .3s, box-shadow .3s, border-color .15s; }
+body.tech .post:hover { transform: translateY(-2px); box-shadow: var(--lift-2); }
+/* the dark county spotlight card keeps its ink fill; just add depth */
+body.tech .county-card { box-shadow: var(--lift-2); }
+
+/* ── Sticky side panel (browse map) → glass ── */
+body.tech .side { box-shadow: var(--lift-1); }
+
+/* ══════════════════════════════════════════════════════════
+   SITE-WIDE content panels → warm layered depth (no blur = cheap)
+   Applies the "sophisticated, layered" feel to real page content.
+   ══════════════════════════════════════════════════════════ */
+body.tech .card,
+body.tech .fact,
+body.tech .book-card,
+body.tech .form-section,
+body.tech .next-steps,
+body.tech .prop-card,
+body.tech .success-recap,
+body.tech .sidebar-note,
+body.tech .type-card,
+body.tech .region-card,
+body.tech .pf-block,
+body.tech .side-block,
+body.tech .stay-card,
+body.tech .listing,
+body.tech .review-item,
+body.tech .feed-widget,
+body.tech .mini-post,
+body.tech .sp-card,
+body.tech .sp-block,
+body.tech .feed-snippet,
+body.tech .rs-card,
+body.tech .step-card,
+body.tech .value-card,
+body.tech .info-card,
+body.tech .faq-card,
+body.tech .role-card,
+body.tech .plan-card,
+body.tech .att-card,
+body.tech .att-compose,
+body.tech .panel,
+body.tech .preview,
+body.tech .stat-box,
+body.tech .rule-card,
+body.tech .type-show,
+body.tech .lc {
+  box-shadow: var(--lift-1);
+}
+
+/* Clickable cards get the smooth hover-lift */
+body.tech .card,
+body.tech .similar-card,
+body.tech .type-card,
+body.tech .region-card,
+body.tech .stay-card,
+body.tech .listing,
+body.tech .prop-card,
+body.tech .mini-post,
+body.tech .feed-snippet,
+body.tech .rs-card,
+body.tech .role-card,
+body.tech .plan-card,
+body.tech .att-card,
+body.tech .lc {
+  transition: transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s, border-color .15s;
+}
+body.tech .card:hover,
+body.tech .similar-card:hover,
+body.tech .type-card:hover,
+body.tech .region-card:hover,
+body.tech .stay-card:hover,
+body.tech .listing:hover,
+body.tech .prop-card:hover,
+body.tech .mini-post:hover,
+body.tech .feed-snippet:hover,
+body.tech .rs-card:hover,
+body.tech .role-card:hover,
+body.tech .plan-card:hover,
+body.tech .att-card:hover,
+body.tech .lc:hover { transform: translateY(-3px); box-shadow: var(--lift-2); }
+
+/* ── Browse results: staggered entrance on each (re)render (CSS-only, safe) ── */
+@keyframes casa-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+body.tech .results .pc { animation: casa-rise .55s cubic-bezier(.22,1,.36,1) both; }
+body.tech .results .pc:nth-child(1) { animation-delay: .02s; }
+body.tech .results .pc:nth-child(2) { animation-delay: .06s; }
+body.tech .results .pc:nth-child(3) { animation-delay: .10s; }
+body.tech .results .pc:nth-child(4) { animation-delay: .14s; }
+body.tech .results .pc:nth-child(5) { animation-delay: .18s; }
+body.tech .results .pc:nth-child(6) { animation-delay: .22s; }
+body.tech .results .pc:nth-child(7) { animation-delay: .26s; }
+body.tech .results .pc:nth-child(8) { animation-delay: .30s; }
+@media (prefers-reduced-motion: reduce) {
+  body.tech .results .pc { animation: none !important; }
+}

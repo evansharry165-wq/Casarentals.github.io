@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="casa.css?v=2">
+<link rel="stylesheet" href="casa-tech.css?v=4">
 <style>
   html,body{height:100vh;overflow:hidden}
   .msg-page{display:grid;grid-template-columns:340px 1fr 300px;height:calc(100vh - 64px);overflow:hidden}
@@ -183,7 +184,7 @@
   }
 </style>
 </head>
-<body>
+<body class="tech">
 <nav class="casa-nav solid">
   <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
   <div class="nav-right">
@@ -687,5 +688,6 @@ function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 // ── INIT ──
 loadConversations();
 </script>
+<script src="casa-tech.js?v=4"></script>
 </body>
 </html>

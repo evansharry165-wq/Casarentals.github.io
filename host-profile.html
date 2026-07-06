@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="casa.css?v=2">
+<link rel="stylesheet" href="casa-tech.css?v=4">
 <style>
   .hp-hero { display: grid; grid-template-columns: auto 1fr auto; gap: 24px; align-items: center; padding: 40px 0 32px; border-bottom: 1px solid var(--rule); }
   .hp-av { width: 88px; height: 88px; border-radius: 50%; background: var(--brick); color: white; display: flex; align-items: center; justify-content: center; font-family: var(--serif); font-style: italic; font-size: 36px; }
@@ -35,7 +36,7 @@
   @media(max-width:800px){.hp-hero{grid-template-columns:1fr;text-align:left}.stats{grid-template-columns:repeat(2,1fr)}.listing-grid{grid-template-columns:1fr}}
 </style>
 </head>
-<body>
+<body class="tech">
 <nav class="casa-nav">
   <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
   <div class="nav-right">
@@ -179,5 +180,6 @@ if (localHost) {
   renderHostProfile(realHost || localHost, listings);
 })();
 </script>
+<script src="casa-tech.js?v=4"></script>
 </body>
 </html>

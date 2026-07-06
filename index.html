@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="casa.css?v=2">
+<link rel="stylesheet" href="casa-tech.css?v=4">
 <style>
   /* ─── HERO ─── */
   .hero {
@@ -87,6 +88,11 @@
   .hero-strip .ph { aspect-ratio: 3/4; border-radius: 14px; }
   .hero-strip .ph:nth-child(2) { aspect-ratio: 4/5; align-self: end; }
   .hero-strip .ph:nth-child(4) { aspect-ratio: 5/6; align-self: end; }
+  /* landscape source photos in portrait tiles — bias the crop off the sky
+     onto the buildings, and tune per tile */
+  .hero-strip .casa-photo-img { object-position: center 62%; }
+  .hero-strip a:nth-child(2) .casa-photo-img { object-position: center 70%; }
+  .hero-strip a:nth-child(3) .casa-photo-img { object-position: center 55%; }
 
   /* ─── DESTINATIONS ─── */
   .dest { padding: 96px 0 48px; }
@@ -237,7 +243,7 @@
   .badge.verified-badge svg { stroke: var(--brick); }
 </style>
 </head>
-<body>
+<body class="tech">
 
 <!-- NAV -->
 <nav class="casa-nav">
@@ -320,10 +326,22 @@
 
     <!-- IMAGE STRIP -->
     <div class="hero-strip rise-4">
-      <div class="ph warm" data-label="STONE COTTAGE · WINDERMERE"></div>
-      <div class="ph dusk" data-label="BLACKHOUSE · ISLE OF SKYE"></div>
-      <div class="ph sage" data-label="FARMHOUSE · SNOWDONIA"></div>
-      <div class="ph fog" data-label="CLIFF HOUSE · ANTRIM"></div>
+      <a class="ph casa-photo hero-photo" href="property.html?id=1">
+        <img class="casa-photo-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Houses_near_Shaw_Bank_%28geograph_5946133%29.jpg/960px-Houses_near_Shaw_Bank_%28geograph_5946133%29.jpg" alt="Stone Cottage, Windermere — Lake District stay on Casa" loading="lazy" decoding="async">
+        <div class="hero-photo-cap"><strong>Stone Cottage</strong>Windermere · Lake District</div>
+      </a>
+      <a class="ph casa-photo hero-photo" href="property.html?id=15">
+        <img class="casa-photo-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Outer_Hebrides_-_Garenin_Blackhouses_Museum_-_20180411102132.jpg/960px-Outer_Hebrides_-_Garenin_Blackhouses_Museum_-_20180411102132.jpg" alt="Restored blackhouse, Isle of Skye — stay on Casa" loading="lazy" decoding="async">
+        <div class="hero-photo-cap"><strong>Blackhouse</strong>Trotternish · Isle of Skye</div>
+      </a>
+      <a class="ph casa-photo hero-photo" href="property.html?id=5">
+        <img class="casa-photo-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/The_Shepherds_Hut_-_geograph.org.uk_-_3040571.jpg/960px-The_Shepherds_Hut_-_geograph.org.uk_-_3040571.jpg" alt="Shepherd's hut, Buttermere — Cumbria stay on Casa" loading="lazy" decoding="async">
+        <div class="hero-photo-cap"><strong>Shepherd's Hut</strong>Buttermere · Cumbria</div>
+      </a>
+      <a class="ph casa-photo hero-photo" href="property.html?id=20">
+        <img class="casa-photo-img" src="https://upload.wikimedia.org/wikipedia/commons/4/41/Thatched_barn_conversion_-_geograph.org.uk_-_1337238.jpg" alt="Burnham Overy barn conversion — Norfolk coast stay on Casa" loading="lazy" decoding="async">
+        <div class="hero-photo-cap"><strong>Burnham Overy Barn</strong>Norfolk coast</div>
+      </a>
     </div>
   </div>
 </section>
@@ -331,7 +349,7 @@
 <!-- DESTINATIONS -->
 <section class="dest">
   <div class="wrap">
-    <div class="sec-head">
+    <div class="sec-head reveal">
       <div>
         <div class="eyebrow" style="color:var(--brick);margin-bottom:8px">01 &mdash; Search</div>
         <h2><i>Search</i> the country, by county or by feeling.</h2>
@@ -341,44 +359,44 @@
       </a>
     </div>
 
-    <div class="dest-grid">
+    <div class="dest-grid reveal d1">
       <a href="browse.html?region=lake-district" class="dest-card dest-1">
-        <div class="ph warm" data-label="THE LAKE DISTRICT"></div>
+        <img class="dest-bg-img" src="https://images.unsplash.com/photo-1732300070181-e7268d8a1b73?auto=format&fit=crop&w=900&q=80" alt="The Lake District" loading="lazy" decoding="async">
         <div class="meta">
           <div class="title">The <i style="font-style:italic">Lake District</i></div>
           <div class="sub" id="destSub-lake-district">&nbsp;</div>
         </div>
       </a>
       <a href="browse.html?region=skye" class="dest-card dest-2">
-        <div class="ph dusk" data-label="ISLE OF SKYE"></div>
+        <img class="dest-bg-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Quiraing_Isle_of_Skye_Pano.jpg/960px-Quiraing_Isle_of_Skye_Pano.jpg" alt="Isle of Skye" loading="lazy" decoding="async">
         <div class="meta">
           <div class="title">Isle of <i>Skye</i></div>
           <div class="sub" id="destSub-skye">&nbsp;</div>
         </div>
       </a>
       <a href="browse.html?region=cornwall" class="dest-card dest-3">
-        <div class="ph sage" data-label="CORNWALL"></div>
+        <img class="dest-bg-img" src="https://images.unsplash.com/photo-1606413447153-b638e3e1d285?auto=format&fit=crop&w=900&q=80" alt="Cornwall" loading="lazy" decoding="async">
         <div class="meta">
           <div class="title"><i>Cornwall</i></div>
           <div class="sub" id="destSub-cornwall">&nbsp;</div>
         </div>
       </a>
       <a href="browse.html?region=cotswolds" class="dest-card dest-4">
-        <div class="ph fog" data-label="THE COTSWOLDS"></div>
+        <img class="dest-bg-img" src="https://images.unsplash.com/photo-1510004868592-324954d4d45a?auto=format&fit=crop&w=900&q=80" alt="The Cotswolds" loading="lazy" decoding="async">
         <div class="meta">
           <div class="title">The <i>Cotswolds</i></div>
           <div class="sub" id="destSub-cotswolds">&nbsp;</div>
         </div>
       </a>
       <a href="browse.html?region=snowdonia" class="dest-card dest-5">
-        <div class="ph ink" data-label="SNOWDONIA"></div>
+        <img class="dest-bg-img" src="https://images.unsplash.com/photo-1596083331697-46711183497f?auto=format&fit=crop&w=900&q=80" alt="Snowdonia" loading="lazy" decoding="async">
         <div class="meta">
           <div class="title"><i>Snowdonia</i></div>
           <div class="sub" id="destSub-snowdonia">&nbsp;</div>
         </div>
       </a>
       <a href="browse.html?region=causeway" class="dest-card dest-6">
-        <div class="ph brick" data-label="THE CAUSEWAY COAST"></div>
+        <img class="dest-bg-img" src="https://images.unsplash.com/photo-1565057386288-be45581ae226?auto=format&fit=crop&w=900&q=80" alt="The Causeway Coast" loading="lazy" decoding="async">
         <div class="meta">
           <div class="title">Causeway <i>Coast</i></div>
           <div class="sub" id="destSub-causeway">&nbsp;</div>
@@ -464,7 +482,7 @@
 <!-- COMMUNITY -->
 <section class="community">
   <div class="wrap">
-    <div class="community-grid">
+    <div class="community-grid reveal">
       <div>
         <div class="eyebrow" style="color:var(--brick);margin-bottom:12px">03 &mdash; Connect</div>
         <h2><i>Connect</i> with the people<br>who run the places.</h2>
@@ -536,7 +554,7 @@
 <!-- HOST CTA -->
 <section class="host-cta">
   <div class="wrap">
-    <div class="host-cta-inner">
+    <div class="host-cta-inner reveal">
       <h2>Have a place?<br><i>List it for £19/month.</i><br>Keep <span style="color:var(--paper)">100%</span> of every booking.</h2>
       <div class="cta-actions">
         <div class="stat"><span class="nm">£19/mo</span> &mdash; flat listing fee</div>
@@ -618,6 +636,7 @@ document.querySelector('.search .seg input[type="text"]')?.addEventListener('key
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
 <script src="casa.js?v=2"></script>
+<script src="casa-tech.js?v=4"></script>
 <script>
 // Real platform stats — this page used to quote a fixed "4,202 UK
 // stays / 4.9 avg rating" regardless of how many real stays/reviews

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casa · Design Pilot — Warm High-Tech</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ──────────────────────────────────────────────────────────
+   CASA · DESIGN PILOT — "Warm High-Tech"
+   Keeps the welcoming warm-earth colourway, adds the high-tech
+   material language: glass depth · warm glow · ambient light · motion.
+   Self-contained. Nothing here touches casa.css / the live site.
+   ────────────────────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* ── Warm-earth canvas (the friendly colourway, kept) ── */
+  --paper:   #F4EFE5;
+  --paper-2: #EBE4D5;
+  --surface: #FBFAF6;
+
+  --ink:   #16140F;
+  --ink-2: #3C3830;
+  --ink-3: #6F6759;
+  --ink-4: #A39A88;
+
+  --brick:      #B05533;
+  --brick-2:    #C97350;
+  --brick-glow: rgba(176,85,51,0.30);
+  --moss:       #4D5C40;
+  --moss-glow:  rgba(77,92,64,0.28);
+  --gold:       #B89656;
+
+  /* ── High-tech material layer ── */
+  --glass:      rgba(255,255,255,0.55);
+  --glass-2:    rgba(255,255,255,0.35);
+  --edge:       rgba(22,20,15,0.09);
+  --edge-hi:    rgba(255,255,255,0.9);      /* top inner-highlight */
+  --rule-2:     rgba(22,20,15,0.06);
+
+  /* layered warm depth */
+  --lift-1: 0 1px 0 var(--edge-hi) inset, 0 2px 6px rgba(60,40,25,0.05), 0 12px 28px -14px rgba(60,40,25,0.18);
+  --lift-2: 0 1px 0 var(--edge-hi) inset, 0 8px 18px rgba(60,40,25,0.08), 0 30px 60px -22px rgba(60,40,25,0.28);
+
+  --serif:   'Instrument Serif', Georgia, serif;
+  --sans:    'Instrument Sans', system-ui, -apple-system, sans-serif;
+  --mono:    'JetBrains Mono', ui-monospace, monospace;
+
+  --r-md: 12px; --r-lg: 18px; --r-xl: 24px; --r-pill: 999px;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ── Ambient warm light + faint grid ── */
+.aura {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(58% 46% at 82% 4%, rgba(176,85,51,0.16), transparent 68%),
+    radial-gradient(46% 42% at 6% 24%, rgba(184,150,86,0.14), transparent 70%),
+    radial-gradient(70% 55% at 50% 116%, rgba(77,92,64,0.10), transparent 72%);
+}
+.grid-lines {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(22,20,15,0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22,20,15,0.035) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(120% 85% at 50% 0%, #000 0%, transparent 72%);
+  -webkit-mask-image: radial-gradient(120% 85% at 50% 0%, #000 0%, transparent 72%);
+}
+.wrap { max-width: 1280px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
+
+/* ── Nav (frosted) ── */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 68px; padding: 0 32px;
+  background: rgba(244,239,229,0.7);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border-bottom: 1px solid var(--edge);
+}
+.brand { display: flex; align-items: baseline; gap: 3px; text-decoration: none; }
+.brand .mark { font-family: var(--serif); font-style: italic; font-size: 30px; line-height: 1; color: var(--brick); letter-spacing: -0.01em; }
+.brand .tld { font-family: var(--serif); font-style: italic; font-size: 14px; color: var(--ink-3); }
+.nav-links { display: flex; align-items: center; gap: 6px; }
+.nav-links a { font-size: 13.5px; color: var(--ink-2); text-decoration: none; padding: 8px 13px; border-radius: 10px; transition: color .15s, background .15s; }
+.nav-links a:hover { color: var(--ink); background: rgba(22,20,15,0.05); }
+.nav-cta {
+  font-weight: 500; font-size: 13.5px; color: #fff; text-decoration: none;
+  padding: 9px 18px; border-radius: var(--r-pill);
+  background: linear-gradient(120deg, var(--brick), var(--brick-2));
+  box-shadow: 0 4px 18px var(--brick-glow), inset 0 1px 0 rgba(255,255,255,0.35);
+  transition: transform .15s, box-shadow .15s;
+}
+.nav-cta:hover { transform: translateY(-1px); box-shadow: 0 8px 26px var(--brick-glow), inset 0 1px 0 rgba(255,255,255,0.45); }
+
+/* ── Reveal on scroll ── */
+.reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
+.reveal.in { opacity: 1; transform: none; }
+.reveal.d1 { transition-delay: .07s; } .reveal.d2 { transition-delay: .14s; }
+.reveal.d3 { transition-delay: .21s; } .reveal.d4 { transition-delay: .28s; }
+
+/* ── HERO ── */
+.hero { padding: 80px 0 48px; }
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--ink-3);
+  padding: 7px 14px 7px 12px; border-radius: var(--r-pill);
+  border: 1px solid var(--edge); background: var(--glass-2);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  margin-bottom: 30px;
+}
+.eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--moss); box-shadow: 0 0 9px var(--moss-glow); animation: pulse 2.4s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+.hero-title { font-family: var(--serif); font-weight: 400; font-size: clamp(52px, 8vw, 104px); line-height: 0.92; letter-spacing: -0.03em; max-width: 14ch; }
+.hero-title .accent { font-style: italic; color: var(--brick); }
+.hero-sub { font-size: 18px; color: var(--ink-2); line-height: 1.55; max-width: 46ch; margin: 26px 0 0; }
+.hero-sub b { color: var(--ink); font-weight: 500; }
+
+/* Glass search console */
+.console {
+  margin-top: 40px;
+  background: var(--glass);
+  border: 1px solid var(--edge-hi);
+  border-radius: var(--r-xl);
+  padding: 10px;
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr 0.9fr auto;
+  gap: 4px; align-items: stretch;
+  backdrop-filter: blur(20px) saturate(140%); -webkit-backdrop-filter: blur(20px) saturate(140%);
+  box-shadow: var(--lift-2);
+  position: relative;
+}
+.console::after { content: ''; position: absolute; inset: 0; border-radius: var(--r-xl); border: 1px solid var(--edge); pointer-events: none; }
+.console .seg { padding: 14px 18px; border-radius: 16px; cursor: text; display: flex; flex-direction: column; justify-content: center; gap: 5px; transition: background .15s; }
+.console .seg + .seg { border-left: 1px solid var(--rule-2); }
+.console .seg:hover { background: rgba(255,255,255,0.5); }
+.console .seg .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
+.console .seg input { border: none; background: transparent; outline: none; font-family: var(--sans); font-size: 15.5px; color: var(--ink); width: 100%; }
+.console .seg input::placeholder { color: var(--ink-4); }
+.console .go {
+  border: none; cursor: pointer; border-radius: 16px; padding: 0 26px;
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--sans); font-weight: 600; font-size: 15px; color: #fff;
+  background: linear-gradient(120deg, var(--brick), var(--brick-2));
+  box-shadow: 0 6px 20px var(--brick-glow), inset 0 1px 0 rgba(255,255,255,0.4);
+  transition: transform .15s, box-shadow .15s;
+}
+.console .go:hover { transform: translateY(-1px); box-shadow: 0 10px 30px var(--brick-glow), inset 0 1px 0 rgba(255,255,255,0.5); }
+.console .go svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2.4; }
+
+.hero-stats { display: flex; gap: 44px; margin-top: 34px; flex-wrap: wrap; }
+.hero-stats .stat .n { font-family: var(--serif); font-style: italic; font-size: 38px; line-height: 1; color: var(--brick); }
+.hero-stats .stat .l { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin-top: 7px; }
+
+/* ── DESTINATIONS — glass bento ── */
+.dest { padding: 88px 0 64px; }
+.sec-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; margin-bottom: 36px; }
+.sec-head h2 { font-family: var(--serif); font-size: 46px; line-height: 1; letter-spacing: -0.02em; }
+.sec-head h2 i { font-style: italic; color: var(--brick); }
+.sec-head .see { font-size: 13.5px; color: var(--ink-2); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: color .15s; }
+.sec-head .see:hover { color: var(--brick); }
+
+.bento { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+.tile {
+  position: relative; overflow: hidden; border-radius: var(--r-lg);
+  text-decoration: none; display: block; isolation: isolate;
+  border: 1px solid var(--edge); box-shadow: var(--lift-1);
+  transition: transform .4s cubic-bezier(.22,1,.36,1), box-shadow .4s;
+}
+.tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform .6s cubic-bezier(.22,1,.36,1); }
+.tile::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(22,20,15,0) 30%, rgba(22,20,15,0.28) 58%, rgba(22,20,15,0.86) 100%); }
+.tile:hover { transform: translateY(-4px); box-shadow: var(--lift-2); }
+.tile:hover img { transform: scale(1.07); }
+.tile .meta { position: absolute; left: 22px; right: 22px; bottom: 20px; }
+.tile .meta .t { font-family: var(--serif); font-size: 34px; line-height: 1; letter-spacing: -0.01em; color: #fff; }
+.tile .meta .s { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.78); margin-top: 8px; }
+.tile .pin {
+  position: absolute; top: 16px; left: 16px; z-index: 1;
+  font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ink); padding: 6px 11px; border-radius: var(--r-pill);
+  background: rgba(251,250,246,0.72); border: 1px solid var(--edge-hi);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.tile .pin .g { width: 5px; height: 5px; border-radius: 50%; background: var(--moss); box-shadow: 0 0 8px var(--moss-glow); }
+.t-a { grid-column: span 7; aspect-ratio: 16/11; }
+.t-b { grid-column: span 5; aspect-ratio: 16/11; }
+.t-c, .t-d, .t-e { grid-column: span 4; aspect-ratio: 4/3; }
+
+/* ── Feature band: warm glass cards ── */
+.band { padding: 64px 0 96px; }
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.fcard {
+  background: var(--glass); border: 1px solid var(--edge-hi); border-radius: var(--r-lg);
+  padding: 28px; position: relative; overflow: hidden;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--lift-1);
+  transition: transform .3s, box-shadow .3s;
+}
+.fcard:hover { transform: translateY(-3px); box-shadow: var(--lift-2); }
+.fcard .ic {
+  width: 44px; height: 44px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center;
+  background: radial-gradient(120% 120% at 30% 20%, rgba(176,85,51,0.22), rgba(176,85,51,0.05));
+  border: 1px solid var(--edge); margin-bottom: 18px;
+}
+.fcard.cool .ic { background: radial-gradient(120% 120% at 30% 20%, rgba(77,92,64,0.22), rgba(77,92,64,0.05)); }
+.fcard .ic svg { width: 22px; height: 22px; stroke: var(--brick); fill: none; stroke-width: 1.8; }
+.fcard.cool .ic svg { stroke: var(--moss); }
+.fcard h3 { font-family: var(--serif); font-size: 24px; letter-spacing: -0.01em; margin-bottom: 8px; }
+.fcard p { font-size: 14px; color: var(--ink-2); line-height: 1.6; }
+
+.note { text-align: center; padding: 40px 0 100px; color: var(--ink-4); font-size: 12px; font-family: var(--mono); letter-spacing: 0.06em; }
+
+@media (max-width: 900px) {
+  .nav-links a:not(.nav-cta) { display: none; }
+  .console { grid-template-columns: 1fr; }
+  .console .seg + .seg { border-left: none; border-top: 1px solid var(--rule-2); }
+  .console .go { padding: 16px; justify-content: center; margin-top: 4px; }
+  .bento { grid-template-columns: repeat(6, 1fr); }
+  .t-a, .t-b { grid-column: span 6; }
+  .t-c, .t-d, .t-e { grid-column: span 3; }
+  .feature-grid { grid-template-columns: 1fr; }
+  .sec-head h2 { font-size: 34px; }
+}
+</style>
+</head>
+<body>
+<div class="aura"></div>
+<div class="grid-lines"></div>
+
+<nav class="nav">
+  <a class="brand" href="index.html"><span class="mark">casa</span><span class="tld">.co.uk</span></a>
+  <div class="nav-links">
+    <a href="browse.html">Browse</a>
+    <a href="map.html">Map</a>
+    <a href="how-it-works.html">How it works</a>
+    <a href="host.html">Become a host</a>
+    <a class="nav-cta" href="signup.html">Sign in</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow reveal in"><span class="dot"></span>Casa — UK holiday rentals — direct, no fees</span>
+    <h1 class="hero-title reveal in d1">Book the whole UK, <span class="accent">direct.</span></h1>
+    <p class="hero-sub reveal in d2">Connect with hosts and guests across the country — search by county or by feeling. <b>No commission, no booking fees, ever.</b></p>
+
+    <div class="console reveal in d3">
+      <label class="seg"><span class="lbl">Where</span><input type="text" placeholder="Anywhere in the UK"></label>
+      <label class="seg"><span class="lbl">Check in</span><input type="text" placeholder="Add dates"></label>
+      <label class="seg"><span class="lbl">Check out</span><input type="text" placeholder="Add dates"></label>
+      <label class="seg"><span class="lbl">Guests</span><input type="text" placeholder="2 guests"></label>
+      <button class="go">Search
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+      </button>
+    </div>
+
+    <div class="hero-stats reveal in d4">
+      <div class="stat"><div class="n">36</div><div class="l">UK stays</div></div>
+      <div class="stat"><div class="n">£0</div><div class="l">Booking fees</div></div>
+      <div class="stat"><div class="n">New</div><div class="l">Avg. rating</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- DESTINATIONS -->
+<section class="dest">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <h2>Where to <i>next</i></h2>
+      <a class="see" href="browse.html">All destinations →</a>
+    </div>
+    <div class="bento">
+      <a class="tile t-a reveal" href="browse.html">
+        <img src="https://images.unsplash.com/photo-1500043357865-c6b8827edf10?auto=format&fit=crop&w=1200&q=70" alt="Lake District">
+        <span class="pin"><span class="g"></span>8 stays live</span>
+        <div class="meta"><div class="t">The Lake District</div><div class="s">Cumbria · from £95 / night</div></div>
+      </a>
+      <a class="tile t-b reveal d1" href="browse.html">
+        <img src="https://images.unsplash.com/photo-1526772662000-3f88f10405ff?auto=format&fit=crop&w=1000&q=70" alt="Cornwall">
+        <span class="pin"><span class="g"></span>12 stays live</span>
+        <div class="meta"><div class="t">Cornwall</div><div class="s">Coast · from £110 / night</div></div>
+      </a>
+      <a class="tile t-c reveal" href="browse.html">
+        <img src="https://images.unsplash.com/photo-1533050487297-09b450131914?auto=format&fit=crop&w=900&q=70" alt="Edinburgh">
+        <div class="meta"><div class="t">Edinburgh</div><div class="s">City · from £120</div></div>
+      </a>
+      <a class="tile t-d reveal d1" href="browse.html">
+        <img src="https://images.unsplash.com/photo-1599833975787-5c143f373c30?auto=format&fit=crop&w=900&q=70" alt="Snowdonia">
+        <div class="meta"><div class="t">Snowdonia</div><div class="s">Mountains · from £85</div></div>
+      </a>
+      <a class="tile t-e reveal d2" href="browse.html">
+        <img src="https://images.unsplash.com/photo-1520939817895-060bdaf4fe1b?auto=format&fit=crop&w=900&q=70" alt="The Cotswolds">
+        <div class="meta"><div class="t">The Cotswolds</div><div class="s">Countryside · from £130</div></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURE BAND -->
+<section class="band">
+  <div class="wrap">
+    <div class="sec-head reveal"><h2>Built <i>different</i></h2></div>
+    <div class="feature-grid">
+      <div class="fcard reveal">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M12 2v20M2 12h20"/></svg></span>
+        <h3>Zero booking fees</h3>
+        <p>What the host charges is what you pay. No service fee bolted on at checkout — the price you see is the price, guaranteed.</p>
+      </div>
+      <div class="fcard cool reveal d1">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+        <h3>Verified, live availability</h3>
+        <p>Calendars sync in real time from the host's other platforms — no double-bookings, no “sorry, just gone” after you enquire.</p>
+      </div>
+      <div class="fcard reveal d2">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+        <h3>Talk to hosts direct</h3>
+        <p>Message the person who owns the place, not a call centre. Ask about the dog, the parking, the walk to the pub — get a real answer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="note">Design pilot — “warm high-tech” direction · not wired to the live site</div>
+
+<script>
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal:not(.in)').forEach(el => io.observe(el));
+
+  const aura = document.querySelector('.aura');
+  window.addEventListener('pointermove', (e) => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 12;
+    const y = (e.clientY / window.innerHeight - 0.5) * 12;
+    aura.style.transform = `translate(${x}px, ${y}px)`;
+  });
+</script>
+</body>
+</html>
