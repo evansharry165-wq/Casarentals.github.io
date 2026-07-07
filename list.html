@@ -185,7 +185,9 @@
   .lp-footer .nav-btns { display: flex; gap: 10px; }
 
   /* ── SUCCESS ── */
-  .success-screen { display: none; padding: 56px 60px; }
+  /* No longer nested in .lp-right-inner (see markup comment), so it needs
+     its own width constraint + centering now that it's full-viewport-width. */
+  .success-screen { display: none; padding: 64px 60px; max-width: 640px; margin: 0 auto; }
   .success-screen.show { display: block; animation: fadeUp .4s ease; }
   .success-icon { width: 72px; height: 72px; background: var(--moss-pale); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
   .success-icon svg { width: 32px; height: 32px; stroke: var(--moss); fill: none; stroke-width: 1.6; }
@@ -455,7 +457,8 @@
           </div>
           <div class="field">
             <label>Minimum stay (nights)</label>
-            <input type="number" id="minstay" value="2" min="1" max="30">
+            <input type="number" id="minstay" value="1" min="1" max="30">
+            <span class="hint">Leave at 1 for no minimum — keeps you open to last-minute bookings.</span>
           </div>
         </div>
       </div>
@@ -529,23 +532,30 @@
       <div style="height:64px"></div>
     </div>
 
-    <!-- SUCCESS SCREEN -->
-    <div class="success-screen" id="successScreen">
-      <div class="success-icon"><svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></div>
-      <h2>You're <i>listed.</i></h2>
-      <p>Your property is live on Casa. Guests can find it in search, on the map, and in the community feed. The first enquiry usually comes within a few days.</p>
-      <div class="success-next">
-        <div class="sn-card"><div class="sn-num">1</div><h4>Check your dashboard</h4><p>See your live listing, track enquiries, and manage your profile from the host dashboard.</p></div>
-        <div class="sn-card"><div class="sn-num">2</div><h4>Reply when enquiries come in</h4><p>Guests message you directly — no pressure, reply on your own schedule.</p></div>
-        <div class="sn-card"><div class="sn-num">3</div><h4>Share your listing</h4><p>Send the link to anyone who might be interested — direct bookings save everyone the commission.</p></div>
-      </div>
-      <div class="success-btns">
-        <a href="host.html" class="btn btn-primary">Connect calendars in dashboard<svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
-        <a href="host-concierge.html" class="btn btn-outline">Explore Concierge</a>
-      </div>
-    </div>
-
   </main>
+</div>
+
+<!-- SUCCESS SCREEN — deliberately a SIBLING of #mainLayout, not nested
+     inside it: submitListing() hides #mainLayout entirely on publish, and
+     this used to live inside it, so it got hidden along with everything
+     else the instant it should have appeared. That's the actual "crash" —
+     the insert always succeeded, but the confirmation screen could never
+     render, leaving a blank page with no link to the new listing at all.
+     Brief interstitial, then a real redirect to the actual new listing. -->
+<div class="success-screen" id="successScreen">
+  <div class="success-icon"><svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg></div>
+  <h2>You're <i>listed.</i></h2>
+  <p>Your property is live on Casa. Guests can find it in search, on the map, and in the community feed. The first enquiry usually comes within a few days.</p>
+  <div class="success-next">
+    <div class="sn-card"><div class="sn-num">1</div><h4>Check your dashboard</h4><p>See your live listing, track enquiries, and manage your profile from the host dashboard.</p></div>
+    <div class="sn-card"><div class="sn-num">2</div><h4>Reply when enquiries come in</h4><p>Guests message you directly — no pressure, reply on your own schedule.</p></div>
+    <div class="sn-card"><div class="sn-num">3</div><h4>Share your listing</h4><p>Send the link to anyone who might be interested — direct bookings save everyone the commission.</p></div>
+  </div>
+  <div class="success-btns">
+    <a href="#" id="viewListingBtn" class="btn btn-primary">View your live listing<svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+    <a href="host.html" class="btn btn-outline">Go to dashboard instead</a>
+  </div>
+  <p id="successRedirectNote" style="margin-top:14px;font-size:12.5px;color:var(--ink-3)"></p>
 </div>
 
 <!-- FOOTER NAV -->
@@ -579,7 +589,7 @@ const form = {
   amenities: ['woodburner','wifi','pets','parking','garden'],
   price: 175,
   cleaning: 60,
-  minStay: 2,
+  minStay: 1,
   publishMode: 'live',
 };
 
@@ -877,13 +887,26 @@ async function submitListing() {
     await uploadListingPhotos(inserted.id, user.id);
   }
 
-  // Show success
+  // Show success, then genuinely take them to the real listing — this used
+  // to be a dead end with no link to the property at all.
+  const propertyUrl = `property.html?id=${inserted.id}`;
+  document.getElementById('viewListingBtn').href = propertyUrl;
   document.getElementById('mainLayout').style.display = 'none';
   document.getElementById('footerNav').style.display = 'none';
   document.querySelector('.top-bar .progress').style.display = 'none';
   document.getElementById('successScreen').classList.add('show');
   document.getElementById('rightPane').scrollTop = 0;
   localStorage.removeItem('casa:listing-draft');
+
+  let secsLeft = 6;
+  const note = document.getElementById('successRedirectNote');
+  const tick = () => {
+    note.textContent = `Taking you to your listing in ${secsLeft}s…`;
+    if (secsLeft <= 0) { window.location.href = propertyUrl; return; }
+    secsLeft--;
+    setTimeout(tick, 1000);
+  };
+  tick();
 }
 
 // Toast helper (uses casa.js if available, falls back inline)
