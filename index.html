@@ -9,13 +9,16 @@
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="casa.css?v=2">
 <link rel="stylesheet" href="casa-tech.css?v=4">
+<link rel="stylesheet" href="casa-search.css?v=1">
 <style>
   /* ─── HERO ─── */
   .hero {
     position: relative;
     padding: 56px 0 0;
-    overflow: hidden;
+    /* overflow visible so the search popovers (calendar / guests / location)
+       can extend below the hero without being clipped */
   }
+  body { overflow-x: hidden; }
   .hero-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
   .hero-top { display: grid; grid-template-columns: 1.4fr 1fr; gap: 64px; align-items: end; margin-bottom: 56px; }
   .hero-eyebrow {
@@ -288,38 +291,29 @@
     </div>
 
     <!-- SEARCH -->
-    <div class="search rise-3">
-      <div class="seg active" onclick="goSearch()">
+    <div class="search rise-3" data-search id="homeSearch">
+      <div class="seg where-seg active">
         <span class="lbl">Where</span>
         <div class="val">
-          <input type="text" placeholder="Where to? Try a county, town, or #feature" list="casaWhereList" autocomplete="off" aria-label="Where do you want to stay?">
-          <datalist id="casaWhereList">
-            <option value="Lake District"></option>
-            <option value="Cornwall"></option>
-            <option value="Highlands"></option>
-            <option value="Isle of Skye"></option>
-            <option value="Norfolk"></option>
-            <option value="Yorkshire Dales"></option>
-            <option value="Cotswolds"></option>
-            <option value="Pembrokeshire"></option>
-            <option value="Snowdonia"></option>
-            <option value="Causeway Coast"></option>
-          </datalist>
+          <input type="text" data-where-input placeholder="Search UK destinations" autocomplete="off" aria-label="Where do you want to stay?">
         </div>
+        <div class="search-pop where-pop" data-where-pop></div>
       </div>
-      <div class="seg" onclick="goSearch()">
+      <div class="seg">
         <span class="lbl">Check in</span>
-        <div class="val"><span class="ph-txt">Sat 12 Jul</span></div>
+        <div class="val"><span class="ph-txt" data-checkin>Add dates</span></div>
+        <div class="search-pop cal-pop" data-cal-pop></div>
       </div>
-      <div class="seg" onclick="goSearch()">
+      <div class="seg">
         <span class="lbl">Check out</span>
-        <div class="val"><span class="ph-txt">Sat 19 Jul</span></div>
+        <div class="val"><span class="ph-txt" data-checkout>Add dates</span></div>
       </div>
-      <div class="seg" onclick="goSearch()">
+      <div class="seg">
         <span class="lbl">Guests</span>
-        <div class="val"><span class="ph-txt">2 adults</span></div>
+        <div class="val"><span class="ph-txt" data-guests-label>Add guests</span></div>
+        <div class="search-pop guest-pop" data-guest-pop></div>
       </div>
-      <button class="search-go" onclick="goSearch()">
+      <button class="search-go" data-search-go>
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         Search
       </button>
@@ -626,33 +620,17 @@
   </div>
 </footer>
 
+<script src="casa-properties.js"></script>
+<script src="casa-search.js?v=1"></script>
 <script>
-function goSearch() {
-  // Smooth visual feedback before navigating
-  document.querySelectorAll('.search .seg').forEach(s => s.classList.remove('active'));
-  event.currentTarget.classList.add('active');
-}
-// Known region labels -> browse region slugs, so picking a county lands on an
-// exact-match filtered browse; anything else falls back to a free-text search.
-const CASA_HOME_REGION_SLUGS = {
-  'lake district': 'lake-district', 'cornwall': 'cornwall', 'highlands': 'highlands',
-  'isle of skye': 'skye', 'skye': 'skye', 'norfolk': 'norfolk',
-  'yorkshire dales': 'yorkshire', 'yorkshire': 'yorkshire', 'n. yorkshire': 'yorkshire',
-  'cotswolds': 'cotswolds', 'pembrokeshire': 'pembrokeshire', 'snowdonia': 'snowdonia',
-  'causeway coast': 'causeway', 'causeway': 'causeway', 'antrim': 'causeway',
-};
-function goToBrowseSearch() {
-  const where = (document.querySelector('.search .seg input[type="text"]')?.value || '').trim();
-  if (!where) { window.location.href = 'browse.html'; return; }
-  const slug = CASA_HOME_REGION_SLUGS[where.toLowerCase()];
-  window.location.href = slug ? `browse.html?region=${slug}` : `browse.html?where=${encodeURIComponent(where)}`;
-}
-document.querySelector('.search-go').addEventListener('click', e => {
-  e.stopPropagation();
-  goToBrowseSearch();
-});
-document.querySelector('.search .seg input[type="text"]')?.addEventListener('keydown', e => {
-  if (e.key === 'Enter') { e.preventDefault(); goToBrowseSearch(); }
+// The home search now uses the shared engine (location autocomplete +
+// date-range calendar + interactive guests). Default submit navigates to
+// a pre-filtered browse.
+document.addEventListener('DOMContentLoaded', function () {
+  var root = document.getElementById('homeSearch');
+  if (root && typeof casaInitSearch === 'function') {
+    casaInitSearch(root, { guestsPlaceholder: 'Add guests', datePlaceholder: 'Add dates' });
+  }
 });
 </script>
 

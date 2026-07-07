@@ -578,14 +578,18 @@ function matchesCategory(p, type) {
 
 // ── Central state: every control mutates this, then applyFilters() re-derives ──
 const qp = new URLSearchParams(location.search);
+const qpGuests = parseInt(qp.get('guests'), 10);
 const state = {
   region: qp.get('region') || '',
   where: qp.get('where') || '',
   type: 'all',            // quick category (cat-bar)
   propTypes: [],          // exact property types (modal)
-  amenities: [],          // amenity tags (feature pills + modal)
-  sleepsMin: 1,
-  guests: 0,
+  // pets carried from the home search becomes a live amenity filter
+  amenities: qp.get('pets') ? ['pets'] : [],
+  sleepsMin: (!isNaN(qpGuests) && qpGuests > 1) ? qpGuests : 1,
+  guests: (!isNaN(qpGuests) && qpGuests > 0) ? qpGuests : 0,
+  checkin: qp.get('checkin') || '',
+  checkout: qp.get('checkout') || '',
   priceMin: null,
   priceMax: null,
   sort: 'curated',
@@ -843,6 +847,11 @@ function clearAllFilters() {
 // ── Init ──
 (function initBrowse() {
   regionsIndex(); // populate REGION_LABELS before first paint
+  // reflect an incoming guest count (from the home search) in the picker
+  if (state.guests > 0) {
+    const gv = document.getElementById('guestVal');
+    if (gv) gv.textContent = state.guests + (state.guests === 1 ? ' guest' : ' guests');
+  }
   const wi = document.getElementById('whereInput');
   if (wi) {
     if (state.region) wi.value = REGION_LABELS[state.region] || '';
