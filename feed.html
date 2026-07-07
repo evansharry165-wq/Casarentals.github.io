@@ -1358,9 +1358,31 @@ function renderPopularHashtags() {
     : `<p style="font-size:12.5px;color:var(--ink-3)">No tagged posts yet.</p>`;
 }
 
+// Replaces the composer with an unmistakable sign-in prompt when signed
+// out, instead of leaving a fully-interactive-looking textarea that only
+// reveals it can't actually post once you've typed something and clicked
+// Post (a real, silent-failure trap a signed-out/unconfirmed user could
+// easily miss — the toast + redirect is easy to not notice).
+async function gateComposerIfSignedOut() {
+  const { data: { session } } = window.casaSupabase ? await window.casaSupabase.auth.getSession() : { data: {} };
+  if (session) return true;
+  const card = document.querySelector('.compose-card');
+  if (card) {
+    card.innerHTML = `
+      <div style="text-align:center;padding:6px 4px 4px">
+        <p style="font-size:14px;color:var(--ink-2);margin-bottom:14px">Sign in to share availability, a tip, or a review with the community.</p>
+        <a class="btn btn-primary" href="signup.html">Sign in or join free</a>
+      </div>`;
+  }
+  return false;
+}
+
 (async function initFeed() {
-  const composeAv = document.getElementById('composeAv');
-  if (composeAv) composeAv.textContent = casaEscapeHtml((casaGetUser()?.name || '?').charAt(0).toUpperCase());
+  const signedIn = await gateComposerIfSignedOut();
+  if (signedIn) {
+    const composeAv = document.getElementById('composeAv');
+    if (composeAv) composeAv.textContent = casaEscapeHtml((casaGetUser()?.name || '?').charAt(0).toUpperCase());
+  }
   if (typeof casaRefreshProperties === 'function') await casaRefreshProperties();
   await initSpaces();
   ALL_POSTS = await loadAllPosts();

@@ -206,6 +206,21 @@ async function submitAttraction() {
   renderAttractions();
 }
 
+// Same gate as feed.html's composer: an unmistakable sign-in prompt when
+// signed out, instead of a fully-interactive-looking form that only
+// reveals it can't post once you've typed a tip and clicked submit.
+async function gateAttComposeIfSignedOut() {
+  const { data: { session } } = window.casaSupabase ? await window.casaSupabase.auth.getSession() : { data: {} };
+  if (session) return;
+  const card = document.querySelector('.att-compose');
+  if (!card) return;
+  card.innerHTML = `
+    <h3>Share a <i>tip</i></h3>
+    <p style="margin-bottom:14px">Sign in to post a local tip — it'll appear here and in the community feed.</p>
+    <a class="btn btn-primary" href="signup.html">Sign in or join free</a>`;
+}
+gateAttComposeIfSignedOut();
+
 renderAttractions();
 </script>
 <script src="casa-tech.js?v=4"></script>

@@ -102,15 +102,28 @@ async function finishSignIn(user) {
 if (err) {
   showError('');
 } else {
-  // Success path: wait for casa.js's auth listener to pick up the
-  // session supabase-js already parsed from the hash, then move on.
+  // Success path: poll the REAL session directly (fast — no network round
+  // trip), not casaGetUser()'s local cache, which only populates after an
+  // extra profiles-table fetch inside casaSyncUserFromSession. Gating on
+  // the slower, enriched cache meant a genuinely successful confirmation
+  // could still land on "Nothing to confirm" if that profile fetch hadn't
+  // resolved within the poll window — a real user could confirm correctly
+  // and be told (wrongly) that nothing happened.
   let tries = 0;
-  const poll = setInterval(() => {
-    const user = typeof casaGetUser === 'function' ? casaGetUser() : null;
+  const poll = setInterval(async () => {
     tries++;
-    if (user) {
+    const { data: { session } } = window.casaSupabase ? await window.casaSupabase.auth.getSession() : { data: {} };
+    if (session) {
       clearInterval(poll);
-      finishSignIn(user);
+      // The enriched profile (name/role) may still be a beat behind the
+      // session itself — give it one short extra grace period, but never
+      // block a confirmed session on it.
+      let user = typeof casaGetUser === 'function' ? casaGetUser() : null;
+      if (!user) {
+        await new Promise(r => setTimeout(r, 500));
+        user = typeof casaGetUser === 'function' ? casaGetUser() : null;
+      }
+      finishSignIn(user || { role: 'guest' });
     } else if (tries > 20) {
       clearInterval(poll);
       wrap.innerHTML = `
