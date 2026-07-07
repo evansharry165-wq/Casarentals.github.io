@@ -271,7 +271,7 @@
         </div>
       </div>
       <div class="compose-hint">
-        <span>Direct to host &mdash; <kbd>⌘</kbd><kbd>↵</kbd> to send</span>
+        <span><span id="composeHintWho">Direct to host</span> &mdash; <kbd>⌘</kbd><kbd>↵</kbd> to send</span>
         <span class="char-warn" id="charWarn"></span>
       </div>
     </div>
@@ -517,6 +517,12 @@ function renderThread() {
   document.getElementById('sendBtn').disabled = true;
   document.getElementById('charWarn').textContent = '';
   hideEmoji();
+
+  // This was hardcoded to "Direct to host" always — backwards and
+  // confusing the moment you're replying AS the host: it told the host
+  // their own message was going "to" a host. Reflects who's actually on
+  // the other end of the specific conversation you're in.
+  document.getElementById('composeHintWho').textContent = c.iAmHost ? 'Direct to guest' : 'Direct to host';
 }
 
 // ── SWITCH ──
