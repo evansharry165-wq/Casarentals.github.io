@@ -45,6 +45,11 @@
 
   /* SEARCH BOX */
   .search {
+    /* The rise entrance animation gives both .search and .hero-strip a
+       transform = a stacking context. Order them explicitly so the search
+       (and its calendar / location / guests popovers) always sits ABOVE
+       the property images below it. */
+    position: relative; z-index: 30;
     background: var(--surface); border: 1px solid var(--rule);
     border-radius: 22px; padding: 12px;
     display: grid; grid-template-columns: 1.6fr 1fr 1fr 0.9fr auto;
@@ -83,6 +88,7 @@
 
   /* HERO IMAGE STRIP */
   .hero-strip {
+    position: relative; z-index: 1;   /* below the search + its popovers */
     margin: 56px -32px 0;
     display: grid; grid-template-columns: 0.7fr 1.2fr 0.9fr 0.8fr;
     gap: 12px;
