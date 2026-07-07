@@ -303,7 +303,7 @@
 <script src="casa-concierge.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
-<script src="casa.js?v=2"></script>
+<script src="casa.js?v=3"></script>
 <script>
 // ═══════════════════
 // DATA — real conversations from Supabase (see supabase/schema.sql:
@@ -409,12 +409,12 @@ function subscribeRealtime(convIds) {
       c.msgs.push(m);
       if (active === m.conversation_id) { markRead(m.conversation_id); renderThread(); }
       renderList();
-      casaAddNotification({
-        type: 'reply',
-        title: `New message from ${c.other?.full_name || 'someone'}`,
-        body: m.body,
-        href: `messages.html?c=${m.conversation_id}`,
-      });
+      // The notification itself is created server-side now (supabase/
+      // notifications.sql: trg_notify_message), so it persists even when
+      // the recipient isn't on this page — adding one here too would
+      // double it up for whoever happens to be looking at their inbox
+      // live. Just refresh the bell so it reflects the new row promptly.
+      if (typeof casaSyncNotificationsFromSupabase === 'function') casaSyncNotificationsFromSupabase();
     })
     .subscribe();
 }

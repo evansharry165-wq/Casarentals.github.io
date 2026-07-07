@@ -221,7 +221,17 @@ function casaUserInitial(user) {
   return name.trim().charAt(0).toUpperCase();
 }
 
-/* ─── Notifications ─── */
+/* ─── Notifications ───
+   Real cross-user notifications (someone replied to you, your enquiry
+   was accepted, you got a new message) are created server-side by
+   Postgres triggers (supabase/notifications.sql) the moment the
+   underlying row is inserted — a client can't write another user's
+   notification row directly under RLS, same reason
+   create_conversation_for_enquiry exists. This local cache is a
+   read-through display copy, kept for pages that render before the
+   real sync resolves and as a graceful fallback if casaSupabase is
+   unavailable; casaSyncNotificationsFromSupabase() is the source of
+   truth once signed in. */
 function casaGetNotifications() {
   try {
     return JSON.parse(localStorage.getItem(CASA_NOTIF_KEY) || '[]');
@@ -234,6 +244,9 @@ function casaSaveNotifications(list) {
   localStorage.setItem(CASA_NOTIF_KEY, JSON.stringify(list.slice(0, 50)));
 }
 
+// Self-notifications only (e.g. "your enquiry was sent", "your review
+// posted") — cross-user notifications never go through this path, they're
+// created by the server-side triggers in supabase/notifications.sql.
 function casaAddNotification(n) {
   const list = casaGetNotifications();
   list.unshift({
@@ -244,19 +257,62 @@ function casaAddNotification(n) {
   });
   casaSaveNotifications(list);
   casaUpdateNotifBadge();
+
+  const user = casaGetUser();
+  if (window.casaSupabase && user) {
+    window.casaSupabase.from('notifications').insert({
+      user_id: user.id, type: n.type, title: n.title, body: n.body || null, href: n.href || null,
+    }).then(({ error }) => {
+      if (error) console.error('casaAddNotification: Supabase sync failed', error);
+    });
+  }
 }
 
-function casaMarkNotifRead(id) {
+async function casaMarkNotifRead(id) {
   const list = casaGetNotifications();
   const item = list.find(n => n.id === id);
   if (item) item.read = true;
   casaSaveNotifications(list);
   casaUpdateNotifBadge();
+
+  const user = casaGetUser();
+  if (window.casaSupabase && user) {
+    const { error } = await window.casaSupabase.from('notifications').update({ read: true }).eq('id', id).eq('user_id', user.id);
+    if (error) console.error('casaMarkNotifRead: Supabase sync failed', error);
+  }
 }
 
-function casaMarkAllNotifsRead() {
+async function casaMarkAllNotifsRead() {
   casaSaveNotifications(casaGetNotifications().map(n => ({ ...n, read: true })));
   casaUpdateNotifBadge();
+
+  const user = casaGetUser();
+  if (window.casaSupabase && user) {
+    const { error } = await window.casaSupabase.from('notifications').update({ read: true }).eq('user_id', user.id).eq('read', false);
+    if (error) console.error('casaMarkAllNotifsRead: Supabase sync failed', error);
+  }
+}
+
+// Real select, replacing (not merging into) the local cache — once
+// signed in, the server is the source of truth for what notifications
+// exist, not whatever seed/local content happened to be there before.
+async function casaSyncNotificationsFromSupabase() {
+  if (!window.casaSupabase) return;
+  const user = casaGetUser();
+  if (!user) return;
+  const { data, error } = await window.casaSupabase
+    .from('notifications')
+    .select('id, type, title, body, href, read, created_at')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
+    .limit(50);
+  if (error || !data) return;
+  casaSaveNotifications(data.map(r => ({
+    id: r.id, type: r.type, title: r.title, body: r.body, href: r.href,
+    read: r.read, time: typeof casaRelativeTime === 'function' ? casaRelativeTime(r.created_at) : '',
+  })));
+  casaUpdateNotifBadge();
+  if (typeof casaRenderNotifPanel === 'function') casaRenderNotifPanel();
 }
 
 function casaUnreadNotifCount() {
@@ -376,9 +432,37 @@ async function casaSyncMutedFromSupabase() {
   if (data) localStorage.setItem(CASA_MUTED_KEY, JSON.stringify(data.map(r => r.muted_user_id)));
 }
 
+// Same gap class as mutes before casaSyncMutedFromSupabase existed: without
+// this, "already reported" was only ever checked against the local
+// browser's history, so the same account on a second device would show a
+// post as un-reported even though the report had already landed in
+// Supabase. Merges rather than overwrites, since a report made while
+// offline/unsynced shouldn't be lost.
+async function casaSyncReportsFromSupabase() {
+  if (!window.casaSupabase) return;
+  const user = casaGetUser();
+  if (!user) return;
+  const { data, error } = await window.casaSupabase
+    .from('reports')
+    .select('target_type, target_id, reason, created_at')
+    .eq('reporter_id', user.id);
+  if (error || !data) return;
+  const local = casaGetReports();
+  const seen = new Set(local.map(r => r.targetType + ':' + r.targetId));
+  data.forEach(r => {
+    const key = r.target_type + ':' + r.target_id;
+    if (!seen.has(key)) {
+      seen.add(key);
+      local.push({ id: r.created_at, targetType: r.target_type, targetId: r.target_id, reportedAt: r.created_at });
+    }
+  });
+  localStorage.setItem(CASA_REPORTS_KEY, JSON.stringify(local.slice(0, 100)));
+}
+
 window.casaGetReports = casaGetReports;
 window.casaIsReported = casaIsReported;
 window.casaReportContent = casaReportContent;
+window.casaSyncReportsFromSupabase = casaSyncReportsFromSupabase;
 window.casaGetMutedUserIds = casaGetMutedUserIds;
 window.casaIsMutedId = casaIsMutedId;
 window.casaMuteUserId = casaMuteUserId;
@@ -388,6 +472,8 @@ window.casaGetUser = casaGetUser;
 window.casaSetUser = casaSetUser;
 window.casaIsLoggedIn = casaIsLoggedIn;
 window.casaAddNotification = casaAddNotification;
+window.casaGetNotifications = casaGetNotifications;
+window.casaSyncNotificationsFromSupabase = casaSyncNotificationsFromSupabase;
 window.casaTrackView = casaTrackView;
 
 /* ─── Hashtag routing ─── */
@@ -617,6 +703,8 @@ async function casaSyncUserFromSession(session) {
   casaSyncSavedFromSupabase();
   casaSyncFollowsFromSupabase();
   casaSyncMutedFromSupabase();
+  casaSyncReportsFromSupabase();
+  casaSyncNotificationsFromSupabase();
 }
 
 function casaInitSupabaseAuthSync() {

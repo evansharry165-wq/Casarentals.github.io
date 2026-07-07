@@ -109,8 +109,7 @@ regresses if `window.casaSupabase` is ever unavailable.
   rendered uses `casaEscapeHtml`/`casaFormatFeedBody` (in
   `casa-feed-posts.js`) before going into `innerHTML`, to avoid an XSS
   hole that didn't exist when this content was hardcoded.
-- **Notifications** — still local-only; low-value to migrate next, most
-  calls are ephemeral in-session toasts today.
+- **Notifications** — now real, see Phase 08 below.
 
 ## Phase 07 — Community platform (`community.sql`)
 
@@ -163,8 +162,36 @@ composer with space/poll/media, hot/top/new toggle) is the next build —
 the existing `casa-feed-posts.js` data layer will be extended with
 `casa-community.js` helpers (vote/save/repost/join/fetch-ranked).
 
+## Phase 08 — Real cross-user notifications (`notifications.sql`)
+
+The `notifications` table's own RLS (`user_id = auth.uid()`) only lets a
+client write its own row, so a sender can't directly insert a notification
+for whoever they just replied to/messaged/enquired with — the exact same
+problem `create_conversation_for_enquiry` already solved for
+`conversation_participants`. `notifications.sql` uses the same fix:
+`SECURITY DEFINER` triggers that fire on the real underlying event
+(new `feed_replies` row, new `enquiries` row, `enquiries.status` change,
+new `messages` row, new `follows` row, new `reviews` row) and insert the
+right recipient's notification row directly — this can't be silently
+skipped by an incomplete client wiring, since it fires regardless of
+which page/code path created the underlying row.
+
+**Apply once, manually** in the SQL editor, after `schema.sql` (order vs.
+`community.sql`/`storage.sql` doesn't matter — additive and idempotent,
+safe to re-run).
+
+Client side (`casa.js`): `casaAddNotification()` is now for **self**-
+notifications only (e.g. "your enquiry was sent") and write-throughs to
+the real table; `casaSyncNotificationsFromSupabase()` is the real read
+path (replaces the local cache, mirrors `casaSyncMutedFromSupabase`);
+`casaMarkNotifRead`/`casaMarkAllNotifsRead` write real `UPDATE`s.
+`messages.html`'s realtime handler no longer also adds a local
+notification on incoming messages — the trigger covers that persistently
+now (previously it only fired while the recipient happened to be on that
+page).
+
 ## Recommended next phase (deferred, not urgent)
 
 Real image upload for feed posts (the "Photo" post type has no working
 upload path yet — a post can be that type, it just won't have any
-images), and notifications.
+images).
