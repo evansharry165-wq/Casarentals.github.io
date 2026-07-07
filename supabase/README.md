@@ -112,6 +112,57 @@ regresses if `window.casaSupabase` is ever unavailable.
 - **Notifications** — still local-only; low-value to migrate next, most
   calls are ephemeral in-session toasts today.
 
+## Phase 07 — Community platform (`community.sql`)
+
+Expands the Phase-06 feed into a full property + holidaying community,
+so the backend is ready to host real communities at scale. **Additive
+and idempotent** — layers on top of `schema.sql` and is safe to re-run.
+
+**Apply once, manually**, in the Supabase SQL editor (same as
+`storage.sql`): run `supabase/schema.sql` first if not already applied,
+then `supabase/community.sql`. The frontend's publishable key can't run
+DDL, by design — nothing here is applied automatically, and the live
+site is unaffected until it's run (the Phase-06 feed keeps working).
+
+What it adds:
+
+- **Communities / "spaces"** (`communities`, `community_members`,
+  `community_bans`) — Reddit-style spaces with membership + per-space
+  moderator/admin roles. Seeded with **18 official Casa spaces**: the
+  10 catalogue regions (Lake District, Cornwall, Highlands…) plus topic
+  spaces (Wild Swimming, Dog-Friendly Travel, First-Time Hosts, Walking
+  & Hiking, Foodie Trails, Off-Grid & Slow, Accessible Travel, Budget
+  Breaks). Seeding *structural* official spaces is legitimate — it's not
+  fabricated user content like the old fake posts.
+- **Voting + ranking** (`post_votes`, `reply_votes`) — up/down votes with
+  incremental trigger-maintained `score`/`upvotes`/`downvotes` on posts &
+  replies, plus author `post_karma`/`comment_karma`. A `feed_posts_ranked`
+  view exposes a Reddit-style **hot** rank (log-weighted score decaying
+  with age) so hot/top/new are all one indexed read.
+- **Threaded comments** — `feed_replies.parent_id` (self-referencing) for
+  nested threads; `reply_count` kept live on the post.
+- **Saves, reposts, awards** (`post_saves`, `post_reposts`, `post_awards`).
+- **Hashtags** (`hashtags`, `post_hashtags`) + a `trending_hashtags` view
+  (last 7 days) for discovery.
+- **Rich media & polls** (`post_media`, `post_polls`, `poll_options`,
+  `poll_votes`) — multi-image/video posts and X-style polls.
+- **Local events / meetups** (`community_events`, `event_attendees`).
+- **Richer notifications** (`actor_id` + `entity_type`/`entity_id`) and
+  **moderation** (`mod_actions`, community-scoped report resolution,
+  a `casa_is_moderator()` helper backing the mod RLS policies).
+- **RLS on every new table** (31 policies): public spaces/feed are
+  world-readable; votes/saves are private to the user; mod actions and
+  bans are gated to a space's moderators; post media/polls/tags are
+  writable only by the post's author.
+
+`feed_posts.type` (avail/looking/review/tip/photo) is unchanged — it's
+the Casa post *flavour*; `community_id` is the new *space* it lives in.
+
+Frontend for this (community browse, voting UI, threaded comments,
+composer with space/poll/media, hot/top/new toggle) is the next build —
+the existing `casa-feed-posts.js` data layer will be extended with
+`casa-community.js` helpers (vote/save/repost/join/fetch-ranked).
+
 ## Recommended next phase (deferred, not urgent)
 
 Real image upload for feed posts (the "Photo" post type has no working
