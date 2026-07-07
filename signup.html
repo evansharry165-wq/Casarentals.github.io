@@ -291,6 +291,34 @@
         </div>
       </div>
 
+      <!-- CONFIRM EMAIL — a 6-digit code as a same-device alternative to
+           the magic link, which breaks the moment the confirmation email
+           is opened on a different device than the one signing up (e.g.
+           laptop signup, phone inbox — the phone gets signed in instead of
+           the laptop, with no way back). The code works from wherever you
+           actually are. -->
+      <div id="confirm-form" style="display:none">
+        <h2 class="auth-h2">Check your <i>email.</i></h2>
+        <p class="auth-tagline">We've sent a 6-digit code to <strong id="confirmEmailLabel"></strong>. Enter it below to finish signing in on <em>this</em> device — or click the link in the email if that's easier.</p>
+
+        <div class="form-grid">
+          <div class="field" id="f-otp">
+            <label>6-digit code</label>
+            <input type="text" id="otpCode" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" maxlength="6" style="letter-spacing:0.3em;font-size:20px;text-align:center">
+            <span class="field-err">Enter the 6-digit code from your email</span>
+          </div>
+
+          <button class="submit-btn" type="button" id="confirmBtn" onclick="submitConfirmCode()">
+            Confirm and continue
+            <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+        <div class="auth-foot" style="margin-top: 28px">
+          Didn't get a code? <a href="#" onclick="event.preventDefault(); resendConfirmCode()">Resend →</a>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -319,7 +347,70 @@
     document.querySelector('.auth-tabs').style.display = 'none';
     document.getElementById('signup-form').style.display = 'none';
     document.getElementById('signin-form').style.display = 'none';
+    document.getElementById('forgot-form').style.display = 'none';
+    document.getElementById('confirm-form').style.display = 'none';
     document.getElementById('forgot-form').style.display = 'block';
+  }
+
+  let pendingConfirmEmail = '';
+  function showConfirm(email) {
+    pendingConfirmEmail = email;
+    document.querySelector('.auth-tabs').style.display = 'none';
+    document.getElementById('signup-form').style.display = 'none';
+    document.getElementById('signin-form').style.display = 'none';
+    document.getElementById('forgot-form').style.display = 'none';
+    document.getElementById('confirm-form').style.display = 'block';
+    document.getElementById('confirmEmailLabel').textContent = email;
+    setTimeout(() => document.getElementById('otpCode')?.focus(), 50);
+  }
+
+  // Completes signup directly from the 6-digit code — works on whichever
+  // device you're actually looking at, unlike the magic link (which signs
+  // in whatever device happens to open the email, not the one waiting).
+  async function submitConfirmCode() {
+    const code = document.getElementById('otpCode').value.trim();
+    if (!/^\d{6}$/.test(code)) {
+      setFieldErr('f-otp', true);
+      return;
+    }
+    setFieldErr('f-otp', false);
+
+    const btn = document.getElementById('confirmBtn');
+    btn.classList.add('loading');
+    btn.innerHTML = 'Confirming…';
+
+    const { data, error } = await window.casaSupabase.auth.verifyOtp({
+      email: pendingConfirmEmail,
+      token: code,
+      type: 'signup',
+    });
+
+    btn.classList.remove('loading');
+    btn.innerHTML = 'Confirm and continue <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
+
+    if (error || !data.session) {
+      setFieldErr('f-otp', true);
+      if (window.casaToast) casaToast(error?.message || 'That code didn\'t work — check it and try again.');
+      else alert(error?.message || "That code didn't work — check it and try again.");
+      return;
+    }
+
+    if (typeof casaAddNotification === 'function') {
+      casaAddNotification({
+        type: 'welcome',
+        title: currentRole === 'host' ? 'Welcome, host' : 'Welcome to Casa',
+        body: currentRole === 'host' ? 'Complete your listing to go live on the map and feed.' : 'Start browsing fee-free stays across the UK.',
+        href: currentRole === 'host' ? 'list.html' : 'browse.html',
+      });
+    }
+    window.location.href = (currentRole === 'host' ? 'list.html' : 'browse.html') + '?welcome=1';
+  }
+
+  async function resendConfirmCode() {
+    if (!pendingConfirmEmail) return;
+    const { error } = await window.casaSupabase.auth.resend({ type: 'signup', email: pendingConfirmEmail });
+    if (window.casaToast) casaToast(error ? error.message : 'Fresh code on its way to ' + pendingConfirmEmail);
+    else alert(error ? error.message : 'Fresh code on its way to ' + pendingConfirmEmail);
   }
 
   async function submitForgotPassword() {
@@ -416,10 +507,14 @@
     }
 
     if (!data.session) {
-      // Email confirmation required — no session yet, can't redirect into an authed page.
+      // Email confirmation required — no session yet, can't redirect into an
+      // authed page. Show the code-entry screen rather than just a toast:
+      // the magic link in that email signs in whatever device opens it,
+      // which is a real, common failure the moment that's a different
+      // device than the one waiting here — the code works from right here.
       btn.classList.remove('loading');
-      btn.innerHTML = 'Check your email to confirm →';
-      if (window.casaToast) casaToast('Almost there — check ' + email + ' to confirm your account.', 6000);
+      btn.innerHTML = 'Create my Casa account <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
+      showConfirm(email);
       return;
     }
 
