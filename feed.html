@@ -139,6 +139,48 @@
   .review-text i{font-style:italic;color:var(--brick)}
   .review-meta{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)}
 
+  /* ── VOTING ── */
+  .post-vote{display:flex;align-items:center;gap:3px;flex-shrink:0}
+  .vote-btn{background:none;border:none;cursor:pointer;padding:3px;border-radius:6px;color:var(--ink-4);display:inline-flex;align-items:center;justify-content:center;transition:all .1s}
+  .vote-btn:hover{background:var(--paper-2);color:var(--ink)}
+  .vote-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+  .vote-btn.up.on{color:var(--brick)}
+  .vote-btn.up.on svg{fill:var(--brick)}
+  .vote-btn.down.on{color:#3E6B7A}
+  .vote-btn.down.on svg{fill:#3E6B7A}
+  .vote-score{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink-2);min-width:18px;text-align:center}
+  .vote-score.pos{color:var(--brick)}
+  .vote-score.neg{color:#3E6B7A}
+
+  /* ── SPACES (communities) ── */
+  .space-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;cursor:pointer;transition:background .1s}
+  .space-row:hover{background:var(--surface)}
+  .space-row.active{background:var(--brick-pale)}
+  .space-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+  .space-name{flex:1;min-width:0;font-size:12.5px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .space-row.active .space-name{color:var(--brick-text);font-weight:500}
+  .space-join{font-size:10.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--rule-3);background:transparent;cursor:pointer;color:var(--ink-3);font-family:var(--sans);flex-shrink:0}
+  .space-join:hover{border-color:var(--ink);color:var(--ink)}
+  .space-join.joined{background:var(--moss-pale);color:var(--moss);border-color:transparent}
+
+  /* ── SORT TABS (hot/top/new) ── */
+  .sort-tabs{display:flex;gap:2px;background:var(--paper-2);border-radius:999px;padding:3px}
+  .sort-tab{padding:6px 13px;border-radius:999px;border:none;background:none;cursor:pointer;font-family:var(--sans);font-size:12px;color:var(--ink-3);display:inline-flex;align-items:center;gap:5px;transition:all .12s}
+  .sort-tab svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2}
+  .sort-tab.active{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(22,20,15,.08);font-weight:500}
+
+  /* ── THREADED REPLIES ── */
+  .reply-thread{margin-left:0}
+  .reply-thread .reply-thread{margin-left:24px;margin-top:10px;border-left:2px solid var(--rule-2);padding-left:12px}
+  .reply-vote{display:flex;align-items:center;gap:3px}
+  .reply-vote .vote-btn svg{width:13px;height:13px}
+  .reply-vote .vote-score{font-size:10.5px;min-width:14px}
+  .reply-actions-row{display:flex;align-items:center;gap:10px;margin-top:5px}
+  .reply-reply-btn{font-size:11px;color:var(--ink-4);background:none;border:none;cursor:pointer;font-family:var(--sans);padding:0}
+  .reply-reply-btn:hover{color:var(--brick)}
+  .nested-compose{display:none;gap:8px;margin-top:8px;align-items:flex-start}
+  .nested-compose.open{display:flex}
+
   /* ── POST ACTIONS ── */
   .post-actions{display:flex;align-items:center;padding:4px 10px 10px;gap:2px;border-top:1px solid var(--rule-2);margin-top:4px}
   .pa{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border-radius:8px;cursor:pointer;background:none;border:none;font-family:var(--sans);font-size:12px;color:var(--ink-3);transition:all .1s;text-decoration:none}
@@ -309,6 +351,10 @@
         <button class="side-link" data-type="tip" onclick="setType(this)"><svg viewBox="0 0 24 24"><path d="M3 20 9 10l4 6 2-3 6 7z"/></svg>Local picks<span class="ct" id="ct-tip">0</span></button>
         <button class="side-link" data-type="photo" onclick="setType(this)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 16-6-6-9 11"/></svg>Photos<span class="ct" id="ct-photo">0</span></button>
       </div>
+      <div class="side-sect" id="spacesSect" style="display:none">
+        <h5>Spaces</h5>
+        <div id="spacesList"></div>
+      </div>
       <div class="side-sect" id="popularHashtagsSect">
         <h5>Popular hashtags</h5>
         <div id="popularHashtags"><p style="font-size:12.5px;color:var(--ink-3)">Loading&hellip;</p></div>
@@ -331,6 +377,9 @@
           <button class="type-pill" onclick="pickType(this,'review')"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> Review</button>
           <button class="type-pill" onclick="pickType(this,'tip')"><svg viewBox="0 0 24 24"><path d="M3 20 9 10l4 6 2-3 6 7z"/></svg> Local tip</button>
           <button class="type-pill" onclick="pickType(this,'photo')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 16-6-6-9 11"/></svg> Photo</button>
+          <select id="composeSpace" style="display:none;border:1px solid var(--rule);border-radius:999px;padding:5px 10px;font-family:var(--sans);font-size:12px;color:var(--ink-2);background:var(--paper);outline:none;cursor:pointer">
+            <option value="">No space</option>
+          </select>
           <div class="compose-meta">
             <span class="char-count" id="charCount"></span>
             <button class="post-btn" id="postBtn" disabled onclick="submitPost()">Post</button>
@@ -357,11 +406,10 @@
         <button class="feed-tab" data-filter="hosts" onclick="setFilter(this)">From hosts <span class="ct" id="tab-hosts">0</span></button>
         <button class="feed-tab" data-filter="guests" onclick="setFilter(this)">From guests <span class="ct" id="tab-guests">0</span></button>
         <button class="feed-tab" data-filter="following" onclick="setFilter(this)">Following <span class="ct" id="tab-following">0</span></button>
-        <div class="feed-sort">
-          Sort: <select id="sortSel" onchange="renderFeed()">
-            <option value="recent">Recent</option>
-            <option value="liked">Top</option>
-          </select>
+        <div class="sort-tabs" id="sortTabs" style="margin-left:auto">
+          <button class="sort-tab active" data-sort="hot" onclick="setSort(this)"><svg viewBox="0 0 24 24"><path d="M12 22c-4 0-7-3-7-7 0-3 2-5 4-7 0 3 2 4 3 2 1-3-1-5 2-8 0 4 3 5 4 9 1 4-2 11-6 11z"/></svg>Hot</button>
+          <button class="sort-tab" data-sort="top" onclick="setSort(this)"><svg viewBox="0 0 24 24"><path d="M12 20V4"/><path d="M6 10l6-6 6 6"/></svg>Top</button>
+          <button class="sort-tab" data-sort="new" onclick="setSort(this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>New</button>
         </div>
       </div>
 
@@ -428,6 +476,7 @@
 <script src="casa-properties.js"></script>
 <script src="casa-hosts.js"></script>
 <script src="casa-feed-posts.js"></script>
+<script src="casa-community.js"></script>
 <script src="casa-images.js"></script>
 <script src="casa-map-geo.js"></script>
 <script src="casa-map-data.js"></script>
@@ -518,12 +567,14 @@ async function casaComputeCountyStats(countyKey) {
 // ═══════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════
-let state = {county:'all', type:'all', filter:'all', sort:'recent', tag:null, search:'', page:8};
+let state = {county:'all', type:'all', filter:'all', sort:'hot', tag:null, search:'', page:8, spaceId:null};
 const openReplies = new Set();
-const likedPosts = new Set();
 const savedPosts = new Set();
 let ALL_POSTS = [];
+let ALL_COMMUNITIES = [];
+let MY_COMMUNITY_IDS = new Set();
 const repliesCache = {};
+const replyVotesCache = {};
 
 // Flattens a feed_posts row (with its joined author profile) into the
 // shape renderPost/getFiltered expect, and seeds a real reply count from
@@ -533,6 +584,8 @@ function normalizePost(row, replyCount) {
     id: row.id,
     type: row.type,
     region: row.region || 'all',
+    communityId: row.community_id || null,
+    title: row.title || null,
     propertyId: row.property_id || null,
     body: row.body || '',
     reviewStars: row.review_stars || null,
@@ -541,9 +594,18 @@ function normalizePost(row, replyCount) {
     authorId: row.author?.id,
     authorName: row.author?.full_name || 'Guest',
     authorRole: row.author?.role || 'guest',
-    likes: 0,
+    score: row.score || 0,
+    upvotes: row.upvotes || 0,
+    downvotes: row.downvotes || 0,
+    myVote: 0,
     replyCount: replyCount || 0,
   };
+}
+
+function communityName(id) {
+  if (!id || !Array.isArray(ALL_COMMUNITIES)) return null;
+  const c = ALL_COMMUNITIES.find(x => x.id === id);
+  return c ? c.name : null;
 }
 
 // Resolves casaGetFollowedHosts()'s mix of CASA_HOSTS slugs (demo hosts)
@@ -565,6 +627,7 @@ function getFiltered() {
   const muted = casaGetMutedUserIds();
   let ps = ALL_POSTS.filter(p => !muted.includes(p.authorId));
   ps = ps.filter(p => state.county === 'all' || p.region === state.county || p.region === 'all');
+  if (state.spaceId) ps = ps.filter(p => p.communityId === state.spaceId);
   if (state.type !== 'all') ps = ps.filter(p => p.type === state.type);
   if (state.filter === 'hosts') ps = ps.filter(p => p.authorRole === 'host');
   if (state.filter === 'guests') ps = ps.filter(p => p.authorRole === 'guest');
@@ -574,7 +637,9 @@ function getFiltered() {
   }
   if (state.tag) ps = ps.filter(p => (p.body||'').toLowerCase().includes(state.tag.toLowerCase().replace('#','')));
   if (state.search) { const q = state.search.toLowerCase(); ps = ps.filter(p => (p.body||'').toLowerCase().includes(q) || p.authorName.toLowerCase().includes(q)); }
-  if (state.sort === 'liked') ps = [...ps].sort((a,b) => b.likes - a.likes);
+  if (state.sort === 'top') ps = [...ps].sort((a,b) => b.score - a.score);
+  else if (state.sort === 'hot') ps = [...ps].sort((a,b) => casaHotRank(b.score,b.createdAt) - casaHotRank(a.score,a.createdAt));
+  else ps = [...ps].sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
   return ps;
 }
 
@@ -587,7 +652,6 @@ const ROLE_BADGE = {Host:`<span class="badge moss"><svg class="i i-sm" viewBox="
 function renderStars(n){ return Array(n).fill('<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:#B05533;stroke:none"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>').join(''); }
 
 function renderPost(p, i) {
-  const liked = likedPosts.has(p.id);
   const saved = savedPosts.has(p.id);
   const repliesOpen = openReplies.has(p.id);
 
@@ -624,6 +688,7 @@ function renderPost(p, i) {
         </div>
         <div class="post-meta">
           <span class="when">${casaRelativeTime(p.createdAt)}</span><span class="sep">·</span><span>${casaEscapeHtml(regionLabel)}</span>
+          ${communityName(p.communityId) ? `<span class="sep">·</span><span style="color:var(--brick)">${casaEscapeHtml(communityName(p.communityId))}</span>` : ''}
         </div>
       </div>
       <div style="position:relative">
@@ -641,10 +706,15 @@ function renderPost(p, i) {
     ${p.body && !p.reviewStars ? `<div class="post-body"><p>${casaFormatFeedBody(p.body)}</p></div>` : ''}
     ${revH}${imgH}${propH}${ctaH}
     <div class="post-actions">
-      <button class="pa${liked?' liked':''}" onclick="likePost(this,${p.id})">
-        <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg>
-        <span class="pa-count" id="likes-${p.id}">${p.likes}</span>
-      </button>
+      <div class="post-vote">
+        <button class="vote-btn up${p.myVote===1?' on':''}" onclick="votePost(${p.id},1)" aria-label="Upvote">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg>
+        </button>
+        <span class="vote-score${p.score>0?' pos':p.score<0?' neg':''}" id="score-${p.id}">${p.score}</span>
+        <button class="vote-btn down${p.myVote===-1?' on':''}" onclick="votePost(${p.id},-1)" aria-label="Downvote">
+          <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7 7 7-7"/></svg>
+        </button>
+      </div>
       <button class="pa${repliesOpen?' active':''}" onclick="toggleReplies(${p.id},this)">
         <svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.4 7.3L4 21l1.7-5.6A8 8 0 1 1 21 12z"/></svg>
         <span class="pa-count" id="replyCount-${p.id}">${p.replyCount}</span>
@@ -654,7 +724,7 @@ function renderPost(p, i) {
         <svg viewBox="0 0 24 24"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg>
         Share
       </button>
-      <button class="pa${saved?' saved':''}" onclick="toggleSave(this,${p.id})">
+      <button class="pa pa-save${saved?' saved':''}" onclick="toggleSave(this,${p.id})">
         <svg viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg>
         ${saved ? 'Saved' : 'Save'}
       </button>
@@ -665,7 +735,6 @@ function renderPost(p, i) {
 }
 
 function renderFeed() {
-  state.sort = document.getElementById('sortSel').value;
   const ps = getFiltered();
   const visible = ps.slice(0, state.page);
   const container = document.getElementById('feedPosts');
@@ -782,6 +851,61 @@ function setFilter(btn) {
   renderFeed();
 }
 
+function setSort(btn) {
+  document.querySelectorAll('.sort-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  state.sort = btn.dataset.sort;
+  renderFeed();
+}
+
+function selectSpace(id) {
+  state.spaceId = state.spaceId === id ? null : id;
+  renderSpacesList();
+  renderFeed();
+}
+
+async function toggleJoinSpace(id, btn) {
+  const { data: { session } } = window.casaSupabase ? await window.casaSupabase.auth.getSession() : { data: {} };
+  if (!session) { toast('Please sign in to join a space'); window.location.href = 'signup.html'; return; }
+  const joined = MY_COMMUNITY_IDS.has(id);
+  btn.disabled = true;
+  const ok = joined ? await casaLeaveCommunity(id) : await casaJoinCommunity(id);
+  btn.disabled = false;
+  if (!ok) { toast('Could not update — please try again'); return; }
+  if (joined) MY_COMMUNITY_IDS.delete(id); else MY_COMMUNITY_IDS.add(id);
+  renderSpacesList();
+  toast(joined ? 'Left space' : 'Joined space ✓');
+}
+
+function renderSpacesList() {
+  const topics = ALL_COMMUNITIES.filter(c => c.kind !== 'region');
+  const sect = document.getElementById('spacesSect');
+  if (!sect) return;
+  if (!topics.length) { sect.style.display = 'none'; return; }
+  sect.style.display = '';
+  document.getElementById('spacesList').innerHTML = topics.map(c => {
+    const joined = MY_COMMUNITY_IDS.has(c.id);
+    const active = state.spaceId === c.id;
+    return `<div class="space-row${active ? ' active' : ''}" onclick="selectSpace(${c.id})">
+      <span class="space-dot" style="background:${c.color || '#B05533'}"></span>
+      <span class="space-name">${casaEscapeHtml(c.name)}</span>
+      <button class="space-join${joined ? ' joined' : ''}" onclick="event.stopPropagation();toggleJoinSpace(${c.id},this)">${joined ? 'Joined' : 'Join'}</button>
+    </div>`;
+  }).join('');
+}
+
+async function initSpaces() {
+  ALL_COMMUNITIES = await casaFetchCommunities();
+  MY_COMMUNITY_IDS = await casaFetchMyCommunityIds();
+  renderSpacesList();
+  const topics = ALL_COMMUNITIES.filter(c => c.kind !== 'region');
+  const sel = document.getElementById('composeSpace');
+  if (sel && topics.length) {
+    sel.style.display = '';
+    sel.innerHTML = '<option value="">No space</option>' + topics.map(c => `<option value="${c.id}">${casaEscapeHtml(c.name)}</option>`).join('');
+  }
+}
+
 function filterByTag(tag) {
   const clean = tag.replace(/^#/, '').toLowerCase();
   window.location.href = `tag.html?tag=${encodeURIComponent(clean)}`;
@@ -793,46 +917,141 @@ function clearTagBanner() { document.getElementById('tagBanner').classList.remov
 function onSearch(val) { state.search = val; renderFeed(); }
 function loadMore() { state.page += 6; renderFeed(); }
 
-function likePost(btn, id) {
-  const ct = document.getElementById('likes-'+id);
-  const post = ALL_POSTS.find(p=>p.id===id);
+async function votePost(id, dir) {
+  const post = ALL_POSTS.find(p => p.id === id);
   if (!post) return;
-  if (likedPosts.has(id)) { likedPosts.delete(id); btn.classList.remove('liked'); post.likes--; }
-  else { likedPosts.add(id); btn.classList.add('liked'); post.likes++; }
-  if (ct) ct.textContent = post.likes;
+  const { data: { session } } = window.casaSupabase ? await window.casaSupabase.auth.getSession() : { data: {} };
+  if (!session) { toast('Please sign in to vote'); window.location.href = 'signup.html'; return; }
+
+  const prev = post.myVote || 0;
+  const next = prev === dir ? 0 : dir; // clicking the same arrow again removes the vote
+  post.score = post.score - prev + next;
+  post.myVote = next;
+  updateVoteUI(id, post);
+
+  const result = await casaVotePost(id, next);
+  if (result === null) {
+    post.score = post.score - next + prev;
+    post.myVote = prev;
+    updateVoteUI(id, post);
+    toast('Could not vote — please try again');
+  }
 }
 
-function toggleSave(btn, id) {
-  if (savedPosts.has(id)) { savedPosts.delete(id); btn.classList.remove('saved'); btn.lastChild.textContent = ' Save'; toast('Removed from saved'); }
-  else { savedPosts.add(id); btn.classList.add('saved'); btn.lastChild.textContent = ' Saved'; toast('Post saved ✓'); }
+function updateVoteUI(id, post) {
+  const scoreEl = document.getElementById('score-' + id);
+  if (scoreEl) { scoreEl.textContent = post.score; scoreEl.className = 'vote-score' + (post.score > 0 ? ' pos' : post.score < 0 ? ' neg' : ''); }
+  const card = document.getElementById('post-' + id);
+  if (!card) return;
+  card.querySelector('.vote-btn.up')?.classList.toggle('on', post.myVote === 1);
+  card.querySelector('.vote-btn.down')?.classList.toggle('on', post.myVote === -1);
 }
 
-function savePostMenu(id, btn) {
-  if (!savedPosts.has(id)) { savedPosts.add(id); toast('Post saved ✓'); }
+// Real saves write through to post_saves when signed in; falls back to a
+// session-local save (same as before Phase 07) when signed out, so nothing
+// regresses for an anonymous visitor just browsing.
+async function setSaved(id, saved) {
+  if (saved) savedPosts.add(id); else savedPosts.delete(id);
+  return casaToggleSavePost(id);
+}
+
+function updateSaveButtonUI(id) {
+  const btn = document.querySelector(`#post-${id} .pa-save`);
+  if (!btn) return;
+  const saved = savedPosts.has(id);
+  btn.classList.toggle('saved', saved);
+  btn.lastChild.textContent = saved ? ' Saved' : ' Save';
+}
+
+async function toggleSave(btn, id) {
+  const wasSaved = savedPosts.has(id);
+  await setSaved(id, !wasSaved);
+  updateSaveButtonUI(id);
+  toast(!wasSaved ? 'Post saved ✓' : 'Removed from saved');
+}
+
+async function savePostMenu(id) {
+  if (!savedPosts.has(id)) { await setSaved(id, true); updateSaveButtonUI(id); toast('Post saved ✓'); }
   closeMenus();
+}
+
+function autoGrowTA(ta) { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 100) + 'px'; }
+
+function bumpReplyCount(postId) {
+  const post = ALL_POSTS.find(p => p.id === postId);
+  if (!post) return;
+  post.replyCount++;
+  const ctEl = document.getElementById('replyCount-' + postId);
+  if (ctEl) ctEl.textContent = post.replyCount;
+}
+
+function flattenReplyIds(tree) {
+  const ids = [];
+  (function walk(nodes) { nodes.forEach(n => { ids.push(n.id); if (n.children) walk(n.children); }); })(tree);
+  return ids;
+}
+
+function findReplyNode(nodes, id) {
+  for (const n of nodes) {
+    if (n.id === id) return n;
+    if (n.children) { const hit = findReplyNode(n.children, id); if (hit) return hit; }
+  }
+  return null;
+}
+
+function insertReplyIntoTree(nodes, parentId, newNode) {
+  for (const n of nodes) {
+    if (n.id === parentId) { n.children = n.children || []; n.children.push(newNode); return true; }
+    if (n.children && insertReplyIntoTree(n.children, parentId, newNode)) return true;
+  }
+  return false;
+}
+
+// Threaded (Reddit-style) reply node — recurses into .children, each of
+// which is nested visually via the .reply-thread .reply-thread CSS rule.
+function renderReplyNode(r, postId, replyVotes, myInitial) {
+  const name = r.author?.full_name || 'Guest';
+  const role = r.author?.role === 'host' ? 'Host' : 'Guest';
+  const roleClass = r.author?.role === 'guest' ? ' guest' : '';
+  const myVote = replyVotes[r.id] || 0;
+  const score = r.score || 0;
+  const childrenHtml = (r.children || []).map(c => renderReplyNode(c, postId, replyVotes, myInitial)).join('');
+  return `<div class="reply-thread" data-reply-id="${r.id}">
+      <div class="reply">
+        <div class="av sm${roleClass}">${casaEscapeHtml(name.charAt(0).toUpperCase())}</div>
+        <div class="reply-bubble">
+          <div class="rh"><span class="rn">${casaEscapeHtml(name)}</span><span style="font-size:11px;color:var(--ink-4);margin-left:4px">${role}</span><span class="rt" style="margin-left:auto">${casaRelativeTime(r.created_at)}</span></div>
+          <div class="rb">${casaFormatFeedBody(r.body)}</div>
+          <div class="reply-actions-row">
+            <div class="reply-vote">
+              <button class="vote-btn up${myVote===1?' on':''}" onclick="voteReply(${r.id},1)" aria-label="Upvote reply"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7-7 7 7"/></svg></button>
+              <span class="vote-score${score>0?' pos':score<0?' neg':''}" id="reply-score-${r.id}">${score}</span>
+              <button class="vote-btn down${myVote===-1?' on':''}" onclick="voteReply(${r.id},-1)" aria-label="Downvote reply"><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7 7 7-7"/></svg></button>
+            </div>
+            <button class="reply-reply-btn" onclick="toggleNestedCompose(${r.id})">Reply</button>
+          </div>
+          <div class="nested-compose" id="nested-compose-${r.id}">
+            <div class="av sm">${myInitial}</div>
+            <textarea class="rc-input" placeholder="Reply to ${casaEscapeHtml(name)}…" rows="1" oninput="autoGrowTA(this)"></textarea>
+            <button class="rc-send" onclick="sendNestedReply(this,${postId},${r.id})">Reply</button>
+          </div>
+        </div>
+      </div>
+      ${childrenHtml}
+    </div>`;
 }
 
 function renderRepliesSection(postId) {
   const section = document.getElementById('replies-'+postId);
   if (!section) return;
-  const rs = repliesCache[postId] || [];
+  const tree = repliesCache[postId] || [];
+  const replyVotes = replyVotesCache[postId] || {};
   const myInitial = casaEscapeHtml((casaGetUser()?.name || '?').charAt(0).toUpperCase());
   section.innerHTML = `
-    ${rs.map(r => {
-      const name = r.author?.full_name || 'Guest';
-      const role = r.author?.role === 'host' ? 'Host' : 'Guest';
-      const roleClass = r.author?.role === 'guest' ? ' guest' : '';
-      return `<div class="reply">
-          <div class="av sm${roleClass}">${casaEscapeHtml(name.charAt(0).toUpperCase())}</div>
-          <div class="reply-bubble">
-            <div class="rh"><span class="rn">${casaEscapeHtml(name)}</span><span style="font-size:11px;color:var(--ink-4);margin-left:4px">${role}</span><span class="rt" style="margin-left:auto">${casaRelativeTime(r.created_at)}</span></div>
-            <div class="rb">${casaFormatFeedBody(r.body)}</div>
-          </div>
-        </div>`;
-    }).join('')}
+    ${tree.map(r => renderReplyNode(r, postId, replyVotes, myInitial)).join('')}
     <div class="reply-compose">
       <div class="av sm">${myInitial}</div>
-      <textarea class="rc-input" placeholder="${rs.length ? 'Reply to this thread…' : 'Be the first to reply…'}" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+      <textarea class="rc-input" id="rc-root-${postId}" placeholder="${tree.length ? 'Reply to this thread…' : 'Be the first to reply…'}" rows="1" oninput="autoGrowTA(this)"></textarea>
       <button class="rc-send" onclick="sendReply(this,${postId})">Reply</button>
     </div>`;
 }
@@ -848,34 +1067,90 @@ async function toggleReplies(id, btn) {
   openReplies.add(id); section.classList.add('open'); btn.classList.add('active'); if(chevron) chevron.style.transform='rotate(180deg)';
   if (!repliesCache[id]) {
     section.innerHTML = '<p style="font-size:12.5px;color:var(--ink-3);padding:8px 0">Loading replies…</p>';
-    repliesCache[id] = await casaFetchRepliesForPost(id);
+    repliesCache[id] = await casaFetchThreadedReplies(id);
+    replyVotesCache[id] = await casaGetMyReplyVotes(flattenReplyIds(repliesCache[id]));
   }
   renderRepliesSection(id);
 }
 
+function toggleNestedCompose(replyId) {
+  const box = document.getElementById('nested-compose-'+replyId);
+  if (!box) return;
+  const open = box.classList.contains('open');
+  document.querySelectorAll('.nested-compose.open').forEach(b => b.classList.remove('open'));
+  if (!open) { box.classList.add('open'); box.querySelector('textarea')?.focus(); }
+}
+
 async function sendReply(btn, postId) {
-  const ta = btn.previousElementSibling;
+  const ta = document.getElementById('rc-root-'+postId) || btn.previousElementSibling;
   const text = ta.value.trim();
   if (!text) { ta.focus(); return; }
   const { data: { session } } = window.casaSupabase ? await window.casaSupabase.auth.getSession() : { data: {} };
   if (!session) { toast('Please sign in to reply'); window.location.href = 'signup.html'; return; }
 
   btn.disabled = true;
-  const reply = await casaCreateFeedReply(postId, text);
+  const reply = await casaCreateThreadedReply(postId, text, null);
   btn.disabled = false;
   if (!reply) { toast('Could not post reply — please try again'); return; }
 
   if (!repliesCache[postId]) repliesCache[postId] = [];
-  repliesCache[postId].push(reply);
+  repliesCache[postId].push(Object.assign({}, reply, { children: [] }));
   renderRepliesSection(postId);
-  ta.value = ''; ta.style.height = 'auto';
+  bumpReplyCount(postId);
+}
 
-  const post = ALL_POSTS.find(p=>p.id===postId);
-  if (post) {
-    post.replyCount++;
-    const ctEl = document.getElementById('replyCount-'+postId);
-    if (ctEl) ctEl.textContent = post.replyCount;
+async function sendNestedReply(btn, postId, parentId) {
+  const box = btn.closest('.nested-compose');
+  const ta = box.querySelector('textarea');
+  const text = ta.value.trim();
+  if (!text) { ta.focus(); return; }
+  const { data: { session } } = window.casaSupabase ? await window.casaSupabase.auth.getSession() : { data: {} };
+  if (!session) { toast('Please sign in to reply'); window.location.href = 'signup.html'; return; }
+
+  btn.disabled = true;
+  const reply = await casaCreateThreadedReply(postId, text, parentId);
+  btn.disabled = false;
+  if (!reply) { toast('Could not post reply — please try again'); return; }
+
+  insertReplyIntoTree(repliesCache[postId] || [], parentId, Object.assign({}, reply, { children: [] }));
+  renderRepliesSection(postId);
+  bumpReplyCount(postId);
+}
+
+async function voteReply(replyId, dir) {
+  const { data: { session } } = window.casaSupabase ? await window.casaSupabase.auth.getSession() : { data: {} };
+  if (!session) { toast('Please sign in to vote'); window.location.href = 'signup.html'; return; }
+
+  let found = null, ownerPostId = null;
+  for (const postId in repliesCache) {
+    const hit = findReplyNode(repliesCache[postId], replyId);
+    if (hit) { found = hit; ownerPostId = postId; break; }
   }
+  if (!found) return;
+
+  if (!replyVotesCache[ownerPostId]) replyVotesCache[ownerPostId] = {};
+  const prev = replyVotesCache[ownerPostId][replyId] || 0;
+  const next = prev === dir ? 0 : dir;
+  found.score = (found.score || 0) - prev + next;
+  replyVotesCache[ownerPostId][replyId] = next;
+  updateReplyVoteUI(replyId, found, next);
+
+  const result = await casaVoteReply(replyId, next);
+  if (result === null) {
+    found.score = found.score - next + prev;
+    replyVotesCache[ownerPostId][replyId] = prev;
+    updateReplyVoteUI(replyId, found, prev);
+    toast('Could not vote — please try again');
+  }
+}
+
+function updateReplyVoteUI(replyId, node, myVote) {
+  const scoreEl = document.getElementById('reply-score-' + replyId);
+  if (scoreEl) { scoreEl.textContent = node.score; scoreEl.className = 'vote-score' + (node.score > 0 ? ' pos' : node.score < 0 ? ' neg' : ''); }
+  const wrap = document.querySelector(`[data-reply-id="${replyId}"] > .reply .reply-vote`);
+  if (!wrap) return;
+  wrap.querySelector('.vote-btn.up')?.classList.toggle('on', myVote === 1);
+  wrap.querySelector('.vote-btn.down')?.classList.toggle('on', myVote === -1);
 }
 
 function sharePost(id) {
@@ -986,12 +1261,16 @@ async function submitPost() {
   const propertyId = draftProp?.propertyId || (qp.get('property') ? Number(qp.get('property')) : null);
   const region = state.county === 'all' ? (draftProp?.county || 'all') : state.county;
 
+  const spaceVal = document.getElementById('composeSpace')?.value || '';
+  const communityId = spaceVal ? Number(spaceVal) : null;
+
   const postBtn = document.getElementById('postBtn');
   postBtn.disabled = true;
-  const row = await casaCreateFeedPost({ type, region, propertyId, body: text });
+  const row = await casaCreatePost({ type, region, communityId, propertyId, body: text });
   if (!row) { toast('Could not post — please try again'); postBtn.disabled = false; return; }
 
   ALL_POSTS.unshift(normalizePost(row));
+  if (document.getElementById('composeSpace')) document.getElementById('composeSpace').value = '';
   if (typeof casaMapPersistFeedPost === 'function') {
     casaMapPersistFeedPost({
       id: row.id,
@@ -1083,7 +1362,19 @@ function renderPopularHashtags() {
   const composeAv = document.getElementById('composeAv');
   if (composeAv) composeAv.textContent = casaEscapeHtml((casaGetUser()?.name || '?').charAt(0).toUpperCase());
   if (typeof casaRefreshProperties === 'function') await casaRefreshProperties();
+  await initSpaces();
   ALL_POSTS = await loadAllPosts();
+
+  // Merge in the signed-in user's own votes/saves so the UI shows the
+  // right arrow lit up / "Saved" state on first paint, not just after
+  // they interact with a post this session.
+  const [voteMap, savedIds] = await Promise.all([
+    casaGetMyPostVotes(ALL_POSTS.map(p => p.id)),
+    casaGetMySavedPostIds(),
+  ]);
+  ALL_POSTS.forEach(p => { p.myVote = voteMap[p.id] || 0; });
+  savedIds.forEach(id => savedPosts.add(id));
+
   updateSidebar();
   renderFeed();
   renderPopularHashtags();
