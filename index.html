@@ -292,7 +292,19 @@
       <div class="seg active" onclick="goSearch()">
         <span class="lbl">Where</span>
         <div class="val">
-          <input type="text" placeholder="Lake District, Cornwall, #cottage…" value="Lake District">
+          <input type="text" placeholder="Where to? Try a county, town, or #feature" list="casaWhereList" autocomplete="off" aria-label="Where do you want to stay?">
+          <datalist id="casaWhereList">
+            <option value="Lake District"></option>
+            <option value="Cornwall"></option>
+            <option value="Highlands"></option>
+            <option value="Isle of Skye"></option>
+            <option value="Norfolk"></option>
+            <option value="Yorkshire Dales"></option>
+            <option value="Cotswolds"></option>
+            <option value="Pembrokeshire"></option>
+            <option value="Snowdonia"></option>
+            <option value="Causeway Coast"></option>
+          </datalist>
         </div>
       </div>
       <div class="seg" onclick="goSearch()">
@@ -620,9 +632,20 @@ function goSearch() {
   document.querySelectorAll('.search .seg').forEach(s => s.classList.remove('active'));
   event.currentTarget.classList.add('active');
 }
+// Known region labels -> browse region slugs, so picking a county lands on an
+// exact-match filtered browse; anything else falls back to a free-text search.
+const CASA_HOME_REGION_SLUGS = {
+  'lake district': 'lake-district', 'cornwall': 'cornwall', 'highlands': 'highlands',
+  'isle of skye': 'skye', 'skye': 'skye', 'norfolk': 'norfolk',
+  'yorkshire dales': 'yorkshire', 'yorkshire': 'yorkshire', 'n. yorkshire': 'yorkshire',
+  'cotswolds': 'cotswolds', 'pembrokeshire': 'pembrokeshire', 'snowdonia': 'snowdonia',
+  'causeway coast': 'causeway', 'causeway': 'causeway', 'antrim': 'causeway',
+};
 function goToBrowseSearch() {
-  const where = document.querySelector('.search .seg input[type="text"]')?.value.trim();
-  window.location.href = where ? `browse.html?where=${encodeURIComponent(where)}` : 'browse.html';
+  const where = (document.querySelector('.search .seg input[type="text"]')?.value || '').trim();
+  if (!where) { window.location.href = 'browse.html'; return; }
+  const slug = CASA_HOME_REGION_SLUGS[where.toLowerCase()];
+  window.location.href = slug ? `browse.html?region=${slug}` : `browse.html?where=${encodeURIComponent(where)}`;
 }
 document.querySelector('.search-go').addEventListener('click', e => {
   e.stopPropagation();

@@ -9,6 +9,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="casa.css?v=2">
 <link rel="stylesheet" href="casa-tech.css?v=4">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
 <style>
   /* Compact nav search */
   .nav-search {
@@ -208,6 +210,90 @@
   /* Override: Verified badge — warm slate, not green (avoids Airbnb similarity) */
   .badge.verified-badge { background: rgba(22,20,15,0.08); color: var(--ink); border: 1px solid rgba(22,20,15,0.12); }
   .badge.verified-badge svg { stroke: var(--brick); }
+
+  /* ── Real nav search: Where input + live location dropdown ── */
+  .nav-search .where-seg input {
+    border: none; background: transparent; outline: none; width: 100%;
+    font-family: var(--sans); font-size: 13px; color: var(--ink); padding: 1px 0;
+  }
+  .nav-search .where-seg input::placeholder { color: var(--ink-4); }
+  .where-pop {
+    display: none; position: absolute; top: calc(100% + 10px); left: -6px;
+    width: 288px; max-height: 340px; overflow-y: auto; z-index: 200;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 14px;
+    box-shadow: 0 14px 40px rgba(22,20,15,0.16); padding: 6px;
+  }
+  .nav-search.where-open .where-pop { display: block; }
+  .where-pop .wp-group { font-family: var(--mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-4); padding: 8px 10px 4px; }
+  .where-opt {
+    display: flex; align-items: center; gap: 10px; width: 100%; text-align: left;
+    padding: 9px 10px; border-radius: 9px; border: none; background: none; cursor: pointer;
+    font-family: var(--sans); font-size: 13.5px; color: var(--ink-2);
+  }
+  .where-opt:hover, .where-opt.kb-active { background: var(--paper); color: var(--ink); }
+  .where-opt svg { width: 15px; height: 15px; stroke: var(--ink-3); fill: none; stroke-width: 1.6; flex-shrink: 0; }
+  .where-opt .wo-ct { margin-left: auto; font-family: var(--mono); font-size: 10px; color: var(--ink-4); }
+  .where-opt .wo-sub { color: var(--ink-4); font-size: 11.5px; }
+  .nav-search .guest-ctl { display: flex; align-items: center; gap: 8px; }
+  .nav-search .guest-ctl button {
+    width: 20px; height: 20px; border: 1px solid var(--rule-3); border-radius: 50%;
+    background: transparent; cursor: pointer; color: var(--ink); font-size: 13px; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .nav-search .guest-ctl button:hover { border-color: var(--ink); }
+  .nav-search .guest-ctl .v { font-size: 13px; min-width: 30px; text-align: center; }
+
+  /* ── Region bar ── */
+  .region-bar { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 4px 0 18px; }
+  .region-bar::-webkit-scrollbar { display: none; }
+  .region-pill {
+    flex-shrink: 0; display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 15px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+    background: var(--surface); border: 1px solid var(--rule); font-family: var(--sans);
+    font-size: 13px; color: var(--ink-2); transition: all .12s;
+  }
+  .region-pill:hover { border-color: var(--ink); color: var(--ink); }
+  .region-pill.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .region-pill .rp-ct { font-family: var(--mono); font-size: 10px; opacity: .55; }
+  .region-pill.active .rp-ct { opacity: .7; }
+
+  /* ── Filter count badge on All filters ── */
+  .fb-filter-count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 16px; height: 16px; padding: 0 4px; margin-left: 2px;
+    background: var(--brick); color: #fff; border-radius: 999px;
+    font-family: var(--mono); font-size: 9px;
+  }
+
+  /* ── Real Leaflet mini-map ── */
+  #miniMapLeaflet { position: absolute; inset: 0; z-index: 0; }
+  #miniMapLeaflet .leaflet-control-attribution { font-size: 9px; background: rgba(251,250,246,0.85); }
+  .side .map-overlay { z-index: 400; }
+  .side .open-map-btn { z-index: 400; }
+  .casa-map-pin-price {
+    background: var(--brick); color: #fff; border: 2px solid #fff;
+    border-radius: 999px; padding: 3px 9px; font-family: var(--sans); font-weight: 500;
+    font-size: 11px; white-space: nowrap; box-shadow: 0 2px 8px rgba(22,20,15,.25);
+  }
+
+  /* ── Filter modal groups ── */
+  .fm-group { margin-bottom: 22px; }
+  .fm-group > h4 { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 11px; }
+  .fm-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fm-chip {
+    display: inline-flex; align-items: center; gap: 7px; padding: 8px 13px;
+    border-radius: 999px; border: 1px solid var(--rule); background: var(--paper);
+    font-family: var(--sans); font-size: 13px; color: var(--ink-2); cursor: pointer; transition: all .12s;
+  }
+  .fm-chip:hover { border-color: var(--ink); }
+  .fm-chip.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .fm-chip svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+  .fm-price { display: flex; align-items: center; gap: 12px; }
+  .fm-price input { flex: 1; border: 1px solid var(--rule); border-radius: 10px; padding: 10px 12px; font-family: var(--sans); font-size: 14px; color: var(--ink); outline: none; background: var(--paper); }
+  .fm-price input:focus { border-color: var(--brick); }
+  .fm-sleeps { display: flex; align-items: center; gap: 14px; }
+  .fm-sleeps button { width: 32px; height: 32px; border: 1px solid var(--rule-3); border-radius: 50%; background: transparent; cursor: pointer; font-size: 17px; color: var(--ink); }
+  .fm-sleeps .v { font-family: var(--serif); font-style: italic; font-size: 22px; color: var(--brick); min-width: 34px; text-align: center; }
 </style>
 </head>
 <body class="tech">
@@ -217,17 +303,21 @@
     <span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span>
   </a>
 
-  <div class="nav-search" onclick="window.location.href='#'">
-    <div class="seg" style="flex:1.4">
-      <span class="l">Where</span><span class="v">Lake District</span>
+  <div class="nav-search" id="navSearch">
+    <div class="seg where-seg" style="flex:1.6; position:relative">
+      <span class="l">Where</span>
+      <input id="whereInput" type="text" placeholder="Anywhere in the UK" autocomplete="off" spellcheck="false">
+      <div class="where-pop" id="wherePop"></div>
     </div>
-    <div class="seg">
-      <span class="l">Dates</span><span class="v">12 – 19 Jul</span>
+    <div class="seg guest-seg">
+      <span class="l">Guests</span>
+      <div class="guest-ctl">
+        <button type="button" class="gminus" onclick="event.stopPropagation();navGuests(-1)" aria-label="Fewer guests">&minus;</button>
+        <span class="v" id="guestVal">Any</span>
+        <button type="button" onclick="event.stopPropagation();navGuests(1)" aria-label="More guests">+</button>
+      </div>
     </div>
-    <div class="seg">
-      <span class="l">Guests</span><span class="v">2 adults</span>
-    </div>
-    <button class="go"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+    <button class="go" onclick="runNavSearch()" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
   </div>
 
   <div class="nav-right">
@@ -252,6 +342,9 @@
         <div style="margin-top:4px; color: var(--ink-4); font-family: var(--mono); font-size: 11px; letter-spacing:.1em; text-transform:uppercase;" id="statPriceRange">From £85 · avg. £175 / night</div>
       </div>
     </div>
+
+    <!-- REGION BAR — every county/region we have stays in, built from data -->
+    <div class="region-bar" id="regionBar"></div>
 
     <!-- CATEGORY BAR — 10 clearest options -->
     <div class="cat-bar">
@@ -299,28 +392,15 @@
 
     <!-- FILTERS -->
     <div class="filter-bar">
-      <button class="fb-pill" onclick="this.classList.toggle('active')">
+      <button class="fb-pill fb-allfilters" onclick="openFilterModal()">
         <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="M4 5h16l-6 8v6l-4-2v-4z"/></svg>
-        All filters
+        All filters<span class="fb-filter-count" id="fbFilterCount" hidden></span>
       </button>
       <div class="fb-sep"></div>
-      <!-- Sleeps stepper — replaces "Beds / Rooms" -->
-      <div class="fb-pill" style="gap:10px;cursor:default;padding:5px 14px">
-        <span style="color:var(--ink-3);font-size:12px;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase">Sleeps</span>
-        <button id="sleepsMinus" onclick="changeSleeps(-1)" style="width:22px;height:22px;border:1px solid var(--rule-3);border-radius:50%;background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:15px;color:var(--ink)">−</button>
-        <span id="sleepsVal" style="font-family:var(--serif);font-style:italic;font-size:19px;color:var(--brick);min-width:28px;text-align:center">2+</span>
-        <button onclick="changeSleeps(1)" style="width:22px;height:22px;border:1px solid var(--rule-3);border-radius:50%;background:transparent;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;font-size:15px;color:var(--ink)">+</button>
-      </div>
-      <div class="fb-sep"></div>
       <span class="fb-group-label">Features</span>
-      <button class="fb-pill" id="fp-pets" onclick="togglePill(this,'pets')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="10" r="1.5"/><circle cx="18.5" cy="10" r="1.5"/><circle cx="9.5" cy="6.5" r="1.5"/><circle cx="14.5" cy="6.5" r="1.5"/><path d="M12 12.5c-2.3 0-4 1.8-4 3.9 0 1.6 1.3 2.6 4 2.6s4-1 4-2.6c0-2.1-1.7-3.9-4-3.9z"/></svg>Pets</button>
-      <button class="fb-pill" id="fp-fire" onclick="togglePill(this,'fire')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c-4 0-7-3-7-7 0-3 2-5 4-7 0 3 2 4 3 2 1-3-1-5 2-8 0 4 3 5 4 9 1 4-2 11-6 11z"/></svg>Wood burner</button>
-      <button class="fb-pill" id="fp-sea" onclick="togglePill(this,'sea')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2"/><path d="M2 17c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2 2-2 4-2"/></svg>Sea view</button>
-      <button class="fb-pill" id="fp-tub" onclick="togglePill(this,'tub')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12V8a4 4 0 0 1 8 0v4"/><path d="M2 16h20"/><path d="M4 18h16l-1 4H5z"/></svg>Hot tub</button>
-      <button class="fb-pill" id="fp-offgrid" onclick="togglePill(this,'offgrid')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 13h6l-1 9 9-11h-6z"/></svg>Off-grid</button>
-      <button class="fb-pill" id="fp-romantic" onclick="togglePill(this,'romantic')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg>Romantic</button>
-      <button class="fb-pill" id="fp-garden" onclick="togglePill(this,'garden')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-6"/><path d="M12 15c-3 0-4.5-2-4.5-4.5 0 0 2-.4 3.5 1 .6.6 1 1.5 1 3.5"/><path d="M12 13c0-2 .4-2.9 1-3.5C14.5 8 16.5 8.5 16.5 8.5 16.5 11 15 13 12 13z"/></svg>Garden</button>
-      <button class="fb-pill" id="fp-sauna" onclick="togglePill(this,'sauna')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14h16v2.5a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z"/><path d="M9 10.5c0-1.2-1-1.8-1-3s1-1.8 1-3M15 10.5c0-1.2-1-1.8-1-3s1-1.8 1-3"/></svg>Sauna</button>
+      <!-- feature pills are generated from the amenities that actually exist
+           across live listings (incl. host-uploaded) — see renderFeaturePills() -->
+      <span id="featurePills" style="display:contents"></span>
       <div class="fb-right">
         <span class="fb-count" id="fbCount">8 stays</span>
         <select class="fb-sort" id="sortSelect" onchange="sortAndRender()">
@@ -343,32 +423,11 @@
     <aside class="side">
       <div class="mini-map">
 
-        <svg class="uk" viewBox="0 0 460 600" preserveAspectRatio="xMidYMid meet">
-          <!-- Simplified UK silhouette -->
-          <path d="M210 60 L260 80 L280 130 L260 180 L290 220 L260 250 L220 240 L180 220 L155 170 L165 110 Z" fill="#D8CFBC" opacity="0.85"/>
-          <path d="M155 220 L290 220 L300 280 L320 380 L290 460 L260 510 L200 540 L170 510 L150 450 L165 380 L150 320 L145 270 Z" fill="#D8CFBC" opacity="0.85"/>
-          <path d="M120 290 L170 285 L165 380 L150 400 L130 380 L120 340 Z" fill="#D8CFBC" opacity="0.85"/>
-          <path d="M90 200 L130 195 L138 240 L115 250 L90 230 Z" fill="#D8CFBC" opacity="0.85"/>
-        </svg>
+        <div id="miniMapLeaflet"></div>
 
         <div class="map-overlay">
-          <div class="ttl">The <i>Lake District</i></div>
-          <div class="ms">214 stays · Cumbria</div>
-        </div>
-
-        <!-- Result pins (all in the Lakes region) -->
-        <div class="pin active" style="left: 38%; top: 50%">£175</div>
-        <div class="pin" style="left: 32%; top: 46%">£215</div>
-        <div class="pin" style="left: 41%; top: 48%">£145</div>
-        <div class="pin" style="left: 35%; top: 52%">£240</div>
-        <div class="pin" style="left: 30%; top: 53%">£95</div>
-        <div class="pin" style="left: 38%; top: 56%">£165</div>
-        <div class="pin" style="left: 33%; top: 54%">£195</div>
-        <div class="pin" style="left: 36%; top: 58%">£385</div>
-
-        <div class="map-zoom">
-          <button><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
-          <button><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+          <div class="ttl" id="mapOverlayTitle">All of the <i>UK</i></div>
+          <div class="ms" id="mapOverlaySub">36 stays across 10 regions</div>
         </div>
 
         <a href="map.html" class="open-map-btn">
@@ -401,8 +460,51 @@
   </div>
 </footer>
 
+<!-- ALL FILTERS MODAL -->
+<div class="casa-modal-overlay" id="filterModal">
+  <div class="casa-modal">
+    <div class="casa-modal-head">
+      <h2>All <i>filters</i></h2>
+      <button class="casa-modal-close" onclick="closeFilterModal()" aria-label="Close">&times;</button>
+    </div>
+    <div class="casa-modal-body">
+      <div class="fm-group">
+        <h4>Price per night</h4>
+        <div class="fm-price">
+          <input type="number" id="fmPriceMin" placeholder="No min" min="0" inputmode="numeric">
+          <span style="color:var(--ink-4)">to</span>
+          <input type="number" id="fmPriceMax" placeholder="No max" min="0" inputmode="numeric">
+        </div>
+      </div>
+      <div class="fm-group">
+        <h4>Property type</h4>
+        <div class="fm-chips" id="fmTypes"></div>
+      </div>
+      <div class="fm-group">
+        <h4>Sleeps at least</h4>
+        <div class="fm-sleeps">
+          <button type="button" onclick="fmSleeps(-1)" aria-label="Fewer">&minus;</button>
+          <span class="v" id="fmSleepsVal">Any</span>
+          <button type="button" onclick="fmSleeps(1)" aria-label="More">+</button>
+        </div>
+      </div>
+      <div class="fm-group">
+        <h4>Amenities &amp; features</h4>
+        <div class="fm-chips" id="fmAmenities"></div>
+      </div>
+    </div>
+    <div class="casa-modal-foot">
+      <button class="btn btn-ghost" onclick="clearAllFilters()">Clear all</button>
+      <button class="btn btn-primary" onclick="applyFilterModal()">Show <span id="fmCount">stays</span></button>
+    </div>
+  </div>
+</div>
+
 <script src="casa-properties.js"></script>
 <script src="casa-images.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="casa-browse-map.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
 <script src="casa.js?v=2"></script>
@@ -474,41 +576,109 @@ function matchesCategory(p, type) {
   return true;
 }
 
+// ── Central state: every control mutates this, then applyFilters() re-derives ──
 const qp = new URLSearchParams(location.search);
-const initialWhere = qp.get('where') || '';
-const initialRegion = qp.get('region') || '';
+const state = {
+  region: qp.get('region') || '',
+  where: qp.get('where') || '',
+  type: 'all',            // quick category (cat-bar)
+  propTypes: [],          // exact property types (modal)
+  amenities: [],          // amenity tags (feature pills + modal)
+  sleepsMin: 1,
+  guests: 0,
+  priceMin: null,
+  priceMax: null,
+  sort: 'curated',
+};
+const REGION_LABELS = {};   // slug -> display label, filled by regionsIndex()
 
-let sleepsMin = 2;
-function changeSleeps(delta) {
-  sleepsMin = Math.max(1, Math.min(20, sleepsMin + delta));
-  document.getElementById('sleepsVal').textContent = sleepsMin + '+';
-  document.getElementById('sleepsMinus').disabled = sleepsMin <= 1;
-  applyFilters();
+// ── Indexes derived live from CASA_PROPERTIES (so host-uploaded data flows in) ──
+function regionsIndex() {
+  const m = {};
+  CASA_PROPERTIES.forEach(p => {
+    if (!p.region) return;
+    if (!m[p.region]) m[p.region] = { region: p.region, count: 0, labels: {} };
+    m[p.region].count++;
+    if (p.rLabel) m[p.region].labels[p.rLabel] = (m[p.region].labels[p.rLabel] || 0) + 1;
+  });
+  return Object.values(m).map(r => {
+    const labels = Object.entries(r.labels).sort((a, b) => b[1] - a[1]);
+    r.label = labels.length ? labels[0][0] : r.region;
+    REGION_LABELS[r.region] = r.label;
+    return r;
+  }).sort((a, b) => b.count - a.count);
+}
+function amenitiesIndex() {
+  const m = {};
+  CASA_PROPERTIES.forEach(p => (p.tags || []).forEach(t => { m[t] = (m[t] || 0) + 1; }));
+  return Object.entries(m).map(([tag, count]) => ({ tag, count })).sort((a, b) => b.count - a.count);
+}
+function typesIndex() {
+  const m = {};
+  CASA_PROPERTIES.forEach(p => { if (p.type) m[p.type] = (m[p.type] || 0) + 1; });
+  return Object.entries(m).map(([type, count]) => ({ type, count })).sort((a, b) => b.count - a.count);
 }
 
-function setType(tile, type) {
-  document.querySelectorAll('.cat-tile').forEach(t => t.classList.remove('active'));
-  tile.classList.add('active');
-  applyFilters();
+function matchesWhere(p, q) {
+  q = q.toLowerCase().replace(/^#/, '');
+  return p.loc.toLowerCase().includes(q) || (p.rLabel || '').toLowerCase().includes(q) ||
+    (p.region || '').includes(q) || p.title.toLowerCase().includes(q) ||
+    (p.tags || []).some(t => t.includes(q));
 }
 
-function togglePill(btn, filter) {
-  btn.classList.toggle('active');
-  applyFilters();
+function filteredList() {
+  let list = CASA_PROPERTIES.slice();
+  if (state.region) list = list.filter(p => p.region === state.region);
+  else if (state.where) list = list.filter(p => matchesWhere(p, state.where));
+  list = list.filter(p => matchesCategory(p, state.type));
+  if (state.propTypes.length) list = list.filter(p => state.propTypes.includes(p.type));
+  state.amenities.forEach(a => { list = list.filter(p => (p.tags || []).includes(a)); });
+  if (state.sleepsMin > 1) list = list.filter(p => p.sleeps >= state.sleepsMin);
+  if (state.priceMin != null) list = list.filter(p => p.price >= state.priceMin);
+  if (state.priceMax != null) list = list.filter(p => p.price <= state.priceMax);
+  if (state.sort === 'price-asc') list = list.slice().sort((a, b) => a.price - b.price);
+  else if (state.sort === 'price-desc') list = list.slice().sort((a, b) => b.price - a.price);
+  else if (state.sort === 'rating') list = list.slice().sort((a, b) => b.rating - a.rating);
+  return list;
+}
+function activeFilterCount() {
+  return state.propTypes.length + state.amenities.length +
+    (state.priceMin != null ? 1 : 0) + (state.priceMax != null ? 1 : 0) +
+    (state.sleepsMin > 1 ? 1 : 0);
 }
 
-function sortAndRender() { applyFilters(); }
-
+// ── Renderers ──
+const PIN_SVG = '<svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg>';
+function renderRegionBar() {
+  const bar = document.getElementById('regionBar');
+  if (!bar) return;
+  const regions = regionsIndex();
+  let html = `<button class="region-pill${!state.region ? ' active' : ''}" onclick="selectRegion('')">All UK <span class="rp-ct">${CASA_PROPERTIES.length}</span></button>`;
+  html += regions.map(r => `<button class="region-pill${state.region === r.region ? ' active' : ''}" onclick="selectRegion('${r.region}')">${esc(r.label)} <span class="rp-ct">${r.count}</span></button>`).join('');
+  bar.innerHTML = html;
+}
+function renderFeaturePills() {
+  const wrap = document.getElementById('featurePills');
+  if (!wrap) return;
+  wrap.innerHTML = amenitiesIndex().map(({ tag }) => {
+    const m = tagMeta(tag);
+    const on = state.amenities.includes(tag);
+    return `<button class="fb-pill${on ? ' active' : ''}" onclick="toggleAmenity('${tag}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${m.icon}</svg>${esc(m.label)}</button>`;
+  }).join('');
+}
+function renderCatBar() {
+  document.querySelectorAll('.cat-tile').forEach(t => t.classList.toggle('active', (t.dataset.type || 'all') === state.type));
+}
 function updateHeader(list) {
   const crumb = document.getElementById('pageCrumb');
   const title = document.getElementById('pageTitle');
-  if (initialWhere) {
-    crumb.textContent = initialWhere;
-    title.innerHTML = `Stays matching <i>"${esc(initialWhere)}"</i>`;
-  } else if (initialRegion) {
-    const label = list[0]?.rLabel || initialRegion;
+  if (state.region) {
+    const label = REGION_LABELS[state.region] || list[0]?.rLabel || state.region;
     crumb.textContent = label;
     title.innerHTML = `Stays in <i>${esc(label)}</i>`;
+  } else if (state.where) {
+    crumb.textContent = state.where;
+    title.innerHTML = `Stays matching <i>"${esc(state.where)}"</i>`;
   } else {
     crumb.textContent = 'All stays';
     title.innerHTML = `All <i>stays</i>`;
@@ -517,55 +687,186 @@ function updateHeader(list) {
   const priceEl = document.getElementById('statPriceRange');
   if (list.length) {
     const prices = list.map(p => p.price);
-    const min = Math.min(...prices);
-    const avg = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
-    priceEl.textContent = `From £${min} · avg. £${avg} / night`;
+    priceEl.textContent = `From £${Math.min(...prices)} · avg. £${Math.round(prices.reduce((a, b) => a + b, 0) / prices.length)} / night`;
+  } else priceEl.textContent = '';
+}
+function updateMap(list) {
+  if (typeof casaUpdateBrowseMap !== 'function') return;
+  casaUpdateBrowseMap(list, state.region || 'all');
+  const t = document.getElementById('mapOverlayTitle');
+  const s = document.getElementById('mapOverlaySub');
+  if (state.region) {
+    if (t) t.innerHTML = `In <i>${esc(REGION_LABELS[state.region] || state.region)}</i>`;
+    if (s) s.textContent = `${list.length} ${list.length === 1 ? 'stay' : 'stays'} on the map`;
   } else {
-    priceEl.textContent = '';
+    if (t) t.innerHTML = `All of the <i>UK</i>`;
+    const rc = new Set(list.map(p => p.region)).size;
+    if (s) s.textContent = `${list.length} stays across ${rc} region${rc === 1 ? '' : 's'}`;
   }
 }
-
 function applyFilters() {
-  let list = initialWhere ? searchCasaProperties(initialWhere)
-           : initialRegion ? searchCasaProperties(initialRegion)
-           : CASA_PROPERTIES.slice();
-
-  const activeType = document.querySelector('.cat-tile.active')?.dataset.type || 'all';
-  list = list.filter(p => matchesCategory(p, activeType));
-
-  const activePills = [...document.querySelectorAll('.fb-pill.active[id^="fp-"]')].map(b => b.id.replace('fp-', ''));
-  const pillTag = { pets: 'pets', fire: 'woodburner', sea: 'seaview', tub: 'hottub', offgrid: 'offgrid', romantic: 'romantic', garden: 'garden', sauna: 'sauna' };
-  activePills.forEach(p => {
-    const tag = pillTag[p];
-    if (tag) list = list.filter(pr => (pr.tags || []).includes(tag));
-  });
-
-  list = list.filter(p => p.sleeps >= sleepsMin);
-
-  const sort = document.getElementById('sortSelect')?.value || 'curated';
-  if (sort === 'price-asc') list = list.slice().sort((a, b) => a.price - b.price);
-  else if (sort === 'price-desc') list = list.slice().sort((a, b) => b.price - a.price);
-  else if (sort === 'rating') list = list.slice().sort((a, b) => b.rating - a.rating);
-
+  const list = filteredList();
   const grid = document.getElementById('resultsGrid');
   grid.innerHTML = list.length
     ? list.map(cardHtml).join('')
-    : `<div class="empty-results"><h3>No stays match yet</h3><p>Try a different location, or clear a filter below.</p></div>`;
-
+    : `<div class="empty-results"><h3>No stays match yet</h3><p>Try a wider area or clear a filter.</p><button class="btn btn-outline" style="margin-top:16px" onclick="clearAllFilters()">Clear all filters</button></div>`;
   const countEl = document.getElementById('fbCount');
   if (countEl) countEl.textContent = `${list.length} ${list.length === 1 ? 'stay' : 'stays'}`;
-  updateHeader(list);
+  const fc = document.getElementById('fbFilterCount');
+  if (fc) { const n = activeFilterCount(); fc.textContent = n; fc.hidden = n === 0; }
+  document.querySelector('.fb-allfilters')?.classList.toggle('active', activeFilterCount() > 0);
+  renderRegionBar(); renderFeaturePills(); renderCatBar();
+  updateHeader(list); updateMap(list);
+  if (typeof window.casaTechScan === 'function') window.casaTechScan();
 }
 
-applyFilters();
-
-// CASA_PROPERTIES starts as the 36 seed listings so the page paints
-// instantly — refresh from Supabase right after so any real listing
-// published via list.html (which only exists in the database, not in
-// this file's local seed array) shows up too, then re-render.
-if (typeof casaRefreshProperties === 'function') {
-  casaRefreshProperties().then(applyFilters);
+// ── Interactions ──
+function selectRegion(region) {
+  state.region = region; state.where = '';
+  const wi = document.getElementById('whereInput');
+  if (wi) wi.value = region ? (REGION_LABELS[region] || '') : '';
+  closeWherePop(); applyFilters();
 }
+function selectWhere(loc) {
+  state.region = ''; state.where = loc;
+  const wi = document.getElementById('whereInput');
+  if (wi) wi.value = loc;
+  closeWherePop(); applyFilters();
+}
+function setType(tile, type) { state.type = type; applyFilters(); }
+function toggleAmenity(tag) {
+  const i = state.amenities.indexOf(tag);
+  if (i >= 0) state.amenities.splice(i, 1); else state.amenities.push(tag);
+  applyFilters();
+}
+function sortAndRender() { state.sort = document.getElementById('sortSelect')?.value || 'curated'; applyFilters(); }
+function navGuests(delta) {
+  state.guests = Math.max(0, Math.min(16, state.guests + delta));
+  state.sleepsMin = state.guests || 1;
+  const el = document.getElementById('guestVal');
+  if (el) el.textContent = state.guests === 0 ? 'Any' : state.guests + (state.guests === 1 ? ' guest' : ' guests');
+  applyFilters();
+}
+function runNavSearch() {
+  const val = (document.getElementById('whereInput')?.value || '').trim();
+  const match = regionsIndex().find(r => r.label.toLowerCase() === val.toLowerCase() || r.region === val.toLowerCase());
+  if (match) { selectRegion(match.region); return; }
+  state.region = ''; state.where = val;
+  closeWherePop(); applyFilters();
+}
+
+// ── "Where" dropdown ──
+function buildWherePop(filter) {
+  const pop = document.getElementById('wherePop');
+  if (!pop) return;
+  const q = (filter || '').toLowerCase();
+  const regions = regionsIndex().filter(r => !q || r.label.toLowerCase().includes(q) || r.region.includes(q));
+  const towns = q ? CASA_PROPERTIES.filter(p => p.loc.toLowerCase().includes(q))
+    .reduce((acc, p) => { if (!acc.some(a => a.loc === p.loc)) acc.push(p); return acc; }, []).slice(0, 6) : [];
+  let html = '';
+  if (!q) html += `<button class="where-opt" onclick="selectRegion('')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z"/></svg> Anywhere in the UK</button>`;
+  if (regions.length) {
+    html += `<div class="wp-group">Regions</div>`;
+    html += regions.map(r => `<button class="where-opt" onclick="selectRegion('${r.region}')">${PIN_SVG} ${esc(r.label)} <span class="wo-ct">${r.count}</span></button>`).join('');
+  }
+  if (towns.length) {
+    html += `<div class="wp-group">Towns</div>`;
+    html += towns.map(p => `<button class="where-opt" onclick="selectWhere('${esc(p.loc).replace(/'/g, "\\'")}')">${PIN_SVG} ${esc(p.loc)}<span class="wo-sub">, ${esc(p.rLabel)}</span></button>`).join('');
+  }
+  if (!regions.length && !towns.length) html = `<div class="wp-group">Press Enter to search “${esc(filter)}”</div>`;
+  pop.innerHTML = html;
+}
+function openWherePop() { document.getElementById('navSearch')?.classList.add('where-open'); buildWherePop(document.getElementById('whereInput')?.value); }
+function closeWherePop() { document.getElementById('navSearch')?.classList.remove('where-open'); }
+
+// ── "All filters" modal ──
+let fmSleepsVal = 1;
+function openFilterModal() { renderModal(); document.getElementById('filterModal')?.classList.add('open'); }
+function closeFilterModal() { document.getElementById('filterModal')?.classList.remove('open'); }
+function fmSleeps(delta) {
+  fmSleepsVal = Math.max(1, Math.min(20, fmSleepsVal + delta));
+  document.getElementById('fmSleepsVal').textContent = fmSleepsVal === 1 ? 'Any' : fmSleepsVal + '+';
+  updateFmCount();
+}
+function renderModal() {
+  fmSleepsVal = state.sleepsMin;
+  document.getElementById('fmSleepsVal').textContent = fmSleepsVal === 1 ? 'Any' : fmSleepsVal + '+';
+  document.getElementById('fmPriceMin').value = state.priceMin ?? '';
+  document.getElementById('fmPriceMax').value = state.priceMax ?? '';
+  document.getElementById('fmTypes').innerHTML = typesIndex().map(({ type, count }) => {
+    const label = (typeof CASA_TYPE_LABELS !== 'undefined' && CASA_TYPE_LABELS[type]) || type;
+    return `<button class="fm-chip${state.propTypes.includes(type) ? ' on' : ''}" data-type="${type}" onclick="this.classList.toggle('on');updateFmCount()">${esc(label)} <span style="opacity:.5;font-family:var(--mono);font-size:10px">${count}</span></button>`;
+  }).join('');
+  document.getElementById('fmAmenities').innerHTML = amenitiesIndex().map(({ tag, count }) => {
+    const m = tagMeta(tag);
+    return `<button class="fm-chip${state.amenities.includes(tag) ? ' on' : ''}" data-am="${tag}" onclick="this.classList.toggle('on');updateFmCount()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${m.icon}</svg>${esc(m.label)}</button>`;
+  }).join('');
+  updateFmCount();
+}
+function readModalDraft() {
+  const min = parseInt(document.getElementById('fmPriceMin').value, 10);
+  const max = parseInt(document.getElementById('fmPriceMax').value, 10);
+  return {
+    priceMin: isNaN(min) ? null : min,
+    priceMax: isNaN(max) ? null : max,
+    sleepsMin: fmSleepsVal,
+    propTypes: [...document.querySelectorAll('#fmTypes .fm-chip.on')].map(c => c.dataset.type),
+    amenities: [...document.querySelectorAll('#fmAmenities .fm-chip.on')].map(c => c.dataset.am),
+  };
+}
+function updateFmCount() {
+  const d = readModalDraft();
+  let list = CASA_PROPERTIES.slice();
+  if (state.region) list = list.filter(p => p.region === state.region);
+  else if (state.where) list = list.filter(p => matchesWhere(p, state.where));
+  list = list.filter(p => matchesCategory(p, state.type));
+  if (d.propTypes.length) list = list.filter(p => d.propTypes.includes(p.type));
+  d.amenities.forEach(a => { list = list.filter(p => (p.tags || []).includes(a)); });
+  if (d.sleepsMin > 1) list = list.filter(p => p.sleeps >= d.sleepsMin);
+  if (d.priceMin != null) list = list.filter(p => p.price >= d.priceMin);
+  if (d.priceMax != null) list = list.filter(p => p.price <= d.priceMax);
+  const el = document.getElementById('fmCount');
+  if (el) el.textContent = `${list.length} ${list.length === 1 ? 'stay' : 'stays'}`;
+}
+function applyFilterModal() {
+  const d = readModalDraft();
+  Object.assign(state, d);
+  closeFilterModal(); applyFilters();
+}
+function clearAllFilters() {
+  state.type = 'all'; state.propTypes = []; state.amenities = [];
+  state.sleepsMin = 1; state.guests = 0; state.priceMin = null; state.priceMax = null;
+  const gv = document.getElementById('guestVal'); if (gv) gv.textContent = 'Any';
+  closeFilterModal(); applyFilters();
+}
+
+// ── Init ──
+(function initBrowse() {
+  regionsIndex(); // populate REGION_LABELS before first paint
+  const wi = document.getElementById('whereInput');
+  if (wi) {
+    if (state.region) wi.value = REGION_LABELS[state.region] || '';
+    else if (state.where) wi.value = state.where;
+    wi.addEventListener('focus', openWherePop);
+    wi.addEventListener('input', () => { document.getElementById('navSearch')?.classList.add('where-open'); buildWherePop(wi.value); });
+    wi.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); runNavSearch(); }
+      else if (e.key === 'Escape') { closeWherePop(); wi.blur(); }
+    });
+  }
+  ['fmPriceMin', 'fmPriceMax'].forEach(id => document.getElementById(id)?.addEventListener('input', updateFmCount));
+  document.addEventListener('click', (e) => { if (!e.target.closest('#navSearch')) closeWherePop(); });
+  document.getElementById('filterModal')?.addEventListener('click', (e) => { if (e.target.id === 'filterModal') closeFilterModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFilterModal(); });
+
+  if (typeof casaInitBrowseMap === 'function') casaInitBrowseMap();
+  applyFilters();
+
+  // Refresh from Supabase (real published listings) then re-derive everything.
+  if (typeof casaRefreshProperties === 'function') {
+    casaRefreshProperties().then(() => applyFilters());
+  }
+})();
 </script>
 </body>
 </html>
