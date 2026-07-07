@@ -878,11 +878,17 @@ function cancelEdit() {
   isDirty = false;
   document.getElementById('saveBar').classList.remove('show');
 }
-function saveEdit() {
-  isDirty = false;
-  document.getElementById('saveBar').classList.remove('show');
-  // Toast feedback
+// The floating save-bar used to show "Saved." and reload regardless of
+// what actually happened — it never called Supabase at all, so edits
+// through this button were silently discarded. Now routes through the
+// same real saveProfileChanges() the "About" section's own Save button
+// uses, and only shows "Saved." if that write genuinely succeeded.
+async function saveEdit() {
   const sb = document.getElementById('saveBar');
+  const ok = typeof saveProfileChanges === 'function' ? await saveProfileChanges() : false;
+  if (!ok) return; // saveProfileChanges already toasted the real error — leave the bar up so nothing looks lost
+  isDirty = false;
+  sb.classList.remove('show');
   sb.innerHTML = '<span style="color:var(--brick-2);font-family:var(--serif);font-style:italic">Saved.</span>';
   sb.classList.add('show');
   setTimeout(() => {
@@ -1109,10 +1115,12 @@ async function renderProfileReal() {
   ].join('');
 }
 
+// Returns true/false so callers (saveEdit's floating save-bar) can tell
+// a real failure apart from success, instead of always assuming it worked.
 async function saveProfileChanges() {
-  if (!window.casaSupabase) return;
+  if (!window.casaSupabase) return false;
   const { data: { session } } = await window.casaSupabase.auth.getSession();
-  if (!session) { if (window.casaToast) casaToast('Please sign in first'); return; }
+  if (!session) { if (window.casaToast) casaToast('Please sign in first'); return false; }
 
   const first = document.getElementById('firstNm').value.trim();
   const last = document.getElementById('lastNm').value.trim();
@@ -1127,7 +1135,7 @@ async function saveProfileChanges() {
     languages: languagesVal,
   }).eq('id', session.user.id);
 
-  if (error) { if (window.casaToast) casaToast('Could not save: ' + error.message); return; }
+  if (error) { if (window.casaToast) casaToast('Could not save: ' + error.message); return false; }
   if (window.casaToast) casaToast('Profile updated');
   document.getElementById('aboutName').textContent = first || 'you';
   document.getElementById('avLetter').textContent = (first || 'U').charAt(0).toUpperCase();
@@ -1137,6 +1145,7 @@ async function saveProfileChanges() {
   } else {
     document.getElementById('locationBadge').style.display = 'none';
   }
+  return true;
 }
 window.saveProfileChanges = saveProfileChanges;
 
