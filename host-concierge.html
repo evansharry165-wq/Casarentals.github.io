@@ -22,9 +22,6 @@
   .price-card h3 { font-family: var(--serif); font-size: 28px; margin-bottom: 8px; }
   .price-card h3 i { font-style: italic; color: var(--brick-2); }
   .price-card .amt { font-family: var(--serif); font-style: italic; font-size: 48px; color: var(--brick-2); line-height: 1; }
-  .plan-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 20px 0; }
-  .plan-btn { padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2); background: transparent; color: rgba(255,255,255,.7); font-size: 13px; cursor: pointer; font-family: var(--sans); text-align: left; }
-  .plan-btn.on { background: var(--brick); border-color: var(--brick); color: white; }
   .cc-layout { display: grid; grid-template-columns: 1fr 380px; gap: 32px; padding: 36px 0 80px; align-items: start; }
   .panel { background: var(--surface); border: 1px solid var(--rule); border-radius: 18px; padding: 28px; margin-bottom: 20px; }
   .panel h2 { font-family: var(--serif); font-size: 28px; margin-bottom: 6px; }
@@ -76,14 +73,10 @@
       </div>
       <div class="price-card">
         <h3>Optional <i>add-on</i></h3>
-        <div class="amt" id="priceDisplay">£24</div>
-        <div style="font-size:13px;opacity:.75;margin-top:4px" id="priceSub">per listing / month</div>
-        <div class="plan-toggle">
-          <button type="button" class="plan-btn on" id="planMonthly" onclick="setPlan('monthly')">£24/mo<br><span style="opacity:.7;font-size:11px">Predictable · unlimited enquiries</span></button>
-          <button type="button" class="plan-btn" id="planBooking" onclick="setPlan('per-booking')">2% per booking<br><span style="opacity:.7;font-size:11px">Only when Concierge confirms</span></button>
-        </div>
-        <label class="toggle-row" style="border:none;padding-top:8px">
-          <span>Enable Concierge<small>Guests see “Replied by Casa Concierge”</small></span>
+        <div class="amt">£24</div>
+        <div style="font-size:13px;opacity:.75;margin-top:4px">per listing / month — flat, never a % of your bookings</div>
+        <label class="toggle-row" style="border:none;padding-top:16px">
+          <span>Enable Concierge<small>Drafts replies for you to review and send — never sent automatically</small></span>
           <label class="sw"><input type="checkbox" id="masterToggle" onchange="syncEnabled()"><span class="track"></span><span class="thumb"></span></label>
         </label>
       </div>
@@ -123,16 +116,19 @@
             <option value="brief">Brief — facts only</option>
           </select>
         </div>
+        <div class="toggle-row" style="border:none;padding-bottom:4px">
+          <span style="font-size:12px;color:var(--ink-3);line-height:1.5">Concierge always <strong>drafts</strong> — it never sends a guest a message on its own. Every reply below waits in your inbox for you to read, edit, and send yourself.</span>
+        </div>
         <div class="toggle-row">
-          <span>Auto-accept matching enquiries<small>Send holding message + payment instructions template</small></span>
+          <span>Draft accepts for matching enquiries<small>Prepares a holding reply for enquiries within your rules — you send it</small></span>
           <label class="sw"><input type="checkbox" id="autoAccept"><span class="track"></span><span class="thumb"></span></label>
         </div>
         <div class="toggle-row">
-          <span>Auto-decline rule breaks<small>Politely decline when below min stay, guests, or price</small></span>
+          <span>Draft declines for rule breaks<small>Prepares a polite decline when below min stay, guests, or price — you send it</small></span>
           <label class="sw"><input type="checkbox" id="autoDeclineUnderMin" checked><span class="track"></span><span class="thumb"></span></label>
         </div>
         <div class="toggle-row">
-          <span>Escalate deposit &amp; payment questions<small>Always notify you — Concierge won’t share bank details alone</small></span>
+          <span>Flag deposit &amp; payment questions<small>Always surfaces these to you — Concierge won't discuss bank details itself</small></span>
           <label class="sw"><input type="checkbox" id="escalateDeposit" checked><span class="track"></span><span class="thumb"></span></label>
         </div>
         <button class="btn btn-primary" style="margin-top:20px;width:100%" onclick="saveSettings()">Save Concierge settings</button>
@@ -162,25 +158,15 @@
   </div>
 </div>
 
-<script src="casa-concierge.js"></script>
+<script src="casa-concierge.js?v=2"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
 <script src="casa.js?v=3"></script>
 <script>
 let state = casaGetConciergeSettings();
 
-function setPlan(plan) {
-  state.plan = plan;
-  document.getElementById('planMonthly').classList.toggle('on', plan === 'monthly');
-  document.getElementById('planBooking').classList.toggle('on', plan === 'per-booking');
-  document.getElementById('priceDisplay').textContent = plan === 'monthly' ? '£24' : '2%';
-  document.getElementById('priceSub').textContent = plan === 'monthly' ? 'per listing / month' : 'on AI-confirmed bookings only';
-  updatePreview();
-}
-
 function loadForm() {
   document.getElementById('masterToggle').checked = state.enabled;
-  setPlan(state.plan || 'monthly');
   document.getElementById('minNights').value = state.minNights;
   document.getElementById('maxGuests').value = state.maxGuests;
   document.getElementById('minLeadDays').value = state.minLeadDays;
@@ -200,7 +186,6 @@ function readForm() {
   state = {
     ...state,
     enabled: document.getElementById('masterToggle').checked,
-    plan: state.plan,
     minNights: parseInt(document.getElementById('minNights').value, 10),
     maxGuests: parseInt(document.getElementById('maxGuests').value, 10),
     minLeadDays: parseInt(document.getElementById('minLeadDays').value, 10),

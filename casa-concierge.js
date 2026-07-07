@@ -4,7 +4,6 @@ const CASA_CONCIERGE_KEY = 'casa:concierge';
 
 const CASA_CONCIERGE_DEFAULTS = {
   enabled: false,
-  plan: 'monthly',
   minNights: 2,
   maxGuests: 6,
   minLeadDays: 3,
@@ -36,10 +35,10 @@ function casaConciergeEnabled() {
   return !!casaGetConciergeSettings().enabled;
 }
 
-function casaConciergePriceLabel(plan) {
-  return plan === 'per-booking'
-    ? '2% on AI-confirmed bookings'
-    : '£24/month per listing';
+// Flat fee only — never a % of booking value, which would contradict
+// Casa's 0% commission claim even as an "optional" add-on.
+function casaConciergePriceLabel() {
+  return '£24/month per listing';
 }
 
 /** Demo: would an enquiry pass host rules? Optional second arg: { propertyId, checkIn, checkOut } */
@@ -82,11 +81,14 @@ function casaConciergeEvaluate(enquiry, opts = {}) {
     reasons.push('Custom request — flagged for you');
   }
 
+  // Every outcome is a DRAFT for the host to read and send themselves —
+  // Concierge never messages a guest on its own. "auto" here only means
+  // "prepared automatically," never "sent automatically."
   if (action === 'accept' && s.autoAccept) {
-    return { action: 'auto_accept', reasons: ['Matches your rules — Concierge will confirm'] };
+    return { action: 'draft_accept', reasons: ['Matches your rules — a reply is drafted for you to send'] };
   }
   if (action === 'decline' && s.autoDeclineUnderMin) {
-    return { action: 'auto_decline', reasons };
+    return { action: 'draft_decline', reasons };
   }
   if (action === 'escalate') {
     return { action: 'escalate', reasons };
