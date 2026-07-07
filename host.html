@@ -305,6 +305,16 @@
         <p style="font-size:13.5px;line-height:1.65;color:rgba(255,255,255,0.75);margin-top:14px">Guests pay you directly once you agree dates in messages &mdash; bank transfer, cash, however you prefer. Casa charges <strong style="color:var(--brick-2)">£0 commission</strong> on every stay, always.</p>
       </div>
 
+      <!-- Concierge status — reflects your real settings from
+           host-concierge.html (the separate landing/signup/rules page).
+           Once enabled there, its real status surfaces right here on the
+           dashboard, not just on its own separate page. -->
+      <div class="side-block" id="dhConciergeBlock">
+        <h3><i>Casa</i> Concierge</h3>
+        <div class="meta" id="dhConciergeMeta">Loading&hellip;</div>
+        <div id="dhConciergeBody" style="font-size:13.5px;color:var(--ink-2);line-height:1.6"></div>
+      </div>
+
       <!-- Tasks -->
       <div class="side-block" id="dhTasksBlock">
         <h3><i>To</i> do</h3>
@@ -332,6 +342,7 @@
 
 <script src="casa-feed-posts.js"></script>
 <script src="casa-images.js"></script>
+<script src="casa-concierge.js?v=2"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
 <script src="casa.js?v=3"></script>
@@ -636,8 +647,27 @@ async function updateEnquiryStatus(enquiryId, newStatus, btn) {
 }
 window.updateEnquiryStatus = updateEnquiryStatus;
 
+// Concierge's real enabled/rules state, surfaced right on the dashboard —
+// host-concierge.html stays the separate landing/signup/rules page, but
+// once a host has actually turned it on there, its status belongs here,
+// not only on a page they'd have to remember to go back and check.
+function renderConciergeStatus() {
+  if (typeof casaGetConciergeSettings !== 'function') return;
+  const s = casaGetConciergeSettings();
+  const meta = document.getElementById('dhConciergeMeta');
+  const body = document.getElementById('dhConciergeBody');
+  if (s.enabled) {
+    meta.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:var(--moss);display:inline-block"></span>Active — drafting for your review</span>';
+    body.innerHTML = `Min ${s.minNights} night${s.minNights === 1 ? '' : 's'} &middot; up to ${s.maxGuests} guests &middot; £${s.priceFloor}/night floor.<br><a href="host-concierge.html" style="color:var(--brick);font-size:12.5px;text-decoration:underline;text-underline-offset:3px;display:inline-block;margin-top:10px">Review rules &amp; drafts →</a>`;
+  } else {
+    meta.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:var(--ink-4);display:inline-block"></span>Off</span>';
+    body.innerHTML = `Optional AI that drafts first-line replies for you to send — £24/mo flat, never a % of your bookings.<br><a href="host-concierge.html" style="color:var(--brick);font-size:12.5px;text-decoration:underline;text-underline-offset:3px;display:inline-block;margin-top:10px">Set up Concierge →</a>`;
+  }
+}
+
 renderHostFeedComments();
 renderHostDashboard();
+renderConciergeStatus();
 </script>
 <script src="casa-tech.js?v=4"></script>
 </body>
