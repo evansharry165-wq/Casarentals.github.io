@@ -190,8 +190,44 @@ notification on incoming messages — the trigger covers that persistently
 now (previously it only fired while the recipient happened to be on that
 page).
 
+## Phase 09 — Real availability blocking (`availability.sql`)
+
+Booking.html had zero conflict checking of any kind (not even against
+the old local-only `casa-availability.js` demo calendar, which nothing
+guest-facing ever actually called) — two different guests could get a
+"confirmed" booking for the same week and nothing would notice. Guests
+can't read other guests' `enquiries` rows under RLS at all (correctly,
+for privacy), so there was no way for a browser about to submit a new
+enquiry to know a property was already booked. Same shape of problem as
+`create_conversation_for_enquiry` — solved the same way: two narrow
+`SECURITY DEFINER` functions that reveal only the minimum needed, never
+guest identity or any other enquiry detail:
+
+- `casa_check_date_conflict(property_id, check_in, check_out)` → boolean.
+  Only a **confirmed** enquiry blocks; pending/replied isn't a real
+  commitment yet. `booking.html` calls this right before inserting a new
+  enquiry and blocks submission with a clear message on a real conflict.
+  Fails open (logs and proceeds) if the RPC isn't reachable, so this
+  doesn't break booking before the migration below is applied.
+- `casa_get_confirmed_ranges(property_id)` → the confirmed date ranges
+  only (no guest/price/message) — available for a future calendar UI
+  that greys out unavailable dates up front rather than only failing at
+  submit time; not wired into any page yet.
+
+**Apply once, manually** in the SQL editor, after `schema.sql`.
+
+**host.html** now has real Confirm/Decline buttons on each enquiry,
+writing a real `enquiries.status` update (`confirmed`/`declined`) — this
+is also what makes Phase 08's `casa_notify_on_enquiry_status` trigger
+fire for real, so declining/confirming actually notifies the guest.
+Before this, `status` only ever moved from `pending` to `replied`
+(messages.html, on a host's first reply) — nothing ever set `confirmed`
+or `declined`, so the host dashboard's own "confirmed bookings" calendar
+strip was always empty in practice.
+
 ## Recommended next phase (deferred, not urgent)
 
 Real image upload for feed posts (the "Photo" post type has no working
 upload path yet — a post can be that type, it just won't have any
-images).
+images), and a real calendar UI (using `casa_get_confirmed_ranges`) so
+unavailable dates are greyed out in the booking form itself.

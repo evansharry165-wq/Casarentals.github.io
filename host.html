@@ -89,6 +89,10 @@
   .status-pill.new { background: var(--brick-pale); color: var(--brick-text); }
   .status-pill.replied { background: var(--moss-pale); color: var(--moss); }
   .status-pill.paid { background: var(--ink); color: white; }
+  .status-pill.confirmed { background: var(--moss); color: white; }
+  .status-pill.declined { background: var(--paper-2); color: var(--ink-4); text-decoration: line-through; }
+  .enq-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .enq-actions .btn-sm { white-space: nowrap; }
 
   /* Properties list */
   .prop-card-h { display: flex; gap: 18px; padding: 16px 0; border-bottom: 1px solid var(--rule-2); }
@@ -518,12 +522,19 @@ async function renderHostDashboard() {
   if (!enquiryList.length) {
     enqTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--ink-3);padding:24px">No enquiries yet.</td></tr>';
   } else {
+    const statusPill = {
+      pending: '<span class="status-pill new">New</span>',
+      replied: '<span class="status-pill replied">Replied</span>',
+      confirmed: '<span class="status-pill confirmed">Confirmed</span>',
+      declined: '<span class="status-pill declined">Declined</span>',
+    };
     enqTableBody.innerHTML = enquiryList.map(e => {
       const name = e.profiles?.full_name || 'Guest';
       const dateLabel = e.check_in && e.check_out ? `${fmtEnqDate(e.check_in)}–${fmtEnqDate(e.check_out)}` : '—';
       const nightsLabel = e.check_in && e.check_out ? `${nights(e)} night${nights(e) > 1 ? 's' : ''}` : '';
       const priceLabel = e.total_price ? `£${e.total_price.toLocaleString()}` : '—';
       const replied = e.status !== 'pending';
+      const decided = e.status === 'confirmed' || e.status === 'declined';
       return `<tr>
         <td>
           <div class="guest">
@@ -534,9 +545,15 @@ async function renderHostDashboard() {
         <td><div style="font-family:var(--serif);font-size:14px">${e.properties?.title || ''}</div></td>
         <td><div class="dates">${dateLabel}</div><div style="font-size:11px;color:var(--ink-3)">${nightsLabel}</div></td>
         <td><div class="price"><i>${priceLabel}</i></div></td>
-        <td>${replied ? '<span class="status-pill replied">Replied</span>' : '<span class="status-pill new">New</span>'}</td>
+        <td>${statusPill[e.status] || statusPill.pending}</td>
         <td class="actions-cell">
-          <a class="btn ${replied ? 'btn-outline' : 'btn-primary'} btn-sm" href="messages.html?c=${e.conversation_id}">${replied ? 'Open' : 'Reply'}</a>
+          <div class="enq-actions">
+            <a class="btn ${replied ? 'btn-outline' : 'btn-primary'} btn-sm" href="messages.html?c=${e.conversation_id}">${replied ? 'Open' : 'Reply'}</a>
+            ${decided ? '' : `
+              <button class="btn btn-primary btn-sm" style="background:var(--moss)" onclick="updateEnquiryStatus(${e.id},'confirmed',this)">Confirm</button>
+              <button class="btn btn-outline btn-sm" onclick="updateEnquiryStatus(${e.id},'declined',this)">Decline</button>
+            `}
+          </div>
         </td>
       </tr>`;
     }).join('');
@@ -585,6 +602,39 @@ async function renderHostDashboard() {
     ? tasks.map(t => `<div class="task"><div class="ti"><svg viewBox="0 0 24 24">${t.icon === 'msg' ? '<path d="M4 5h16v12H8l-4 4z"/>' : '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 16-6-6-9 11"/>'}</svg></div><div class="body"><div class="tt"><a href="${t.href}" style="color:inherit;text-decoration:none">${t.text}</a></div><div class="tm">${t.sub}</div></div></div>`).join('')
     : '<div style="padding:8px 0">You\'re all caught up.</div>';
 }
+
+// Real accept/decline — previously there was no way to move an enquiry
+// past "pending" except a host's first reply flipping it to "replied"
+// (messages.html), so nothing ever actually confirmed a booking and
+// nothing ever blocked a second guest enquiring for the same dates
+// (see supabase/availability.sql's casa_check_date_conflict, which
+// booking.html now checks before accepting a new enquiry — it only
+// looks at status='confirmed' rows). Updating status here also fires
+// the casa_notify_on_enquiry_status trigger (supabase/notifications.sql),
+// so the guest gets a real notification either way.
+async function updateEnquiryStatus(enquiryId, newStatus, btn) {
+  if (newStatus === 'declined' && !confirm('Decline this enquiry? The guest will be notified.')) return;
+  if (btn) { btn.disabled = true; btn.textContent = newStatus === 'confirmed' ? 'Confirming…' : 'Declining…'; }
+
+  const { data: { session } } = await window.casaSupabase.auth.getSession();
+  if (!session) { if (window.casaToast) casaToast('Please sign in'); return; }
+
+  const { error } = await window.casaSupabase
+    .from('enquiries')
+    .update({ status: newStatus })
+    .eq('id', enquiryId)
+    .eq('host_id', session.user.id);
+
+  if (error) {
+    console.error('updateEnquiryStatus failed', error);
+    if (window.casaToast) casaToast('Could not update — please try again');
+    if (btn) { btn.disabled = false; btn.textContent = newStatus === 'confirmed' ? 'Confirm' : 'Decline'; }
+    return;
+  }
+  if (window.casaToast) casaToast(newStatus === 'confirmed' ? 'Booking confirmed — guest notified' : 'Enquiry declined — guest notified');
+  renderHostDashboard();
+}
+window.updateEnquiryStatus = updateEnquiryStatus;
 
 renderHostFeedComments();
 renderHostDashboard();

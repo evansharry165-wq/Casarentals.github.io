@@ -841,6 +841,24 @@ async function submitEnquiry() {
   const nights   = Math.round((new Date(checkout) - new Date(checkin)) / 86400000);
   const total    = PROPERTY.pricePerNight * nights;
 
+  // Real double-booking check: a guest can't read another guest's
+  // enquiries under RLS (correctly, for privacy), so this goes through
+  // casa_check_date_conflict — a narrow RPC (supabase/availability.sql)
+  // that only ever returns yes/no, never who booked or any other detail.
+  // Only a CONFIRMED enquiry blocks; a pending/replied one isn't a real
+  // commitment yet.
+  const { data: hasConflict, error: conflictError } = await window.casaSupabase
+    .rpc('casa_check_date_conflict', { p_property_id: PROPERTY.id, p_check_in: checkin, p_check_out: checkout });
+  if (conflictError) {
+    console.error('casa_check_date_conflict failed', conflictError);
+  } else if (hasConflict) {
+    btn.disabled = false;
+    document.getElementById('loadingOverlay').classList.remove('show');
+    if (window.casaToast) casaToast('Those dates are already booked for this property — try different dates.');
+    else alert('Those dates are already booked for this property — try different dates.');
+    return;
+  }
+
   const { data, error } = await window.casaSupabase
     .from('enquiries')
     .insert({
