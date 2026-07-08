@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="casa.css?v=2">
-<link rel="stylesheet" href="casa-tech.css?v=4">
+<link rel="stylesheet" href="casa-tech.css?v=5">
 <style>
   /* ── LAYOUT ── */
   .feed-head{padding:32px 0 20px;border-bottom:1px solid var(--rule)}
@@ -440,17 +440,17 @@
         <button class="ask-btn" onclick="startLooking()">Post a request →</button>
       </div>
 
-      <div class="aside-block">
+      <div class="aside-block reveal">
         <h4>Trending <i>now</i></h4>
         <div id="trendingTags"></div>
       </div>
 
-      <div class="aside-block">
+      <div class="aside-block reveal d1">
         <h4>Active <i>hosts</i></h4>
         <div id="activeHosts"></div>
       </div>
 
-      <div class="aside-block" style="border-style:dashed">
+      <div class="aside-block reveal d2" style="border-style:dashed">
         <h4 style="font-size:14px;color:var(--ink-3)">Community guidelines</h4>
         <p style="font-size:12px;color:var(--ink-3);line-height:1.55">For hosts and guests — not agencies or bots. Keep it useful, kind, and direct. No spam or off-platform booking links.</p>
         <a href="community.html" style="font-size:12px;color:var(--brick);text-decoration:underline;text-underline-offset:2px;display:inline-block;margin-top:8px">Read in full →</a>
@@ -484,7 +484,7 @@
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
 <script src="casa.js?v=3"></script>
-<script src="casa-tech.js?v=4"></script>
+<script src="casa-tech.js?v=5"></script>
 <script>
 // ═══════════════════════════════════════
 // DATA

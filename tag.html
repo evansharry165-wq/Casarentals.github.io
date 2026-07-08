@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="casa.css?v=2">
-<link rel="stylesheet" href="casa-tech.css?v=4">
+<link rel="stylesheet" href="casa-tech.css?v=5">
 <style>
   .tag-hero { padding: 40px 0 28px; border-bottom: 1px solid var(--rule); }
   .tag-hero h1 { font-family: var(--serif); font-size: 56px; line-height: .95; letter-spacing: -.025em; }
@@ -88,6 +88,10 @@ const TAG_MAP = {
   lakedistrict: { label: 'Lake District', regions: ['lake-district'], tags: ['woodburner'] },
   cornwall: { label: 'Cornwall', regions: ['cornwall'], tags: ['seaview'] },
   highlands: { label: 'Scottish Highlands', regions: ['highlands', 'skye'], tags: ['offgrid'] },
+  norfolk: { label: 'Norfolk', regions: ['norfolk'], tags: ['seaview'] },
+  cotswolds: { label: 'The Cotswolds', regions: ['cotswolds'], tags: ['woodburner'] },
+  snowdonia: { label: 'Snowdonia', regions: ['snowdonia'], tags: ['offgrid'] },
+  causeway: { label: 'Causeway Coast', regions: ['causeway'], tags: ['seaview'] },
   petfriendly: { label: 'Pet friendly', regions: [], tags: ['pets'] },
   woodburner: { label: 'Wood burner', regions: [], tags: ['woodburner'] },
   seaview: { label: 'Sea view', regions: [], tags: ['seaview'] },
@@ -106,13 +110,21 @@ document.getElementById('tagTitle').innerHTML = `<i>#${rawTag}</i>`;
 document.getElementById('tagDesc').textContent = `Explore ${meta.label} on Casa — fee-free stays and community tips.`;
 document.title = `#${rawTag} — Casa`;
 
+// Region-scoped tags (regions.length > 0) must match the actual region —
+// the amenity-tag fallback is nationwide, so applying it to e.g. "cotswolds"
+// would match any woodburner property in the UK, not just Cotswolds stays.
+// Amenity-only tags (regions: []) keep the original tag-match behaviour.
 function matchProps() {
-  return CASA_PROPERTIES.filter(p =>
-    meta.regions.includes(p.region) ||
-    meta.tags.some(t => p.tags.includes(t)) ||
-    p.title.toLowerCase().includes(rawTag) ||
-    p.loc.toLowerCase().includes(rawTag)
-  );
+  return CASA_PROPERTIES.filter(p => {
+    if (meta.regions.length) {
+      return meta.regions.includes(p.region) ||
+        p.title.toLowerCase().includes(rawTag) ||
+        p.loc.toLowerCase().includes(rawTag);
+    }
+    return meta.tags.some(t => p.tags.includes(t)) ||
+      p.title.toLowerCase().includes(rawTag) ||
+      p.loc.toLowerCase().includes(rawTag);
+  });
 }
 
 function renderStays() {
@@ -188,6 +200,6 @@ renderStays();
 renderPosts();
 renderHosts();
 </script>
-<script src="casa-tech.js?v=4"></script>
+<script src="casa-tech.js?v=5"></script>
 </body>
 </html>

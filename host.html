@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="casa.css?v=2">
-<link rel="stylesheet" href="casa-tech.css?v=4">
+<link rel="stylesheet" href="casa-tech.css?v=5">
 <style>
   /* Host nav variant */
   .host-mode-badge { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; padding: 4px 10px; background: var(--ink); color: var(--paper); border-radius: 999px; }
@@ -24,7 +24,9 @@
 
   /* KPI row */
   .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-  .kpi { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 22px 22px 18px; position: relative; overflow: hidden; }
+  .kpi { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 22px 22px 18px; position: relative; overflow: hidden; transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s; }
+  body.tech .kpi { box-shadow: var(--lift-1); }
+  body.tech .kpi:hover { transform: translateY(-3px); box-shadow: var(--lift-2); }
   .kpi .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); }
   .kpi .val { font-family: var(--serif); font-size: 44px; line-height: 1; margin: 14px 0 6px; }
   .kpi .val i { font-style: italic; color: var(--brick); }
@@ -234,7 +236,7 @@
     <div class="dh-main">
 
       <!-- Calendar strip -->
-      <div class="block">
+      <div class="block reveal">
         <div class="b-head">
           <h2>This <i>week</i></h2>
         </div>
@@ -242,7 +244,7 @@
       </div>
 
       <!-- Enquiries -->
-      <div class="block">
+      <div class="block reveal">
         <div class="b-head">
           <h2><i>New</i> enquiries</h2>
           <a href="messages.html" class="more">Go to inbox <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
@@ -267,7 +269,7 @@
       </div>
 
       <!-- Feed comments needing a reply -->
-      <div class="block" id="feedCommentsBlock" style="display:none">
+      <div class="block reveal" id="feedCommentsBlock" style="display:none">
         <div class="b-head">
           <h2><i>Guest</i> questions on your posts</h2>
           <a href="feed.html" class="more">Open feed <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
@@ -276,7 +278,7 @@
       </div>
 
       <!-- Properties + chart -->
-      <div class="block">
+      <div class="block reveal">
         <div class="b-head">
           <h2>Your <i>listings</i></h2>
           <a href="list.html" class="more">Add a listing <svg viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
@@ -286,7 +288,7 @@
       </div>
 
       <!-- Earnings -->
-      <div class="block">
+      <div class="block reveal">
         <div class="b-head">
           <h2><i>Earnings</i></h2>
         </div>
@@ -299,7 +301,7 @@
     <aside class="dh-side">
 
       <!-- How you get paid -->
-      <div class="side-block payout-block">
+      <div class="side-block payout-block reveal">
         <h3>How you get <i>paid</i></h3>
         <div class="meta">Casa never touches your money</div>
         <p style="font-size:13.5px;line-height:1.65;color:rgba(255,255,255,0.75);margin-top:14px">Guests pay you directly once you agree dates in messages &mdash; bank transfer, cash, however you prefer. Casa charges <strong style="color:var(--brick-2)">£0 commission</strong> on every stay, always.</p>
@@ -309,14 +311,14 @@
            host-concierge.html (the separate landing/signup/rules page).
            Once enabled there, its real status surfaces right here on the
            dashboard, not just on its own separate page. -->
-      <div class="side-block" id="dhConciergeBlock">
+      <div class="side-block reveal d1" id="dhConciergeBlock">
         <h3><i>Casa</i> Concierge</h3>
         <div class="meta" id="dhConciergeMeta">Loading&hellip;</div>
         <div id="dhConciergeBody" style="font-size:13.5px;color:var(--ink-2);line-height:1.6"></div>
       </div>
 
       <!-- Tasks -->
-      <div class="side-block" id="dhTasksBlock">
+      <div class="side-block reveal d2" id="dhTasksBlock">
         <h3><i>To</i> do</h3>
         <div id="dhTasks" style="color:var(--ink-3);font-size:13.5px;padding-top:4px">Loading&hellip;</div>
       </div>
@@ -623,6 +625,15 @@ async function renderHostDashboard() {
 // looks at status='confirmed' rows). Updating status here also fires
 // the casa_notify_on_enquiry_status trigger (supabase/notifications.sql),
 // so the guest gets a real notification either way.
+// Bank transfer is the pilot payment method — direct between guest and
+// host, off-platform. Casa never touches the money, so confirming a
+// booking is the moment both sides most need this spelled out. Posted as
+// a real message into the enquiry's own conversation (sender = the
+// confirming host — messages.sender_id can't be null/system under RLS),
+// not a bank-details field: hosts already have a real private channel to
+// share their own details themselves. See CASA_PROJECT_BRIEF.md.
+const CASA_PAYMENT_GUIDANCE_MESSAGE = "Booking confirmed. A reminder for both of you: Casa doesn't process or hold payment — that's arranged directly between you, by bank transfer or however suits you. UK bank transfers are protected against fraud by law (Payment Systems Regulator rules, in force since October 2024) — but that covers fraud, not ordinary questions or disagreements about the stay itself, which are between the two of you to sort out directly.";
+
 async function updateEnquiryStatus(enquiryId, newStatus, btn) {
   if (newStatus === 'declined' && !confirm('Decline this enquiry? The guest will be notified.')) return;
   if (btn) { btn.disabled = true; btn.textContent = newStatus === 'confirmed' ? 'Confirming…' : 'Declining…'; }
@@ -630,11 +641,13 @@ async function updateEnquiryStatus(enquiryId, newStatus, btn) {
   const { data: { session } } = await window.casaSupabase.auth.getSession();
   if (!session) { if (window.casaToast) casaToast('Please sign in'); return; }
 
-  const { error } = await window.casaSupabase
+  const { data: updated, error } = await window.casaSupabase
     .from('enquiries')
     .update({ status: newStatus })
     .eq('id', enquiryId)
-    .eq('host_id', session.user.id);
+    .eq('host_id', session.user.id)
+    .select('conversation_id')
+    .single();
 
   if (error) {
     console.error('updateEnquiryStatus failed', error);
@@ -642,6 +655,14 @@ async function updateEnquiryStatus(enquiryId, newStatus, btn) {
     if (btn) { btn.disabled = false; btn.textContent = newStatus === 'confirmed' ? 'Confirm' : 'Decline'; }
     return;
   }
+
+  if (newStatus === 'confirmed' && updated?.conversation_id) {
+    const { error: msgError } = await window.casaSupabase
+      .from('messages')
+      .insert({ conversation_id: updated.conversation_id, sender_id: session.user.id, body: CASA_PAYMENT_GUIDANCE_MESSAGE });
+    if (msgError) console.error('payment-guidance message failed', msgError);
+  }
+
   if (window.casaToast) casaToast(newStatus === 'confirmed' ? 'Booking confirmed — guest notified' : 'Enquiry declined — guest notified');
   renderHostDashboard();
 }
@@ -669,6 +690,6 @@ renderHostFeedComments();
 renderHostDashboard();
 renderConciergeStatus();
 </script>
-<script src="casa-tech.js?v=4"></script>
+<script src="casa-tech.js?v=5"></script>
 </body>
 </html>

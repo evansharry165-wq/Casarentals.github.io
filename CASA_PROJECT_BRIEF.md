@@ -105,8 +105,26 @@ referenced in stale docs — it's gone from the live site.
   `casa-hosts.js`. Not a bare flag.
 - **Pilot region**: Lake District, per the launch plan — 20–30 real hosts
   to be manually onboarded once listing creation is real (Supabase-backed).
-- **Payments at launch**: not yet decided (bank transfer vs. Stripe
-  Connect) — flagged as a genuine open decision, not a coding task.
+- **Payments for the pilot**: bank transfer, direct between guest and
+  host, off-platform — Casa never touches, stores, or sees a bank account
+  number. Not permanent: Stripe Connect is the planned graduation path
+  once real volume justifies the integration effort, not needed now.
+  Guidance is surfaced at the moment a host confirms a booking (a real
+  message posted into that enquiry's conversation, plus a status banner
+  in `messages.html`) — see `supabase/README.md` Phase 10.
+- **Cancellation policy**: host-set, per listing (`properties
+  .cancellation_policy`, sensible default "free cancellation up to 7 days
+  before check-in", editable in `list.html`). Casa can't hold funds, so it
+  can't enforce a refund — the field's job is visibility before a guest
+  enquires (`property.html`, `booking.html`), not enforcement.
+- **Host verification for the pilot**: manual, no new integration yet. A
+  host sends ID through the existing real messaging system, Harry reviews
+  it personally and flips the Supabase column directly — no document
+  storage beyond that one-time review. Documented in
+  `VERIFICATION-POLICY.md`. An ID-verification integration (e.g. Stripe
+  Identity) is deliberately deferred to a later phase, pairing naturally
+  with the eventual Stripe Connect migration rather than being built
+  separately now.
 - **PWA / native app**: pocketed until the Supabase backend lands. A PWA
   manifest + service worker is the recommended first step when revisited
   (cheap, and the mobile-responsive groundwork is already done); a real

@@ -34,16 +34,16 @@ body.tech { background: transparent; }
 .casa-aura {
   position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background:
-    radial-gradient(56% 44% at 84% 2%, rgba(176,85,51,0.14), transparent 68%),
-    radial-gradient(44% 40% at 4% 20%, rgba(184,150,86,0.12), transparent 70%),
-    radial-gradient(70% 55% at 50% 118%, rgba(77,92,64,0.09), transparent 72%);
+    radial-gradient(56% 44% at 84% 2%, rgba(176,85,51,0.34), transparent 68%),
+    radial-gradient(44% 40% at 4% 20%, rgba(184,150,86,0.28), transparent 70%),
+    radial-gradient(70% 55% at 50% 118%, rgba(77,92,64,0.24), transparent 72%);
   transition: transform .3s ease-out;
 }
 .casa-grid {
   position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background-image:
-    linear-gradient(rgba(22,20,15,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(22,20,15,0.03) 1px, transparent 1px);
+    linear-gradient(rgba(22,20,15,0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22,20,15,0.09) 1px, transparent 1px);
   background-size: 64px 64px;
   mask-image: radial-gradient(125% 80% at 50% 0%, #000 0%, transparent 70%);
   -webkit-mask-image: radial-gradient(125% 80% at 50% 0%, #000 0%, transparent 70%);
@@ -209,6 +209,9 @@ body.tech .role-card,
 body.tech .plan-card,
 body.tech .att-card,
 body.tech .att-compose,
+body.tech .review-summary,
+body.tech .sn-card,
+body.tech .block,
 body.tech .panel,
 body.tech .preview,
 body.tech .stat-box,

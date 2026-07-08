@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="casa.css?v=2">
-<link rel="stylesheet" href="casa-tech.css?v=4">
+<link rel="stylesheet" href="casa-tech.css?v=5">
 <style>
 
   /* ── NAV ── */
@@ -448,7 +448,7 @@
 
       <div class="lock-strip">
         <svg viewBox="0 0 24 24"><path d="M12 8v4M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg>
-        <p>Cancellations and refunds are agreed directly between you and the host, per booking — Casa doesn't process payments and has no cancellation policy of its own to enforce. Confirm the host's terms with them before you pay.</p>
+        <p><strong id="cancelPolicyText">Free cancellation up to 7 days before check-in.</strong> Agreed directly between you and the host, per booking — Casa doesn't process payments and has no cancellation policy of its own to enforce. Confirm the host's terms with them before you pay.</p>
       </div>
 
       <!-- CONSENT -->
@@ -584,7 +584,8 @@
 // e.g. booking.html?id=1&checkin=2026-07-12&checkout=2026-07-19&guests=2
 // ═══════════════════════════════════════════
 const qp = new URLSearchParams(location.search);
-const listing = getCasaProperty(qp.get('id'));
+const qpId = parseInt(qp.get('id'), 10);
+let listing = getCasaProperty(qp.get('id'));
 const PROPERTY = {
   id: listing.id,
   title: qp.get('prop') || `${listing.title}, ${listing.loc}`,
@@ -594,8 +595,11 @@ const PROPERTY = {
   pricePerNight: parseInt(qp.get('price'), 10) || listing.price,
   maxGuests: listing.sleeps,
   minNights: listing.minNights || 1,
+  cancellationPolicy: listing.cancellationPolicy || 'Free cancellation up to 7 days before check-in.',
   petsWelcome: true,
 };
+const cancelPolicyEl = document.getElementById('cancelPolicyText');
+if (cancelPolicyEl) cancelPolicyEl.textContent = PROPERTY.cancellationPolicy;
 
 // Resolve the real host from Supabase (property_id -> host_id -> profile).
 // Falls back to the local CASA_HOSTS approximation if the lookup fails
@@ -625,15 +629,49 @@ async function resolvePropertyHost() {
   document.getElementById('hostFirstName').textContent = PROPERTY.host;
   document.getElementById('submitBtn').innerHTML = `Send enquiry to ${PROPERTY.host} <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;flex-shrink:0"><path d="M5 12h14M13 5l7 7-7 7"/></svg>`;
 }
-const propertyHostReady = resolvePropertyHost();
 
-const propUrl = `property.html?id=${listing.id}`;
-document.getElementById('backToProperty').href = propUrl;
-const crumbLink = document.getElementById('crumbPropLink');
-if (crumbLink) {
-  crumbLink.href = propUrl;
-  crumbLink.textContent = PROPERTY.title;
+// Correct in place if this id wasn't in the local seed set — same fix as
+// property.html's `if (qpId && listing.id !== qpId)` block. Without this,
+// any real (non-seed) published listing silently falls back to
+// getCasaProperty()'s seed id 1, and PROPERTY.id/hostId stay wrong for
+// the rest of the page: title/price still look right (they come straight
+// from the prop/price URL params), so the guest sees nothing wrong, but
+// the enquiry actually inserts against the WRONG property and host.
+// Must finish before resolvePropertyHost() runs, since that queries
+// Supabase using PROPERTY.id.
+async function initBookingProperty() {
+  if (qpId && listing.id !== qpId) {
+    await casaRefreshProperties();
+    const real = CASA_PROPERTIES.find(p => p.id === qpId);
+    if (!real) {
+      document.body.innerHTML = '<div style="max-width:480px;margin:120px auto;text-align:center;font-family:sans-serif;padding:0 24px"><h1 style="font-size:28px;margin-bottom:12px">Listing not found</h1><p style="color:#8a8478;margin-bottom:24px">This property may have been removed, or the link is incorrect.</p><a href="browse.html" style="color:#B05533">Browse all stays &rarr;</a></div>';
+      return;
+    }
+    listing = real;
+    PROPERTY.id = real.id;
+    PROPERTY.title = qp.get('prop') || `${real.title}, ${real.loc}`;
+    PROPERTY.pricePerNight = parseInt(qp.get('price'), 10) || real.price;
+    PROPERTY.maxGuests = real.sleeps;
+    PROPERTY.minNights = real.minNights || 1;
+    PROPERTY.cancellationPolicy = real.cancellationPolicy || 'Free cancellation up to 7 days before check-in.';
+    if (cancelPolicyEl) cancelPolicyEl.textContent = PROPERTY.cancellationPolicy;
+    // Refresh the price display now that PROPERTY.pricePerNight may have
+    // changed — updatePricing() is declared further down but hoisted, so
+    // callable here; it already checks the current checkin/checkout
+    // values and falls back to clearPricing() itself if either is empty,
+    // so this is correct whether or not dates were pre-filled from the URL.
+    if (typeof updatePricing === 'function') updatePricing();
+  }
+  await resolvePropertyHost();
+  const propUrl = `property.html?id=${listing.id}`;
+  document.getElementById('backToProperty').href = propUrl;
+  const crumbLink = document.getElementById('crumbPropLink');
+  if (crumbLink) {
+    crumbLink.href = propUrl;
+    crumbLink.textContent = PROPERTY.title;
+  }
 }
+const propertyHostReady = initBookingProperty();
 
 if (qp.get('checkin'))  document.getElementById('checkin').value  = qp.get('checkin');
 if (qp.get('checkout')) document.getElementById('checkout').value = qp.get('checkout');
@@ -942,6 +980,6 @@ document.querySelectorAll('.consent-item input').forEach(cb => {
 </script>
 
 <script src="casa.js?v=3"></script>
-<script src="casa-tech.js?v=4"></script>
+<script src="casa-tech.js?v=5"></script>
 </body>
 </html>

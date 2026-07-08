@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="casa.css?v=2">
-<link rel="stylesheet" href="casa-tech.css?v=4">
+<link rel="stylesheet" href="casa-tech.css?v=5">
 <link rel="stylesheet" href="casa-search.css?v=1">
 <style>
   /* ─── HERO ─── */
@@ -106,8 +106,10 @@
   /* ─── DESTINATIONS ─── */
   .dest { padding: 96px 0 48px; }
   .dest-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
-  .dest-card { position: relative; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform .25s; }
+  .dest-card { position: relative; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform .25s, box-shadow .25s; }
   .dest-card:hover { transform: translateY(-2px); }
+  body.tech .dest-card { box-shadow: var(--lift-1); }
+  body.tech .dest-card:hover { box-shadow: var(--lift-2); }
   .dest-card .ph { width: 100%; height: 100%; }
   .dest-card .meta {
     position: absolute; left: 16px; right: 16px; bottom: 16px;
@@ -168,8 +170,10 @@
     background: var(--surface); border: 1px solid var(--rule);
     padding: 9px 16px; border-radius: var(--r-pill);
     font-size: 13.5px; color: var(--ink-2); cursor: pointer;
-    transition: all .15s;
+    text-decoration: none; transition: all .15s;
   }
+  body.tech .tag-wall .ch { box-shadow: 0 1px 2px rgba(60,40,25,0.05); }
+  body.tech .tag-wall .ch:hover:not(:active) { box-shadow: 0 4px 12px rgba(60,40,25,0.10); }
   .tag-wall .ch:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   .tag-wall .ch .tag-name { font-family: var(--serif); font-style: italic; color: var(--brick); }
   .tag-wall .ch:hover .tag-name { color: var(--brick-2); }
@@ -177,14 +181,23 @@
   .tag-wall .ch:hover .ct { color: rgba(255,255,255,0.55); }
 
   .post-feed { display: flex; flex-direction: column; gap: 16px; }
-  .post-mini { background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 20px; }
+  .post-mini {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 20px;
+    cursor: pointer; transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s, border-color .15s;
+  }
+  body.tech .post-mini { box-shadow: var(--lift-1); }
+  body.tech .post-mini:hover { transform: translateY(-3px); box-shadow: var(--lift-2); border-color: var(--rule-3); }
+  .post-mini:focus-visible { outline: 2px solid var(--brick); outline-offset: 2px; }
+  .post-mini .body .tag { font-style: italic; color: var(--brick); cursor: pointer; text-decoration: none; }
+  .post-mini .body .tag:hover { text-decoration: underline; text-underline-offset: 2px; }
+  .post-mini .body a { font-style: italic; color: var(--brick); cursor: pointer; text-decoration: none; }
+  .post-mini .body a:hover { text-decoration: underline; text-underline-offset: 2px; }
   .post-mini .pm-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   .post-mini .av { width: 32px; height: 32px; border-radius: 50%; background: var(--brick); color: white; display: inline-flex; align-items: center; justify-content: center; font-family: var(--serif); font-style: italic; font-size: 14px; }
   .post-mini .av.guest { background: var(--moss); }
   .post-mini .nm { font-size: 13.5px; font-weight: 500; }
   .post-mini .when { font-family: var(--mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-4); margin-left: auto; }
   .post-mini .body { font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
-  .post-mini .body i { font-style: italic; color: var(--brick); cursor: pointer; }
 
   /* ─── HOST CTA ─── */
   .host-cta { padding: 0 0 96px; }
@@ -505,58 +518,24 @@
         </a>
 
         <div class="tag-wall" style="margin-top: 40px;">
-          <span class="ch"><span class="tag-name">#lakedistrict</span><span class="ct">214</span></span>
-          <span class="ch"><span class="tag-name">#cornwall</span><span class="ct">198</span></span>
-          <span class="ch"><span class="tag-name">#scottishhighlands</span><span class="ct">145</span></span>
-          <span class="ch"><span class="tag-name">#norfolk</span><span class="ct">112</span></span>
-          <span class="ch"><span class="tag-name">#cotswolds</span><span class="ct">87</span></span>
-          <span class="ch"><span class="tag-name">#snowdonia</span><span class="ct">54</span></span>
-          <span class="ch"><span class="tag-name">#cottage</span><span class="ct">341</span></span>
-          <span class="ch"><span class="tag-name">#seaview</span><span class="ct">156</span></span>
-          <span class="ch"><span class="tag-name">#petfriendly</span><span class="ct">134</span></span>
-          <span class="ch"><span class="tag-name">#glamping</span><span class="ct">89</span></span>
-          <span class="ch"><span class="tag-name">#hottub</span><span class="ct">71</span></span>
-          <span class="ch"><span class="tag-name">#offgrid</span><span class="ct">62</span></span>
-          <span class="ch"><span class="tag-name">#causewaycoast</span><span class="ct">29</span></span>
+          <a class="ch" href="tag.html?tag=lakedistrict"><span class="tag-name">#lakedistrict</span><span class="ct">214</span></a>
+          <a class="ch" href="tag.html?tag=cornwall"><span class="tag-name">#cornwall</span><span class="ct">198</span></a>
+          <a class="ch" href="tag.html?tag=highlands"><span class="tag-name">#scottishhighlands</span><span class="ct">145</span></a>
+          <a class="ch" href="tag.html?tag=norfolk"><span class="tag-name">#norfolk</span><span class="ct">112</span></a>
+          <a class="ch" href="tag.html?tag=cotswolds"><span class="tag-name">#cotswolds</span><span class="ct">87</span></a>
+          <a class="ch" href="tag.html?tag=snowdonia"><span class="tag-name">#snowdonia</span><span class="ct">54</span></a>
+          <a class="ch" href="tag.html?tag=cottage"><span class="tag-name">#cottage</span><span class="ct">341</span></a>
+          <a class="ch" href="tag.html?tag=seaview"><span class="tag-name">#seaview</span><span class="ct">156</span></a>
+          <a class="ch" href="tag.html?tag=petfriendly"><span class="tag-name">#petfriendly</span><span class="ct">134</span></a>
+          <a class="ch" href="tag.html?tag=glamping"><span class="tag-name">#glamping</span><span class="ct">89</span></a>
+          <a class="ch" href="tag.html?tag=hottub"><span class="tag-name">#hottub</span><span class="ct">71</span></a>
+          <a class="ch" href="tag.html?tag=offgrid"><span class="tag-name">#offgrid</span><span class="ct">62</span></a>
+          <a class="ch" href="tag.html?tag=causeway"><span class="tag-name">#causewaycoast</span><span class="ct">29</span></a>
         </div>
       </div>
 
-      <div class="post-feed">
-        <div class="post-mini">
-          <div class="pm-head">
-            <div class="av">S</div>
-            <div>
-              <div class="nm">Sarah R.</div>
-              <div class="mono" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)">Host · Windermere</div>
-            </div>
-            <span class="when">2 hrs</span>
-          </div>
-          <div class="body">300-year-old stone cottage, sleeps 6. Wood burner, garden onto the fells. July is open. <i>#lakedistrict</i> <i>#cottage</i> <i>#familyfriendly</i></div>
-        </div>
-
-        <div class="post-mini">
-          <div class="pm-head">
-            <div class="av guest">M</div>
-            <div>
-              <div class="nm">Marcus J.</div>
-              <div class="mono" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)">Guest · Trip review</div>
-            </div>
-            <span class="when">5 hrs</span>
-          </div>
-          <div class="body">Just back from a week in Cornwall &mdash; booked direct through Casa, saved about £180. Cannot recommend it enough. <i>#cornwall</i> <i>#seaview</i></div>
-        </div>
-
-        <div class="post-mini">
-          <div class="pm-head">
-            <div class="av">F</div>
-            <div>
-              <div class="nm">Fiona C.</div>
-              <div class="mono" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)">Host · Isle of Skye</div>
-            </div>
-            <span class="when">Yest.</span>
-          </div>
-          <div class="body">Restored blackhouse on the Trotternish. Solar, wood-fired hot tub, views to the Old Man. <i>#isleofskye</i> <i>#offgrid</i></div>
-        </div>
+      <div class="post-feed" id="postFeed">
+        <div class="post-mini reveal" style="color:var(--ink-3);font-size:13.5px">Loading community posts&hellip;</div>
       </div>
 
     </div>
@@ -642,8 +621,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
+<script src="casa-feed-posts.js"></script>
 <script src="casa.js?v=3"></script>
-<script src="casa-tech.js?v=4"></script>
+<script src="casa-tech.js?v=5"></script>
 <script>
 // Real platform stats — this page used to quote a fixed "4,202 UK
 // stays / 4.9 avg rating" regardless of how many real stays/reviews
@@ -667,6 +647,42 @@ document.addEventListener('DOMContentLoaded', function () {
     const s = stats[r];
     el.textContent = s ? `${s.count} stay${s.count === 1 ? '' : 's'} · from £${s.minPrice}` : 'No stays yet';
   });
+})();
+
+/* Connect section mini-post previews — real feed posts, not fabricated
+   ones. Same data source and hashtag-linking as feed.html/tag.html. */
+(async () => {
+  const feedEl = document.getElementById('postFeed');
+  if (!feedEl) return;
+  const posts = typeof casaFetchFeedPosts === 'function' ? await casaFetchFeedPosts() : [];
+  const top = posts.slice(0, 3);
+
+  if (!top.length) {
+    feedEl.innerHTML = `<div class="post-mini reveal" style="cursor:default">
+      <div class="body">No posts yet — <a href="feed.html">be the first to share</a> a stay, a tip, or a review.</div>
+    </div>`;
+    return;
+  }
+
+  feedEl.innerHTML = top.map((p, i) => {
+    const name = casaEscapeHtml(p.author?.full_name || 'Guest');
+    const roleClass = p.author?.role === 'guest' ? ' guest' : '';
+    const roleLabel = p.author?.role === 'host' ? 'Host' : 'Guest';
+    const initial = casaEscapeHtml(name.charAt(0).toUpperCase());
+    const delay = i === 0 ? '' : ` d${i}`;
+    return `<div class="post-mini reveal${delay}" role="link" tabindex="0" aria-label="Open the community feed" onclick="location.href='feed.html?post=${p.id}'" onkeydown="if(event.key==='Enter')location.href='feed.html?post=${p.id}'">
+      <div class="pm-head">
+        <div class="av${roleClass}">${initial}</div>
+        <div>
+          <div class="nm">${name}</div>
+          <div class="mono" style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-4)">${roleLabel}</div>
+        </div>
+        <span class="when">${casaRelativeTime(p.created_at)}</span>
+      </div>
+      <div class="body">${casaFormatFeedBody(p.body)}</div>
+    </div>`;
+  }).join('');
+  casaLinkifyHashtags(feedEl);
 })();
 </script>
 </body>

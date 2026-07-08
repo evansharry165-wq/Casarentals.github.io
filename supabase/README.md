@@ -225,6 +225,29 @@ Before this, `status` only ever moved from `pending` to `replied`
 or `declined`, so the host dashboard's own "confirmed bookings" calendar
 strip was always empty in practice.
 
+## Phase 10 — Cancellation policy & pilot payments (`cancellation-policy.sql`)
+
+Two linked pilot decisions, made together since they both come down to
+"Casa doesn't touch the money":
+
+- **Payments**: bank transfer, direct between guest and host, off-platform
+  — not permanent, Stripe Connect is the planned graduation path once real
+  volume justifies the integration effort. Casa never stores or sees a
+  bank account number; no schema change needed for this part; see
+  `CASA_PROJECT_BRIEF.md`. `host.html`'s `updateEnquiryStatus()` now posts
+  a real message into the enquiry's conversation the moment a host
+  confirms, and `messages.html`'s thread-status banner now has a real
+  `confirmed` state (the CSS already existed — `else { st.style.display =
+  'none' }` was silently swallowing it for every non-pending status).
+- **Cancellation policy**: since Casa can't hold funds, it can't enforce a
+  refund — `properties.cancellation_policy` (added by
+  `cancellation-policy.sql`) exists purely so whatever the host has agreed
+  is visible to a guest before they enquire, same spirit as `min_stay`.
+  Host-set in `list.html` (sensible pre-filled default, editable),
+  displayed on `property.html` and `booking.html`.
+
+**Apply once, manually** in the SQL editor, after `schema.sql`.
+
 ## Recommended next phase (deferred, not urgent)
 
 Real image upload for feed posts (the "Photo" post type has no working

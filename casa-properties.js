@@ -100,6 +100,7 @@ CASA_PROPERTIES.forEach(p => {
   p.cleaningFee = Math.max(35, Math.round(p.price * 0.28));
   p.instantBook = p.rating >= 4.8 && (p.badge === 'verified' || p.reviews >= 20);
   p.minNights = p.type === 'glamping' ? 2 : p.price > 300 ? 3 : 2;
+  p.cancellationPolicy = 'Free cancellation up to 7 days before check-in.';
 });
 
 function casaCalcStayTotal(property, nights, opts = {}) {
@@ -180,6 +181,7 @@ function casaMapSupabaseRow(row) {
     col: casaColorForId(row.id),
     cleaningFee: row.cleaning_fee || Math.max(35, Math.round(row.price_per_night * 0.28)),
     minNights: row.min_stay || 1,
+    cancellationPolicy: row.cancellation_policy || 'Free cancellation up to 7 days before check-in.',
     instantBook: !!row.instant_book,
   };
   // Real host-uploaded photos take priority. Falling back to the curated
