@@ -67,25 +67,59 @@ When in doubt, check the actual code and git history, not a document.
   "looks done but does nothing" patterns are common — decorative buttons,
   filters that don't filter, forms with no real validation. Hunt for these
   actively.
+- **Verification standard — applies to everything, especially visual/
+  subjective work.** A task isn't done because code exists that *could*
+  satisfy it — it's done when there's a specific, visible, or testable
+  difference someone could actually go check. Concrete case this bit the
+  project: a "make it feel more high-tech" prompt led to a full 266-line
+  material system (`casa-tech.css` — ambient glow, `.glass`/`.depth`
+  card treatments, scroll-reveal) being built, then applied to real page
+  content in exactly zero places, while the ambient effect itself was
+  tuned so subtly (3–14% opacity) it was invisible. The system existed;
+  the site looked unchanged. Before marking anything done — especially
+  design/UX work — describe in plain English the specific visible
+  difference on the specific named page(s). If that description can't be
+  written with real specificity, treat the task as not done, regardless
+  of what code exists.
+- **Report the commit hash at the end of every session, always, not just
+  on request.** A separate real incident: a full round of verified,
+  working changes was described in detail as complete, but never actually
+  committed — it existed only in-session and never reached `origin/main`,
+  which wasn't discovered until three separate fresh exports of the repo
+  all failed to show any of the claimed work. End every session-completion
+  report with the actual pushed commit hash (e.g. "pushed as `c6c94da`"),
+  confirmed via `git log` / `git status` against `origin/main`, not
+  assumed. This is the cheapest possible check and would have caught the
+  gap immediately instead of several rounds later.
 - **Verify before trusting docs/trackers.** Tracker files and planning
   docs go stale fast. Before redoing or "fixing" something a tracker
   flags, check the actual current code/git history first.
 - **localStorage keys, and which are wired to real Supabase tables** —
-  see `supabase/README.md` for the full picture:
+  see `supabase/README.md` for the full picture. Corrected against direct
+  code inspection (the previous version of this list was stale — always
+  verify against the actual code, not this document, per the rule above):
   - `casa:user` — **live**, synced from the real session (`profiles` +
     `auth.users`), read-through cache, not the source of truth anymore
   - `casa:saved` — **live** (`saved_properties`)
   - `casa:follows` — **live** (`follows`, via `CASA_HOSTS[key].supabaseId`)
-  - `casa:enquiries` — **live** (`enquiries`); `casa:local-convos` is
-    still local-only (conversations aren't migrated yet)
-  - `casa:reviews` — **live** (`reviews`); the feed cross-post
-    (`casa:local-feed-posts`) is still local-only
+  - `casa:enquiries` — **live** (`enquiries`), and enquiry → conversation
+    linking is real too, via the `create_conversation_for_enquiry` RPC
+  - `casa:reviews` — **live** (`reviews`)
   - `casa:reports` — **live** (`reports`)
-  - Community feed (`feed_posts`, `feed_replies`, `muted_users`) — **live**.
-    The 21 fabricated seed posts were deleted rather than migrated (no
-    real accounts behind their invented authors); the feed now starts
-    empty and grows from real posts only. See `supabase/README.md`.
-  - `casa:blocked-convos`, `casa:notifications` — **still local-only**
+  - `casa:muted-users` — **live** (`muted_users`)
+  - `casa:notifications` — **live** (`notifications`), read-through cache
+    like `casa:user` above — corrected from an earlier stale note in this
+    file that called it local-only; it isn't
+  - Community feed (`feed_posts`, `feed_replies`) — **live**. The 21
+    fabricated seed posts were deleted rather than migrated (no real
+    accounts behind their invented authors); the feed starts empty and
+    grows from real posts only
+  - Conversation blocking — **live** (`conversation_participants.blocked`)
+  - Remaining local-only keys are genuinely fine to stay that way — they're
+    transient UI/draft state, not core data needing to sync across users:
+    `casa:feed-draft`, `casa:listing-draft`, `casa:host-listings`,
+    `casa:availability`, `casa:map-feed`, `casa:recent`,
+    `casa:pending-oauth-role`, `casa:concierge`
 - **Commit in small, real increments** and push as each logical piece
   lands, not one giant commit at the end.
 
