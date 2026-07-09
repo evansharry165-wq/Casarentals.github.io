@@ -86,6 +86,7 @@
 <script src="casa-properties.js?v=1"></script>
 <script src="casa-hosts.js"></script>
 <script src="casa-feed-posts.js"></script>
+<script src="casa-editorial-attractions.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
 <script src="casa.js?v=3"></script>
@@ -188,22 +189,45 @@ async function renderPosts() {
 
 // Real attractions.html tips for this region — attractions.html tips are
 // feed_posts with type:'tip'; matched the same way matchProps() matches
-// properties, by real region, not a parallel lookup.
+// properties, by real region, not a parallel lookup. Casa's own editorial
+// attractions (casa-editorial-attractions.js) are a separate, original-
+// content source layered on top — kept in their own labeled sub-section,
+// with distinct brick-tinted card styling, so they're never mistaken for
+// a user-submitted tip. See attractions.html for the full picks + tips UI.
 async function renderTips() {
   if (!meta.regions.length) return;
   const el = document.getElementById('tabTips');
   el.innerHTML = '<p style="color:var(--ink-3)">Loading…</p>';
+
+  const editorial = typeof CASA_EDITORIAL_ATTRACTIONS !== 'undefined'
+    ? CASA_EDITORIAL_ATTRACTIONS.filter(a => meta.regions.includes(a.region))
+    : [];
   const all = typeof casaFetchFeedPosts === 'function' ? await casaFetchFeedPosts({ type: 'tip' }) : [];
   const matches = all.filter(p => meta.regions.includes(p.region));
-  if (!matches.length) {
+
+  if (!editorial.length && !matches.length) {
     el.innerHTML = `<div class="feed-snippet"><div class="fs-body">No local tips for ${casaEscapeHtml(meta.label)} yet. <a href="attractions.html">Share one</a>.</div></div>`;
     return;
   }
-  el.innerHTML = matches.map(p => `
-    <div class="feed-snippet">
-      <div class="fs-head">${casaEscapeHtml(p.author?.full_name || 'Guest')} · <a href="feed.html?post=${p.id}">View in feed</a></div>
-      <div class="fs-body">${casaFormatFeedBody(p.body)}</div>
-    </div>`).join('');
+
+  let html = '';
+  if (editorial.length) {
+    html += `<div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--brick);margin-bottom:10px">Casa&rsquo;s picks</div>`;
+    html += editorial.map(a => `
+      <div class="feed-snippet" style="border-color:rgba(176,85,51,0.3);background:var(--brick-pale)">
+        <div class="fs-head">${casaEscapeHtml(a.name)} &middot; ${casaEscapeHtml(a.category)} &middot; <a href="attractions.html">See all Casa picks</a></div>
+        <div class="fs-body">${casaEscapeHtml(a.body)}</div>
+      </div>`).join('');
+  }
+  if (matches.length) {
+    if (editorial.length) html += `<div style="font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin:22px 0 10px">From hosts &amp; guests</div>`;
+    html += matches.map(p => `
+      <div class="feed-snippet">
+        <div class="fs-head">${casaEscapeHtml(p.author?.full_name || 'Guest')} · <a href="feed.html?post=${p.id}">View in feed</a></div>
+        <div class="fs-body">${casaFormatFeedBody(p.body)}</div>
+      </div>`).join('');
+  }
+  el.innerHTML = html;
   casaLinkifyHashtags(el);
 }
 

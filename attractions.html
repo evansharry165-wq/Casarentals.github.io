@@ -46,6 +46,20 @@
 
   .att-empty { grid-column: 1 / -1; text-align: center; padding: 56px 32px; border: 1px dashed var(--rule-3); border-radius: 16px; color: var(--ink-3); }
 
+  .att-section-head { margin: 4px 0 16px; }
+  .att-section-head h2 { font-family: var(--serif); font-size: 22px; letter-spacing: -0.01em; margin-bottom: 4px; }
+  .att-section-head p { font-size: 12.5px; color: var(--ink-3); }
+  .att-grid + .att-section-head { margin-top: 8px; }
+
+  /* Editorial ("Casa's picks") cards — deliberately distinct from
+     user-submitted tip cards below, so the two are never confused:
+     brick-tinted surface + a mono "Casa pick" badge, vs. the plain
+     surface + guest/host avatar treatment user tips use. */
+  .att-card.editorial { border-color: rgba(176,85,51,0.3); background: var(--brick-pale); }
+  .att-card.editorial:hover { border-color: var(--brick); }
+  .att-pick-badge { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--brick); margin-bottom: 10px; }
+  .att-pick-badge svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; }
+
   .att-side { position: sticky; top: 84px; align-self: start; }
   .att-compose { border: 1px solid var(--rule); border-radius: 16px; padding: 20px; background: var(--surface); }
   .att-compose h3 { font-family: var(--serif); font-size: 20px; margin-bottom: 6px; }
@@ -91,7 +105,19 @@
   <div class="att-filters" id="attFilters"></div>
 
   <div class="att-layout">
-    <div class="att-grid" id="attGrid"></div>
+    <div>
+      <div class="att-section-head" id="attEditorialHead" style="display:none">
+        <h2>Casa&rsquo;s picks</h2>
+        <p>Well-known local spots, written by Casa &mdash; not user-submitted.</p>
+      </div>
+      <div class="att-grid" id="attEditorialGrid" style="display:none"></div>
+
+      <div class="att-section-head">
+        <h2>From hosts &amp; guests</h2>
+        <p>Real tips shared by the people who actually stay and host here.</p>
+      </div>
+      <div class="att-grid" id="attGrid"></div>
+    </div>
 
     <aside class="att-side">
       <div class="att-compose">
@@ -139,6 +165,7 @@
 </footer>
 
 <script src="casa-feed-posts.js"></script>
+<script src="casa-editorial-attractions.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
 <script src="casa.js?v=3"></script>
@@ -164,7 +191,11 @@ async function getAllTips() {
 const ATT_REGION_LABELS = { 'lake-district': 'Lake District', cornwall: 'Cornwall', highlands: 'Scottish Highlands', norfolk: 'Norfolk', yorkshire: 'Yorkshire', cotswolds: 'Cotswolds', snowdonia: 'Snowdonia', skye: 'Isle of Skye', pembrokeshire: 'Pembrokeshire', causeway: 'Causeway Coast', devon: 'Devon', other: 'Somewhere else' };
 
 function renderFilters(tips) {
-  const counties = ['all', ...new Set(tips.map(t => t.county).filter(c => c && c !== 'all'))];
+  // Union of regions with real user tips AND regions with a Casa's-picks
+  // editorial set, so a region with only editorial content (or only user
+  // tips) still gets a working filter pill for it.
+  const editorialRegions = typeof CASA_EDITORIAL_ATTRACTIONS !== 'undefined' ? CASA_EDITORIAL_ATTRACTIONS.map(a => a.region) : [];
+  const counties = ['all', ...new Set([...tips.map(t => t.county), ...editorialRegions].filter(c => c && c !== 'all'))];
   document.getElementById('attFilters').innerHTML = counties.map(c => {
     const label = c === 'all' ? 'All regions' : (ATT_REGION_LABELS[c] || c.charAt(0).toUpperCase() + c.slice(1));
     return `<button class="att-pill${c === attCounty ? ' active' : ''}" onclick="setAttCounty('${c}')">${label}</button>`;
@@ -176,8 +207,39 @@ function setAttCounty(c) {
   paintAttractions();
 }
 
+// Casa's own original local-attractions content (see casa-editorial-
+// attractions.js) — kept in a separate grid with its own heading and a
+// "Casa pick" badge rather than mixed into the user-tip grid, so
+// editorial content is never mistaken for something a guest posted.
+function paintEditorialAttractions() {
+  const editorial = typeof casaGetEditorialAttractions === 'function' ? casaGetEditorialAttractions(attCounty) : [];
+  const head = document.getElementById('attEditorialHead');
+  const grid = document.getElementById('attEditorialGrid');
+  if (!editorial.length) {
+    head.style.display = 'none';
+    grid.style.display = 'none';
+    return;
+  }
+  head.style.display = '';
+  grid.style.display = '';
+  grid.innerHTML = editorial.map(a => `
+    <a class="att-card editorial" href="browse.html?region=${encodeURIComponent(a.region)}">
+      <div class="att-pick-badge"><svg viewBox="0 0 24 24"><path d="m4 12 5 5 11-11"/></svg> Casa pick</div>
+      <div class="ac-head">
+        <div class="av ink">${casaEscapeHtml(a.name[0])}</div>
+        <div>
+          <div class="ac-who">${casaEscapeHtml(a.name)}</div>
+          <div class="ac-when">${casaEscapeHtml(a.category)} &middot; ${casaEscapeHtml(ATT_REGION_LABELS[a.region] || a.region)}</div>
+        </div>
+      </div>
+      <div class="ac-body">${casaEscapeHtml(a.body)}</div>
+      <div class="ac-foot"><span style="margin-left:auto">See stays in ${casaEscapeHtml(ATT_REGION_LABELS[a.region] || a.region)} &rarr;</span></div>
+    </a>`).join('');
+}
+
 function paintAttractions() {
   renderFilters(ALL_TIPS);
+  paintEditorialAttractions();
   const shown = attCounty === 'all' ? ALL_TIPS : ALL_TIPS.filter(t => t.county === attCounty || t.county === 'all');
   const grid = document.getElementById('attGrid');
   if (!shown.length) {
