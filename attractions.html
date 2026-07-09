@@ -51,7 +51,8 @@
   .att-compose h3 { font-family: var(--serif); font-size: 20px; margin-bottom: 6px; }
   .att-compose p { font-size: 12.5px; color: var(--ink-3); margin-bottom: 14px; line-height: 1.5; }
   .att-compose label { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); margin: 10px 0 5px; }
-  .att-compose input, .att-compose textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--rule); border-radius: 10px; font-family: var(--sans); font-size: 13.5px; background: var(--paper); }
+  .att-compose input, .att-compose select, .att-compose textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--rule); border-radius: 10px; font-family: var(--sans); font-size: 13.5px; background: var(--paper); }
+  .att-compose select { cursor: pointer; }
   .att-compose textarea { min-height: 90px; resize: vertical; }
   .att-compose button { width: 100%; margin-top: 14px; padding: 11px; border: none; border-radius: 10px; background: var(--brick); color: white; font-size: 14px; cursor: pointer; }
   .att-compose button:hover { background: var(--brick-2); }
@@ -98,6 +99,22 @@
         <p>Know a walk, a view, or a place worth the detour? Post it here — it'll appear on this page and in the community feed.</p>
         <label>Where</label>
         <input type="text" id="attWhere" placeholder="e.g. Coniston, Cumbria">
+        <label>Region</label>
+        <select id="attRegion">
+          <option value="">Select a region…</option>
+          <option value="lake-district">Lake District</option>
+          <option value="cornwall">Cornwall</option>
+          <option value="highlands">Scottish Highlands</option>
+          <option value="norfolk">Norfolk</option>
+          <option value="yorkshire">Yorkshire</option>
+          <option value="cotswolds">Cotswolds</option>
+          <option value="snowdonia">Snowdonia</option>
+          <option value="skye">Isle of Skye</option>
+          <option value="pembrokeshire">Pembrokeshire</option>
+          <option value="causeway">Causeway Coast</option>
+          <option value="devon">Devon</option>
+          <option value="other">Somewhere else</option>
+        </select>
         <label>Your tip</label>
         <textarea id="attBody" placeholder="What should people know?"></textarea>
         <button id="attSubmit" onclick="submitAttraction()" disabled>Post tip</button>
@@ -117,7 +134,7 @@
       <div><h5>Hosts</h5><a href="list.html">List a property</a><a href="host-resources.html">Resources</a><a href="community.html">Community</a></div>
       <div><h5>Casa</h5><a href="about.html">Our story</a><a href="press.html">Press</a><a href="careers.html">Careers</a><a href="help.html">Help &amp; contact</a></div>
     </div>
-    <div class="bot"><div>© 2026 Casa.co.uk</div><div><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div></div>
+    <div class="bot"><div>© 2026 Casa.co.uk</div><div><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="casa-promise.html">Our promise</a></div></div>
   </div>
 </footer>
 
@@ -141,10 +158,15 @@ async function getAllTips() {
   }));
 }
 
+// Same slugs/labels as list.html's LIST_REGION_LABELS and tag.html's
+// TAG_MAP regions — not a second region vocabulary, just this page's own
+// display-label copy of the same established list.
+const ATT_REGION_LABELS = { 'lake-district': 'Lake District', cornwall: 'Cornwall', highlands: 'Scottish Highlands', norfolk: 'Norfolk', yorkshire: 'Yorkshire', cotswolds: 'Cotswolds', snowdonia: 'Snowdonia', skye: 'Isle of Skye', pembrokeshire: 'Pembrokeshire', causeway: 'Causeway Coast', devon: 'Devon', other: 'Somewhere else' };
+
 function renderFilters(tips) {
   const counties = ['all', ...new Set(tips.map(t => t.county).filter(c => c && c !== 'all'))];
   document.getElementById('attFilters').innerHTML = counties.map(c => {
-    const label = c === 'all' ? 'All regions' : c.charAt(0).toUpperCase() + c.slice(1);
+    const label = c === 'all' ? 'All regions' : (ATT_REGION_LABELS[c] || c.charAt(0).toUpperCase() + c.slice(1));
     return `<button class="att-pill${c === attCounty ? ' active' : ''}" onclick="setAttCounty('${c}')">${label}</button>`;
   }).join('');
 }
@@ -185,25 +207,36 @@ async function renderAttractions() {
 }
 
 document.getElementById('attWhere').addEventListener('input', checkAttValid);
+document.getElementById('attRegion').addEventListener('change', checkAttValid);
 document.getElementById('attBody').addEventListener('input', checkAttValid);
 function checkAttValid() {
   const where = document.getElementById('attWhere').value.trim();
+  const region = document.getElementById('attRegion').value;
   const body = document.getElementById('attBody').value.trim();
-  document.getElementById('attSubmit').disabled = !(where.length > 1 && body.length >= 15);
+  document.getElementById('attSubmit').disabled = !(where.length > 1 && region && body.length >= 15);
 }
 
 async function submitAttraction() {
   const where = document.getElementById('attWhere').value.trim();
+  const region = document.getElementById('attRegion').value;
   const body = document.getElementById('attBody').value.trim();
-  if (where.length < 2 || body.length < 15) return;
+  if (where.length < 2 || !region || body.length < 15) return;
 
   const { data: { session } } = window.casaSupabase ? await window.casaSupabase.auth.getSession() : { data: {} };
   if (!session) { casaToast('Please sign in to post a tip'); window.location.href = 'signup.html'; return; }
 
-  const post = await casaCreateFeedPost({ type: 'tip', region: 'all', body: `${where} — ${body}` });
+  // Previously always posted region: 'all' regardless of what the user
+  // typed in "Where" — every tip ended up with the same region, so the
+  // county filter pills above (renderFilters, built from real tip
+  // regions) could only ever show a single "All regions" option, and
+  // tag.html's regional pages had no real region to match tips against.
+  // Real region select, same slugs list.html's region picker uses —
+  // not a second region vocabulary.
+  const post = await casaCreateFeedPost({ type: 'tip', region, body: `${where} — ${body}` });
   if (!post) { casaToast('Could not post — please try again'); return; }
 
   document.getElementById('attWhere').value = '';
+  document.getElementById('attRegion').value = '';
   document.getElementById('attBody').value = '';
   checkAttValid();
   casaToast('Tip posted — visible here and in the feed');

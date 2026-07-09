@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- Privacy-respecting analytics (Plausible) — see supabase/README.md Phase 11 -->
+<script defer data-domain="casa.co.uk" src="https://plausible.io/js/script.js"></script>
+<!-- Error monitoring (Sentry) — inert until CASA_SENTRY_DSN is set for real, see casa-monitoring.js -->
+<script src="https://browser.sentry-cdn.com/7.120.0/bundle.min.js" crossorigin="anonymous"></script>
+<script src="casa-monitoring.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Search — Casa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="casa.css?v=3">
+<link rel="stylesheet" href="casa-tech.css?v=5">
+<link rel="stylesheet" href="casa-search.css?v=1">
+<style>
+  .search-hero { padding: 40px 0 28px; border-bottom: 1px solid var(--rule); }
+  .search-hero h1 { font-family: var(--serif); font-size: 44px; line-height: .98; letter-spacing: -.025em; }
+  .search-hero h1 i { font-style: italic; color: var(--brick); }
+  .search-hero .sub { margin-top: 10px; font-size: 14.5px; color: var(--ink-3); }
+
+  /* Search bar — same component markup/behaviour as the homepage hero,
+     driven by casaInitSearch (casa-search.js): shared location
+     autocomplete, date-range calendar, and guests picker. */
+  .search { position: relative; z-index: 30; background: var(--surface); border: 1px solid var(--rule);
+    border-radius: 20px; padding: 10px; display: grid; grid-template-columns: 1.6fr 1fr 1fr 0.9fr auto;
+    gap: 0; align-items: stretch; box-shadow: 0 8px 32px rgba(22,20,15,0.05); margin-top: 22px; }
+  .search .seg { padding: 12px 20px; position: relative; border-right: 1px solid var(--rule); cursor: pointer; transition: background .12s; border-radius: 12px; }
+  .search .seg:last-child { border-right: none; padding: 6px; }
+  .search .seg:hover { background: rgba(22,20,15,0.025); }
+  .search .seg.active { background: var(--paper); }
+  .search .seg .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; display: block; }
+  .search .seg .val { font-size: 14.5px; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+  .search .seg .val .ph-txt { color: var(--ink-4); }
+  .search .seg input { border: none; background: transparent; padding: 0; font-family: var(--sans); font-size: 14.5px; color: var(--ink); outline: none; width: 100%; }
+  .search .seg input::placeholder { color: var(--ink-4); }
+  .search-go { background: var(--brick); color: white; border: none; border-radius: 12px; padding: 0 24px;
+    cursor: pointer; display: flex; align-items: center; gap: 9px; font-family: var(--sans); font-weight: 500; font-size: 14.5px; transition: background .12s; }
+  .search-go:hover { background: var(--brick-2); }
+  .search-go svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2; }
+  @media (max-width: 900px) {
+    .search { grid-template-columns: 1fr 1fr; }
+    .search .seg { border-right: none; border-bottom: 1px solid var(--rule); }
+    .search-go { grid-column: span 2; padding: 12px; }
+  }
+  @media (max-width: 560px) {
+    .search { grid-template-columns: 1fr; }
+    .search-go { grid-column: span 1; }
+  }
+
+  .results-head { display: flex; align-items: baseline; justify-content: space-between; padding: 24px 0 4px; }
+  .results-head .count { font-size: 13.5px; color: var(--ink-3); }
+  .results-head .count b { color: var(--ink); font-weight: 500; }
+
+  .results { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px 22px; padding-bottom: 80px; }
+  @media (max-width: 1000px) { .results { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 620px) { .results { grid-template-columns: 1fr; } }
+
+  .pc { background: transparent; border-radius: 14px; overflow: visible; cursor: pointer; text-decoration: none; color: inherit; display: block; transition: transform .2s; }
+  .pc:hover { transform: translateY(-2px); }
+  .pc-image { position: relative; aspect-ratio: 4/3.2; border-radius: 14px; overflow: hidden; }
+  .pc-image .ph { width: 100%; height: 100%; }
+  .pc-image .save-heart { position: absolute; top: 12px; right: 12px; z-index: 3; }
+  .pc-image .badge-row { position: absolute; top: 12px; left: 12px; display: flex; gap: 6px; z-index: 3; }
+  .pc-body { padding: 14px 4px 0; }
+  .pc-row1 { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+  .pc-title { font-family: var(--serif); font-size: 21px; line-height: 1.1; letter-spacing: -0.01em; flex: 1; min-width: 0; }
+  .pc-title i { font-style: italic; color: var(--brick); }
+  .pc-rating { font-size: 13px; display: inline-flex; align-items: center; gap: 4px; color: var(--ink); flex-shrink: 0; }
+  .pc-rating svg { width: 13px; height: 13px; fill: var(--ink); stroke: none; }
+  .pc-rating .ct { color: var(--ink-4); }
+  .pc-loc { font-size: 13px; color: var(--ink-3); display: flex; align-items: center; gap: 5px; margin-bottom: 6px; }
+  .pc-loc svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+  .pc-meta { display: flex; gap: 12px; font-size: 12.5px; color: var(--ink-3); margin-bottom: 12px; flex-wrap: wrap; }
+  .pc-meta span { display: inline-flex; align-items: center; gap: 4px; }
+  .pc-meta svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+  .pc-price { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding-top: 10px; border-top: 1px solid var(--rule); }
+  .pc-price .p-amt { font-family: var(--serif); font-size: 23px; color: var(--ink); }
+  .pc-price .p-amt i { font-style: italic; color: var(--brick); }
+  .pc-price .p-per { font-size: 12px; color: var(--ink-3); margin-left: 2px; }
+  .pc-price .p-fee { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--moss); }
+  .badge.verified-badge { background: rgba(22,20,15,0.08); color: var(--ink); border: 1px solid rgba(22,20,15,0.12); }
+  .badge.verified-badge svg { stroke: var(--brick); }
+
+  .empty-results { grid-column: 1 / -1; text-align: center; padding: 64px 32px; border: 1px dashed var(--rule-3); border-radius: 18px; background: var(--surface); }
+  .empty-results h3 { font-family: var(--serif); font-size: 24px; margin-bottom: 8px; }
+  .empty-results p { color: var(--ink-3); font-size: 14px; }
+</style>
+</head>
+<body class="tech">
+<nav class="casa-nav">
+  <a class="brand-lockup" href="index.html"><span class="casa-mark">casa</span><span class="casa-tld">.co.uk</span></a>
+  <div class="nav-right">
+    <a class="nav-link" href="browse.html">Browse</a>
+    <a class="nav-link" href="map.html">Map</a>
+    <a class="nav-link" href="feed.html">Feed</a>
+    <a class="nav-link" href="list.html">Become a host</a>
+    <div class="nav-divider"></div>
+    <a class="nav-link" href="saved.html">Saved</a>
+    <a class="nav-link" href="messages.html">Messages</a>
+    <div class="nav-divider"></div>
+    <a class="nav-link outline" href="signup.html">Sign in</a>
+    <a class="nav-link primary" href="signup.html">Join free</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <div class="search-hero">
+    <div class="eyebrow">Search</div>
+    <h1 id="searchTitle">Find your <i>stay</i></h1>
+    <p class="sub" id="searchSub">Search by place, dates and guests — every result is a real, bookable Casa listing.</p>
+
+    <div class="search rise-3" data-search id="siteSearch">
+      <div class="seg where-seg active">
+        <span class="lbl">Where</span>
+        <div class="val">
+          <input type="text" data-where-input placeholder="Search UK destinations" autocomplete="off" aria-label="Where do you want to stay?">
+        </div>
+        <div class="search-pop where-pop" data-where-pop></div>
+      </div>
+      <div class="seg">
+        <span class="lbl">Check in</span>
+        <div class="val"><span class="ph-txt" data-checkin>Add dates</span></div>
+        <div class="search-pop cal-pop" data-cal-pop></div>
+      </div>
+      <div class="seg">
+        <span class="lbl">Check out</span>
+        <div class="val"><span class="ph-txt" data-checkout>Add dates</span></div>
+      </div>
+      <div class="seg">
+        <span class="lbl">Guests</span>
+        <div class="val"><span class="ph-txt" data-guests-label>Add guests</span></div>
+        <div class="search-pop guest-pop" data-guest-pop></div>
+      </div>
+      <button class="search-go" data-search-go>
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        Search
+      </button>
+    </div>
+  </div>
+
+  <div class="results-head">
+    <div class="count" id="resultsCount"></div>
+    <a href="browse.html" id="allFiltersLink" style="font-size:13px;color:var(--ink-3);text-decoration:underline">Browse all stays &amp; filters &rarr;</a>
+  </div>
+
+  <div class="results" id="resultsGrid"></div>
+</div>
+
+<footer class="casa-foot">
+  <div class="inner">
+    <div class="bot"><div>© 2026 Casa.co.uk</div><div><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="casa-promise.html">Our promise</a></div></div>
+  </div>
+</footer>
+
+<script src="casa-properties.js?v=1"></script>
+<script src="casa-images.js"></script>
+<script src="casa-search.js?v=1"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<script src="casa-supabase.js"></script>
+<script src="casa.js?v=3"></script>
+<script src="casa-tech.js?v=5"></script>
+<script>
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function badgeHtml(p) {
+  if (p.badge === 'verified') return `<span class="badge verified-badge"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> Verified host</span>`;
+  if (p.badge === 'new') return `<span class="badge ink">New</span>`;
+  if (p.badge === 'editors') return `<span class="badge">Editor's pick</span>`;
+  return '';
+}
+function cardHtml(p) {
+  const tags = (p.tags || []).slice(0, 2);
+  return `
+    <a class="pc rise" href="property.html?id=${p.id}">
+      <div class="pc-image">
+        ${p.photos && p.photos[0] ? `<img class="ph" src="${esc(p.photos[0])}" alt="${esc(p.title)}, ${esc(p.loc)}" loading="lazy" decoding="async">` : `<div class="ph" style="background:${p.col}" data-label="${esc(p.title.toUpperCase())} · ${esc(p.loc.toUpperCase())}"></div>`}
+        <div class="badge-row">${badgeHtml(p)}</div>
+        <button class="save-heart${typeof casaIsSaved === 'function' && casaIsSaved(p.id) ? ' saved' : ''}" onclick="event.preventDefault();event.stopPropagation();casaToggleSaved(${p.id},this);"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
+      </div>
+      <div class="pc-body">
+        <div class="pc-row1">
+          <div class="pc-title">${esc(p.title)}, <i>${esc(p.loc)}</i></div>
+          <div class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> ${p.rating.toFixed(1)} <span class="ct">(${p.reviews})</span></div>
+        </div>
+        <div class="pc-loc"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6-7-12a7 7 0 1 1 14 0c0 6-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></svg> ${esc(p.loc)}, ${esc(p.rLabel)}</div>
+        <div class="pc-meta">
+          <span><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg> Sleeps ${p.sleeps}</span>
+          <span><svg viewBox="0 0 24 24"><path d="M3 17v-7h13a4 4 0 0 1 4 4v3"/><path d="M3 21v-4M21 21v-4"/></svg> ${p.beds} bed</span>
+        </div>
+        <div class="pc-price">
+          <div><span class="p-amt"><i>£${p.price}</i></span><span class="p-per"> / night</span><div class="p-fee">£0 booking fee · pay host direct</div></div>
+        </div>
+      </div>
+    </a>`;
+}
+
+function matchesWhere(p, q) {
+  q = q.toLowerCase().replace(/^#/, '');
+  return p.loc.toLowerCase().includes(q) || (p.rLabel || '').toLowerCase().includes(q) ||
+    (p.region || '').includes(q) || p.title.toLowerCase().includes(q);
+}
+
+let searchEngine = null;
+
+function computeResults(state) {
+  let list = (typeof CASA_PROPERTIES !== 'undefined' ? CASA_PROPERTIES : []).slice();
+  if (state.region) list = list.filter(p => p.region === state.region);
+  else if (state.where) list = list.filter(p => matchesWhere(p, state.where));
+  const guests = (state.adults || 0) + (state.children || 0);
+  if (guests > 0) list = list.filter(p => p.sleeps >= guests);
+  if (state.pets) list = list.filter(p => (p.tags || []).includes('pets'));
+  if (state.checkin && state.checkout) {
+    const nights = Math.round((state.checkout - state.checkin) / 86400000);
+    list = list.filter(p => nights >= (p.minNights || 1));
+  }
+  return list;
+}
+
+function summaryLabel(state) {
+  const idx = typeof casaLocationIndex === 'function' ? casaLocationIndex() : { regions: [] };
+  const parts = [];
+  if (state.region) {
+    const r = idx.regions.find(x => x.region === state.region);
+    parts.push(r ? r.label : state.region);
+  } else if (state.where) parts.push(`"${state.where}"`);
+  else parts.push('the UK');
+  return parts.join(' ');
+}
+
+function render() {
+  const state = searchEngine ? searchEngine.state : {};
+  const list = computeResults(state);
+  document.getElementById('searchTitle').innerHTML = (state.region || state.where)
+    ? `Stays in <i>${esc(summaryLabel(state))}</i>`
+    : `Find your <i>stay</i>`;
+  const guests = (state.adults || 0) + (state.children || 0);
+  const bits = [];
+  if (state.checkin && state.checkout) {
+    const nights = Math.round((state.checkout - state.checkin) / 86400000);
+    bits.push(`${nights} night${nights === 1 ? '' : 's'}`);
+  }
+  if (guests) bits.push(`${guests} guest${guests === 1 ? '' : 's'}`);
+  document.getElementById('searchSub').textContent = bits.length
+    ? `Searching ${summaryLabel(state)} · ${bits.join(' · ')} — every result is a real, bookable Casa listing.`
+    : 'Search by place, dates and guests — every result is a real, bookable Casa listing.';
+  document.getElementById('resultsCount').innerHTML = `<b>${list.length}</b> ${list.length === 1 ? 'stay' : 'stays'} match${list.length === 1 ? 'es' : ''}`;
+  const grid = document.getElementById('resultsGrid');
+  grid.innerHTML = list.length
+    ? list.map(cardHtml).join('')
+    : `<div class="empty-results"><h3>No stays match yet</h3><p>Try a wider area, fewer nights, or fewer guests.</p></div>`;
+  if (typeof window.casaTechScan === 'function') window.casaTechScan();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  const root = document.getElementById('siteSearch');
+  if (root && typeof casaInitSearch === 'function') {
+    searchEngine = casaInitSearch(root, {
+      mode: 'filter',
+      readUrl: true,
+      guestsPlaceholder: 'Add guests',
+      datePlaceholder: 'Add dates',
+      onChange: render,
+      // Filter mode already re-renders live as the guest edits the bar —
+      // the explicit Search button just needs to stay on this page (the
+      // engine's default submit() would otherwise send them to browse.html).
+      onSubmit: function (state, query) {
+        window.history.replaceState(null, '', 'search.html' + (query ? '?' + query : ''));
+        render();
+      },
+    });
+  }
+  render();
+  if (typeof casaRefreshProperties === 'function') {
+    casaRefreshProperties().then(render);
+  }
+});
+</script>
+</body>
+</html>

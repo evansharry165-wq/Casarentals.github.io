@@ -583,6 +583,7 @@
           <a class="ch" href="tag.html?tag=hottub"><span class="tag-name">#hottub</span><span class="ct">71</span></a>
           <a class="ch" href="tag.html?tag=offgrid"><span class="tag-name">#offgrid</span><span class="ct">62</span></a>
           <a class="ch" href="tag.html?tag=causeway"><span class="tag-name">#causewaycoast</span><span class="ct">29</span></a>
+          <a class="ch" href="tag.html?tag=yorkshire"><span class="tag-name">#yorkshire</span><span class="ct">38</span></a>
         </div>
       </div>
 
@@ -652,21 +653,26 @@
     </div>
     <div class="bot">
       <div>&copy; 2026 Casa.co.uk &mdash; <em style="font-family:var(--serif);font-style:italic">a quieter way to book.</em></div>
-      <div><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="privacy.html#cookies">Cookies</a></div>
+      <div><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="casa-promise.html">Our promise</a> · <a href="privacy.html#cookies">Cookies</a></div>
     </div>
   </div>
 </footer>
 
-<script src="casa-properties.js"></script>
+<script src="casa-properties.js?v=1"></script>
 <script src="casa-search.js?v=1"></script>
 <script>
 // The home search now uses the shared engine (location autocomplete +
-// date-range calendar + interactive guests). Default submit navigates to
-// a pre-filtered browse.
+// date-range calendar + interactive guests). Submitting a search takes
+// the guest to the dedicated results page (search.html) — browse.html
+// stays the full browse-everything-with-filters view.
 document.addEventListener('DOMContentLoaded', function () {
   var root = document.getElementById('homeSearch');
   if (root && typeof casaInitSearch === 'function') {
-    casaInitSearch(root, { guestsPlaceholder: 'Add guests', datePlaceholder: 'Add dates' });
+    casaInitSearch(root, {
+      guestsPlaceholder: 'Add guests',
+      datePlaceholder: 'Add dates',
+      onSubmit: function (state, query) { window.location.href = 'search.html' + (query ? '?' + query : ''); },
+    });
   }
 });
 </script>

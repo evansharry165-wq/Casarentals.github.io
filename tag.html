@@ -65,7 +65,7 @@
     <p id="tagDesc">Stays, tips, and community posts tagged with this topic across the UK.</p>
   </div>
 
-  <div class="tabs">
+  <div class="tabs" id="tagTabs">
     <button class="tab active" data-tab="stays" onclick="setTab(this)">Stays <span id="stayCount"></span></button>
     <button class="tab" data-tab="posts" onclick="setTab(this)">Community posts</button>
     <button class="tab" data-tab="hosts" onclick="setTab(this)">Hosts</button>
@@ -74,15 +74,16 @@
   <div id="tabStays" class="grid"></div>
   <div id="tabPosts" style="display:none; padding-bottom:80px"></div>
   <div id="tabHosts" style="display:none; padding-bottom:80px"></div>
+  <div id="tabTips" style="display:none; padding-bottom:80px"></div>
 </div>
 
 <footer class="casa-foot">
   <div class="inner">
-    <div class="bot"><div>© 2026 Casa.co.uk</div><div><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div></div>
+    <div class="bot"><div>© 2026 Casa.co.uk</div><div><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="casa-promise.html">Our promise</a></div></div>
   </div>
 </footer>
 
-<script src="casa-properties.js"></script>
+<script src="casa-properties.js?v=1"></script>
 <script src="casa-hosts.js"></script>
 <script src="casa-feed-posts.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -97,6 +98,7 @@ const TAG_MAP = {
   cotswolds: { label: 'The Cotswolds', regions: ['cotswolds'], tags: ['woodburner'] },
   snowdonia: { label: 'Snowdonia', regions: ['snowdonia'], tags: ['offgrid'] },
   causeway: { label: 'Causeway Coast', regions: ['causeway'], tags: ['seaview'] },
+  yorkshire: { label: 'Yorkshire', regions: ['yorkshire'], tags: ['woodburner'] },
   petfriendly: { label: 'Pet friendly', regions: [], tags: ['pets'] },
   woodburner: { label: 'Wood burner', regions: [], tags: ['woodburner'] },
   seaview: { label: 'Sea view', regions: [], tags: ['seaview'] },
@@ -114,6 +116,17 @@ const meta = TAG_MAP[rawTag] || { label: rawTag, regions: [], tags: [rawTag] };
 document.getElementById('tagTitle').innerHTML = `<i>#${rawTag}</i>`;
 document.getElementById('tagDesc').textContent = `Explore ${meta.label} on Casa — fee-free stays and community tips.`;
 document.title = `#${rawTag} — Casa`;
+
+// "Local tips" only makes sense for a real regional page (Lake District,
+// Cornwall, Yorkshire, etc) — an amenity tag like #hottub has no region
+// to pull attractions.html tips from. Appended as a real tab, not a
+// second content system: same casaFetchFeedPosts() + feed-snippet
+// rendering renderPosts() already uses, just filtered to type:'tip' and
+// this tag's region(s) instead of hashtag-in-body.
+if (meta.regions.length) {
+  document.getElementById('tagTabs').insertAdjacentHTML('beforeend',
+    '<button class="tab" data-tab="tips" onclick="setTab(this)">Local tips</button>');
+}
 
 // Region-scoped tags (regions.length > 0) must match the actual region —
 // the amenity-tag fallback is nationwide, so applying it to e.g. "cotswolds"
@@ -173,6 +186,27 @@ async function renderPosts() {
   casaLinkifyHashtags(el);
 }
 
+// Real attractions.html tips for this region — attractions.html tips are
+// feed_posts with type:'tip'; matched the same way matchProps() matches
+// properties, by real region, not a parallel lookup.
+async function renderTips() {
+  if (!meta.regions.length) return;
+  const el = document.getElementById('tabTips');
+  el.innerHTML = '<p style="color:var(--ink-3)">Loading…</p>';
+  const all = typeof casaFetchFeedPosts === 'function' ? await casaFetchFeedPosts({ type: 'tip' }) : [];
+  const matches = all.filter(p => meta.regions.includes(p.region));
+  if (!matches.length) {
+    el.innerHTML = `<div class="feed-snippet"><div class="fs-body">No local tips for ${casaEscapeHtml(meta.label)} yet. <a href="attractions.html">Share one</a>.</div></div>`;
+    return;
+  }
+  el.innerHTML = matches.map(p => `
+    <div class="feed-snippet">
+      <div class="fs-head">${casaEscapeHtml(p.author?.full_name || 'Guest')} · <a href="feed.html?post=${p.id}">View in feed</a></div>
+      <div class="fs-body">${casaFormatFeedBody(p.body)}</div>
+    </div>`).join('');
+  casaLinkifyHashtags(el);
+}
+
 function renderHosts() {
   const props = matchProps();
   const hostIds = [...new Set(props.map(p => getCasaHostForProperty(p.id)?.id).filter(Boolean))];
@@ -199,11 +233,13 @@ function setTab(btn) {
   document.getElementById('tabStays').style.display = tab === 'stays' ? 'grid' : 'none';
   document.getElementById('tabPosts').style.display = tab === 'posts' ? 'block' : 'none';
   document.getElementById('tabHosts').style.display = tab === 'hosts' ? 'block' : 'none';
+  document.getElementById('tabTips').style.display = tab === 'tips' ? 'block' : 'none';
 }
 
 renderStays();
 renderPosts();
 renderHosts();
+renderTips();
 </script>
 <script src="casa-tech.js?v=5"></script>
 </body>
