@@ -364,6 +364,95 @@ site launches on a different domain first (no CNAME is committed yet —
 see the repo-hygiene phase), the `data-domain` value here needs to match
 whatever the real deployed domain is.
 
+## Phase 12 — Backend foundation: last known gaps
+
+Three things: sync real email confirmation automatically instead of
+Harry re-confirming it by hand, a real security pass now that real user
+data exists in these tables, and actively hunting for anything else
+still stubbed rather than just confirming the known list.
+
+### Real email verification sync (`email-verification-sync.sql`)
+
+`profiles.email_verified` used to require Harry manually flipping it,
+even though Supabase Auth already tracks real confirmation for certain
+(`auth.users.email_confirmed_at`). Now: `handle_new_user()` seeds it at
+profile-creation time from that real value, a new trigger
+(`on_auth_user_email_confirmed`) syncs it the moment a user completes
+the real magic-link/6-digit-code flow, and a one-time backfill catches
+accounts confirmed before this migration existed. `phone_verified` /
+`gov_id_verified` / `background_check` are untouched — still genuinely
+manual, exactly as `VERIFICATION-POLICY.md` documents, since no
+automated source of truth exists for those yet.
+
+### Real security pass (`rls-hardening.sql`)
+
+Spot-checked policies directly rather than trusting schema.sql's
+original comments — found four real, exploitable gaps, all reachable
+today from nothing more than a browser console and a real session. Row
+Level Security only controls *which rows* a policy lets through; none
+of these had a column-level guard, so an "own row" policy on a table
+with a privileged column let a user touch that column too:
+
+1. **profiles** — any signed-in user could self-set
+   `gov_id_verified`/`background_check`/`phone_verified` to `true` and
+   forge their own "Verified+" badge. This is the one that matters
+   most: the entire point of the manual-review process in
+   `VERIFICATION-POLICY.md`, bypassable in a single API call.
+2. **community_members** — any user could set their own `role` to
+   `'admin'` (including on first join, no prior membership needed) and
+   gain moderator powers over any community — ban other users, edit the
+   community, flip `is_official`.
+3. **messages** — "participants mark messages read" let any participant
+   rewrite *any* column on *any* message in a shared conversation, not
+   just their own `read_at` — including `body` and `sender_id`.
+4. **enquiries** — the guest could update the same row the host is
+   supposed to confirm/decline, including self-setting
+   `status: 'confirmed'` on their own booking, or silently changing
+   `check_in`/`check_out`/`total_price` after submitting.
+
+Fixed with a `BEFORE UPDATE` trigger guard on each (resets protected
+columns to their prior value for `auth.role() = 'authenticated'`
+requests — real end-user sessions, not Harry's Dashboard table editor,
+which connects as service-role and is untouched), plus tightening
+`enquiries`' UPDATE policy to host-only. `create_conversation_for_enquiry`
+(SECURITY DEFINER, called by the guest) is explicitly still allowed to
+set `conversation_id` — SECURITY DEFINER bypasses RLS row checks but
+not triggers, so this needed an explicit exception, not just RLS.
+Moderator promotion for `community_members` now has to go through
+Harry's table editor too, same as verification — there's no other
+legitimate write path for it today.
+
+### Actively hunting, not just confirming the known list
+
+Found and fixed one more, bigger than either of the above in user-
+facing terms: **property.html's entire reviews section was static,
+fabricated HTML** — 4 fake reviews ("Marcus J.", "Laura P.", "Hannah &
+Tom", "Daniel R.", all referencing a specific Windermere cottage) shown
+identically on *every* listing regardless of which property you're
+viewing, plus a permanently-stuck "4.9 · 23 reviews" header. A guest's
+real review (`profile.html` → the real `reviews` table) never rendered
+anywhere — it only nudged the small aggregate rating badge near the
+title. Compounding it: `profile.html`'s `submitReview()` also dual-wrote
+every review to `localStorage['casa:reviews']` *before* attempting the
+real Supabase insert, and property.html re-rendered that local copy on
+top of the fake static list — so a failed real insert still looked
+like a successful post to the one person who'd notice, and a
+successful one could show up twice on the submitter's own browser.
+Both fixed: `property.html` now fetches and renders real reviews
+(honest "No reviews yet" empty state when there are none, which is
+every listing right now — the `reviews` table is genuinely empty), and
+the `localStorage` dual-write in `profile.html` is gone entirely. The
+fabricated per-category breakdown bars (Cleanliness/Communication/etc)
+were removed rather than backed with real numbers — the schema only
+ever stored one `stars` value per review, there's no real per-category
+data to show.
+
+Also flagged, not fixed here (out of scope for a backend/security
+session — a real UI feature, not a data-integrity issue):
+`property.html`'s "All 12 photos" gallery button just calls
+`alert('Open gallery (12 photos)')` — a real dead end for anyone
+who clicks it expecting a photo lightbox.
+
 ## Recommended next phase (deferred, not urgent)
 
 Real image upload for feed posts (the "Photo" post type has no working

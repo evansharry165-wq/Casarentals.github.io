@@ -398,75 +398,18 @@
 
       <!-- REVIEWS -->
       <div class="reviews reveal">
-        <h2><span class="serif" style="font-style:italic;color:var(--brick)">4.9</span> · <span id="revCount">23 reviews</span></h2>
-        <div class="rev-summary">
+        <h2><span class="serif" style="font-style:italic;color:var(--brick)" id="revScoreHead">New</span> · <span id="revCount">0 reviews</span></h2>
+        <div class="rev-summary" style="grid-template-columns:200px 1fr">
           <div class="overall">
-            <div class="score">4.9</div>
+            <div class="score" id="revScore">—</div>
             <div style="font-size:12px;color:var(--ink-3);margin-top:4px">
-              <span class="stars" style="display:inline-flex;align-items:center;gap:2px">
-                <svg style="width:14px;height:14px;fill:var(--brick);stroke:none" viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
-                <svg style="width:14px;height:14px;fill:var(--brick);stroke:none" viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
-                <svg style="width:14px;height:14px;fill:var(--brick);stroke:none" viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
-                <svg style="width:14px;height:14px;fill:var(--brick);stroke:none" viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
-                <svg style="width:14px;height:14px;fill:var(--brick);stroke:none" viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
-              </span>
+              <span class="stars" id="revStars" style="display:inline-flex;align-items:center;gap:2px"></span>
             </div>
-            <div class="of">23 reviews</div>
-          </div>
-          <div class="breakdown">
-            <div class="rev-row"><span class="nm">Cleanliness</span><span class="bar"><span class="fill" style="width:98%"></span></span><span class="val">4.9</span></div>
-            <div class="rev-row"><span class="nm">Communication</span><span class="bar"><span class="fill" style="width:100%"></span></span><span class="val">5.0</span></div>
-            <div class="rev-row"><span class="nm">Accuracy</span><span class="bar"><span class="fill" style="width:96%"></span></span><span class="val">4.8</span></div>
-            <div class="rev-row"><span class="nm">Check-in</span><span class="bar"><span class="fill" style="width:100%"></span></span><span class="val">5.0</span></div>
-            <div class="rev-row"><span class="nm">Location</span><span class="bar"><span class="fill" style="width:96%"></span></span><span class="val">4.8</span></div>
-            <div class="rev-row"><span class="nm">Value</span><span class="bar"><span class="fill" style="width:100%"></span></span><span class="val">5.0</span></div>
+            <div class="of" id="revOf">No reviews yet</div>
           </div>
         </div>
 
-        <div class="rev-list">
-          <div class="rev">
-            <div class="r-head">
-              <div class="av">M</div>
-              <div>
-                <div class="who">Marcus J.</div>
-                <div class="when">June 2026 · Family trip</div>
-              </div>
-            </div>
-            <div class="body">"A proper Lakes cottage &mdash; warm, lived-in, and with the kind of view you book a holiday for. Sarah was on hand without ever being in the way. We saved nearly £200 booking direct through Casa, which paid for half the food shop."</div>
-          </div>
-          <div class="rev">
-            <div class="r-head">
-              <div class="av brick">L</div>
-              <div>
-                <div class="who">Laura P.</div>
-                <div class="when">May 2026 · Couple's break</div>
-              </div>
-            </div>
-            <div class="body">"Wood burner does what wood burners are supposed to do. Walked into Windermere village both nights, dog loved the garden. The cottage smells like a real home, not a holiday rental. Will be back."</div>
-          </div>
-          <div class="rev">
-            <div class="r-head">
-              <div class="av">H</div>
-              <div>
-                <div class="who">Hannah &amp; Tom</div>
-                <div class="when">April 2026 · 4 nights</div>
-              </div>
-            </div>
-            <div class="body">"We took our two children (5 &amp; 8) and the dog. Cottage is just as photographed. Loved the fire pit in the evenings &mdash; the kids toasted marshmallows for an hour. Sarah even left a Lakeland map and a list of her favourite walks."</div>
-          </div>
-          <div class="rev">
-            <div class="r-head">
-              <div class="av brick">D</div>
-              <div>
-                <div class="who">Daniel R.</div>
-                <div class="when">March 2026 · Long weekend</div>
-              </div>
-            </div>
-            <div class="body">"Booked it on a Tuesday for the following weekend &mdash; Sarah replied within an hour and we paid her direct. Easy. The cottage is genuinely beautiful, and the location couldn't be more central for the southern Lakes."</div>
-          </div>
-        </div>
-
-        <div style="margin-top: 28px"><button class="btn btn-outline">Show all 23 reviews</button></div>
+        <div class="rev-list" id="revList"></div>
       </div>
 
       <section class="reveal" style="padding:32px 0;border-top:1px solid var(--rule);display:none" id="communityMentionsSection">
@@ -732,32 +675,63 @@ if (qpId && listing.id !== qpId) {
   })();
 }
 
-/* ─── Show any reviews submitted locally via profile.html's review flow ─── */
-(function loadLocalReviews() {
-  let store = {};
-  try { store = JSON.parse(localStorage.getItem('casa:reviews') || '{}'); } catch { /* ignore */ }
-  const mine = store[listing.id];
-  if (!mine || !mine.length) return;
-  const list = document.querySelector('.rev-list');
-  const countEl = document.getElementById('revCount');
-  if (countEl) {
-    const baseCount = parseInt(countEl.textContent, 10) || 0;
-    countEl.textContent = `${baseCount + mine.length} reviews`;
+/* ─── Real reviews for this property ───
+   The whole reviews section used to be static markup — 4 fabricated
+   reviews ("Marcus J.", "Laura P.", "Hannah & Tom", "Daniel R.",
+   referencing a specific cottage in Windermere) baked into the HTML and
+   shown identically on every single listing, plus a permanently-static
+   "4.9 · 23 reviews" header. A guest's real review (profile.html ->
+   reviews table) never appeared anywhere — it just weirdly bumped the
+   small rating badge near the title (propRating, driven by
+   casaMapSupabaseRow's real aggregate), while this whole section stayed
+   fake. Real fetch + render, honest empty state, no fabricated
+   per-category breakdown bars (the schema only has one stars value per
+   review — there's no real per-category data to show). */
+(async function loadRealReviews() {
+  const { data: reviews, error } = window.casaSupabase
+    ? await window.casaSupabase
+        .from('reviews')
+        .select('id, stars, body, created_at, author:profiles!reviews_author_id_fkey(full_name)')
+        .eq('property_id', listing.id)
+        .order('created_at', { ascending: false })
+    : { data: null, error: 'no supabase client' };
+  if (error) console.error('loadRealReviews failed', error);
+
+  const list = reviews || [];
+  const count = list.length;
+  const avg = count ? Math.round((list.reduce((s, r) => s + r.stars, 0) / count) * 10) / 10 : 0;
+
+  document.getElementById('revScoreHead').textContent = count ? avg.toFixed(1) : 'New';
+  document.getElementById('revCount').textContent = `${count} review${count === 1 ? '' : 's'}`;
+  document.getElementById('revScore').textContent = count ? avg.toFixed(1) : '—';
+  document.getElementById('revOf').textContent = count ? `${count} review${count === 1 ? '' : 's'}` : 'No reviews yet';
+  const starsEl = document.getElementById('revStars');
+  if (starsEl) {
+    const full = Math.round(avg);
+    starsEl.innerHTML = Array.from({ length: 5 }, (_, i) => `
+      <svg style="width:14px;height:14px;fill:${i < full ? 'var(--brick)' : 'var(--rule-3)'};stroke:none" viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg>
+    `).join('');
   }
-  if (!list) return;
-  const html = mine.map(r => `
-    <div class="rev">
+
+  const revListEl = document.getElementById('revList');
+  if (!revListEl) return;
+  if (!count) {
+    revListEl.innerHTML = `<p style="color:var(--ink-3);grid-column:1/-1">No reviews yet — real stays here will show up as real reviews once guests post them.</p>`;
+    return;
+  }
+  revListEl.innerHTML = list.map(r => {
+    const name = r.author?.full_name || 'Guest';
+    return `<div class="rev">
       <div class="r-head">
-        <div class="av">${(r.name || 'You')[0]}</div>
+        <div class="av">${casaEscapeHtml(name.charAt(0).toUpperCase())}</div>
         <div>
-          <div class="who">${r.name || 'You'}</div>
-          <div class="when">${r.date} · ${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
+          <div class="who">${casaEscapeHtml(name)}</div>
+          <div class="when">${casaRelativeTime(r.created_at)} · ${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</div>
         </div>
       </div>
-      <div class="body">"${r.text}"</div>
-    </div>
-  `).join('');
-  list.insertAdjacentHTML('afterbegin', html);
+      <div class="body">"${casaEscapeHtml(r.body)}"</div>
+    </div>`;
+  }).join('');
 })();
 
 /* ─── From the community: real feed posts that reference this property ─── */

@@ -53,11 +53,14 @@ separately now.
 
 **What Harry actually confirms per field:**
 
-- `email_verified` — confirmed ownership of the account email. Supabase
-  Auth already tracks real email confirmation (`signup.html`'s
-  magic-link/6-digit-code flow sets `auth.users.email_confirmed_at` for
-  real) — Harry can treat that as sufficient evidence and flip this
-  column to match, since nothing currently syncs the two automatically.
+- `email_verified` — **automatic, not manual.** Supabase Auth already
+  tracks real email confirmation for certain
+  (`auth.users.email_confirmed_at`, set for real by `signup.html`'s
+  magic-link/6-digit-code flow) — `supabase/email-verification-sync.sql`
+  syncs that into `profiles.email_verified` the moment it happens, plus
+  a one-time backfill for accounts confirmed before that migration was
+  applied. Harry does nothing for this field; it's never re-confirming
+  something Supabase already knows for certain.
 - `phone_verified` — confirmed ownership of a contact phone number. No
   OTP-based phone flow exists yet, so for the pilot this means Harry
   personally confirms a real, reachable number (e.g. a call or text
@@ -72,10 +75,16 @@ separately now.
   pilot. Optional; a host can be fully "Verified" without ever pursuing
   this.
 
-All four are manual today, including email/phone — there's no
-automated sync from Supabase Auth's own state into these `profiles`
-columns yet, so even a real, confirmed email or phone still needs
-Harry's column edit to actually surface as "Verified" in the UI.
+`phone_verified` / `gov_id_verified` / `background_check` are still
+manual today, exactly as above — no automated source of truth exists
+for any of those three yet, unlike email. Note also (found during a
+security pass, see `supabase/rls-hardening.sql`): these four columns
+used to be updatable by *any* signed-in user on their own profile row —
+nothing stopped a user from setting `gov_id_verified`/`background_check`
+to `true` themselves via a direct API call, forging the badge this
+whole process exists to protect. A trigger now blocks that for normal
+authenticated requests while leaving Harry's own table-editor edits (and
+the automatic email sync above) untouched.
 
 ## What this does *not* cover yet
 

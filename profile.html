@@ -808,13 +808,15 @@ async function submitReview() {
 
   const dateLabel = new Date().toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
 
+  // Previously this dual-wrote to localStorage first (always "succeeding"
+  // from the submitter's point of view) and property.html re-rendered
+  // that local copy on top of the real Supabase-backed list — so a
+  // failed insert still looked like a posted review to the one person
+  // who'd know to check, and a successful one could show up twice on
+  // the submitter's own browser. Real Supabase write only, real
+  // success/failure reported.
+  let propertyOk = false;
   if (toProperty) {
-    let store = {};
-    try { store = JSON.parse(localStorage.getItem('casa:reviews') || '{}'); } catch { /* ignore */ }
-    if (!store[reviewCtx.propertyId]) store[reviewCtx.propertyId] = [];
-    store[reviewCtx.propertyId].unshift({ name: 'You', stars: reviewStarsPicked, text, date: dateLabel });
-    localStorage.setItem('casa:reviews', JSON.stringify(store));
-
     // Read the real session directly rather than the casaGetUser() cache —
     // author_id must exactly match auth.uid() or RLS rejects the insert.
     const { data: { session } } = window.casaSupabase ? await window.casaSupabase.auth.getSession() : { data: {} };
@@ -825,10 +827,14 @@ async function submitReview() {
         stars: reviewStarsPicked,
         body: text,
       });
-      if (error) casaToast('Review saved locally, but failed to sync: ' + error.message);
+      if (error) casaToast('Could not post your review: ' + error.message);
+      else propertyOk = true;
+    } else {
+      casaToast('Please sign in to post a review');
     }
   }
 
+  let feedOk = false;
   if (toFeed) {
     const post = await casaCreateFeedPost({
       type: 'review',
@@ -837,25 +843,30 @@ async function submitReview() {
       body: text,
       reviewStars: reviewStarsPicked,
     });
-    if (!post) casaToast('Review saved, but could not cross-post to the feed');
+    if (!post) casaToast('Could not cross-post your review to the feed');
+    else feedOk = true;
   }
 
-  // Update the stay card in place
-  const card = document.getElementById(reviewCtx.cardId);
-  if (card) {
-    const sb = card.querySelector('.sb');
-    if (sb) {
-      sb.querySelector('button')?.remove();
-      const when = sb.querySelector('.when');
-      if (when) when.innerHTML = `<span class="stars">${'★'.repeat(reviewStarsPicked)}${'☆'.repeat(5 - reviewStarsPicked)}</span> ${dateLabel}`;
-      const reviewDiv = document.createElement('div');
-      reviewDiv.className = 'review';
-      reviewDiv.textContent = `"${text}"`;
-      sb.appendChild(reviewDiv);
+  if (!propertyOk && !feedOk) return;
+
+  // Update the stay card in place — only once the review is actually real.
+  if (propertyOk) {
+    const card = document.getElementById(reviewCtx.cardId);
+    if (card) {
+      const sb = card.querySelector('.sb');
+      if (sb) {
+        sb.querySelector('button')?.remove();
+        const when = sb.querySelector('.when');
+        if (when) when.innerHTML = `<span class="stars">${'★'.repeat(reviewStarsPicked)}${'☆'.repeat(5 - reviewStarsPicked)}</span> ${dateLabel}`;
+        const reviewDiv = document.createElement('div');
+        reviewDiv.className = 'review';
+        reviewDiv.textContent = `"${text}"`;
+        sb.appendChild(reviewDiv);
+      }
     }
   }
 
-  const where = toProperty && toFeed ? 'the property page and the feed' : toProperty ? 'the property page' : 'the feed';
+  const where = propertyOk && feedOk ? 'the property page and the feed' : propertyOk ? 'the property page' : 'the feed';
   casaToast(`Review posted to ${where} ✓`);
   casaAddNotification({
     type: 'review',
