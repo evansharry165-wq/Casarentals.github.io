@@ -51,6 +51,33 @@
   .gallery .show-all:hover { background: white; }
   .gallery .show-all svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.6; }
 
+  /* GALLERY LIGHTBOX — same overlay/open mechanics as casa-modal-overlay
+     (fixed, centered, .open toggles display, backdrop-click + Escape to
+     close), sized for photo browsing rather than casa-modal's small
+     520px form-dialog width. Near-black stage matches --ink, not
+     inventing a new colour. */
+  .gallery-modal-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(22,20,15,0.92); display: none; align-items: center; justify-content: center; padding: 24px; }
+  .gallery-modal-overlay.open { display: flex; }
+  .gallery-modal { position: relative; width: min(1100px, 100%); max-height: 90vh; display: flex; flex-direction: column; }
+  .gallery-modal-head { display: flex; align-items: center; justify-content: space-between; padding: 0 4px 16px; color: var(--paper); }
+  .gallery-modal-head h2 { font-family: var(--serif); font-size: 22px; font-weight: 400; }
+  .gallery-modal-head h2 i { font-style: italic; color: var(--brick-2); }
+  .gallery-modal-close { width: 38px; height: 38px; border: 1px solid rgba(250,248,244,0.3); border-radius: 50%; background: rgba(250,248,244,0.08); color: var(--paper); cursor: pointer; font-size: 20px; line-height: 1; display: inline-flex; align-items: center; justify-content: center; transition: background .15s; }
+  .gallery-modal-close:hover { background: rgba(250,248,244,0.16); }
+  .gallery-modal-stage { position: relative; flex: 1; min-height: 0; border-radius: 16px; overflow: hidden; background: var(--ink); display: flex; align-items: center; justify-content: center; }
+  .gallery-modal-stage img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .gallery-modal-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: none; background: rgba(22,20,15,0.55); color: white; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background .15s; }
+  .gallery-modal-nav:hover { background: rgba(22,20,15,0.8); }
+  .gallery-modal-nav.prev { left: 16px; }
+  .gallery-modal-nav.next { right: 16px; }
+  .gallery-modal-nav svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .gallery-modal-count { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); background: rgba(22,20,15,0.6); color: var(--paper); font-family: var(--mono); font-size: 11px; letter-spacing: .08em; padding: 5px 12px; border-radius: 999px; }
+  .gallery-modal-strip { display: flex; gap: 8px; margin-top: 14px; overflow-x: auto; padding-bottom: 2px; }
+  .gallery-modal-strip img { width: 76px; height: 56px; object-fit: cover; border-radius: 8px; cursor: pointer; opacity: .5; transition: opacity .15s, outline-color .15s; flex-shrink: 0; outline: 2px solid transparent; outline-offset: 2px; }
+  .gallery-modal-strip img:hover { opacity: .8; }
+  .gallery-modal-strip img.active { opacity: 1; outline-color: var(--brick-2); }
+  @media (max-width: 640px) { .gallery-modal-strip { display: none; } }
+
   /* MAIN GRID */
   .pdetail { display: grid; grid-template-columns: 1fr 420px; gap: 64px; padding-bottom: 64px; }
   .pd-main { min-width: 0; }
@@ -275,9 +302,9 @@
     <div class="ph dusk" data-label="MASTER BEDROOM"></div>
     <div class="ph sage" data-label="KITCHEN · OAK BEAMS"></div>
     <div class="ph cool" data-label="GARDEN · VIEW TO FELLS"></div>
-    <button class="show-all" onclick="alert('Open gallery (12 photos)')">
+    <button class="show-all" onclick="openGalleryModal(0)">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      All 12 photos
+      <span id="showAllPhotosLabel">All photos</span>
     </button>
   </div>
 
@@ -509,6 +536,27 @@
   </div>
 </footer>
 
+<!-- PHOTO GALLERY LIGHTBOX -->
+<div class="gallery-modal-overlay" id="galleryModal">
+  <div class="gallery-modal">
+    <div class="gallery-modal-head">
+      <h2 id="galleryModalTitle">All <i>photos</i></h2>
+      <button class="gallery-modal-close" onclick="closeGalleryModal()" aria-label="Close">&times;</button>
+    </div>
+    <div class="gallery-modal-stage">
+      <button class="gallery-modal-nav prev" onclick="galleryNav(-1)" aria-label="Previous photo">
+        <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>
+      </button>
+      <img id="galleryModalImg" src="" alt="">
+      <button class="gallery-modal-nav next" onclick="galleryNav(1)" aria-label="Next photo">
+        <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+      <span class="gallery-modal-count" id="galleryModalCount"></span>
+    </div>
+    <div class="gallery-modal-strip" id="galleryModalStrip"></div>
+  </div>
+</div>
+
 <script src="casa-properties.js"></script>
 <script src="casa-images.js"></script>
 <script src="casa-hosts.js"></script>
@@ -597,15 +645,20 @@ function applyListingToPage(p) {
   if (mapLbl) mapLbl.textContent = listing.title;
   const photos = listing.photos || (typeof casaGetPropertyGallery === 'function' ? casaGetPropertyGallery(listing, 5) : []);
   document.querySelectorAll('.gallery .ph').forEach((el, i) => {
-    const url = photos[i] || photos[0];
+    const displayIdx = photos[i] ? i : 0;
+    const url = photos[displayIdx];
     if (!url) return;
     const img = document.createElement('img');
     img.className = 'casa-photo-img';
     img.src = url;
-    img.alt = `${listing.title}, ${listing.loc} — photo ${i + 1}`;
+    img.alt = `${listing.title}, ${listing.loc} — photo ${displayIdx + 1}`;
     img.loading = i === 0 ? 'eager' : 'lazy';
+    img.style.cursor = 'pointer';
+    img.onclick = () => openGalleryModal(displayIdx);
     el.replaceWith(img);
   });
+  const showAllLabel = document.getElementById('showAllPhotosLabel');
+  if (showAllLabel) showAllLabel.textContent = `All ${photos.length} photo${photos.length === 1 ? '' : 's'}`;
   if (host) {
     const hostUrl = casaHostProfileUrl(host.id);
     document.getElementById('hostAvLink').href = hostUrl;
@@ -809,6 +862,54 @@ function updateBooking() {
   document.getElementById('grandTotal').textContent = '—';
   document.getElementById('saveRow').style.display = 'none';
 }
+
+// ── Photo gallery lightbox ──
+// Real photos (listing.photos, same source the 5 visible gallery tiles
+// use), not the alert('Open gallery (12 photos)') stub this replaced.
+// Re-derives from `listing` on every open rather than caching once, so
+// it's always correct even if the id-correction block (see above)
+// swaps in a real listing after the initial seed-fallback render.
+let galleryPhotos = [];
+let galleryIndex = 0;
+
+function openGalleryModal(startIndex) {
+  galleryPhotos = listing.photos || (typeof casaGetPropertyGallery === 'function' ? casaGetPropertyGallery(listing, 5) : []);
+  if (!galleryPhotos.length) return;
+  galleryIndex = Math.min(Math.max(startIndex || 0, 0), galleryPhotos.length - 1);
+  document.getElementById('galleryModalTitle').innerHTML = `All <i>${galleryPhotos.length} photo${galleryPhotos.length === 1 ? '' : 's'}</i>`;
+  document.getElementById('galleryModalStrip').innerHTML = galleryPhotos.map((u, i) =>
+    `<img src="${u}" alt="Photo ${i + 1}" onclick="galleryGoTo(${i})">`
+  ).join('');
+  renderGalleryStage();
+  document.getElementById('galleryModal').classList.add('open');
+}
+function closeGalleryModal() {
+  document.getElementById('galleryModal')?.classList.remove('open');
+}
+function galleryGoTo(i) {
+  galleryIndex = i;
+  renderGalleryStage();
+}
+function galleryNav(delta) {
+  galleryIndex = (galleryIndex + delta + galleryPhotos.length) % galleryPhotos.length;
+  renderGalleryStage();
+}
+function renderGalleryStage() {
+  const img = document.getElementById('galleryModalImg');
+  img.src = galleryPhotos[galleryIndex];
+  img.alt = `${listing.title}, ${listing.loc} — photo ${galleryIndex + 1}`;
+  document.getElementById('galleryModalCount').textContent = `${galleryIndex + 1} / ${galleryPhotos.length}`;
+  document.querySelectorAll('.gallery-modal-strip img').forEach((el, i) => el.classList.toggle('active', i === galleryIndex));
+}
+document.getElementById('galleryModal')?.addEventListener('click', (e) => {
+  if (e.target.id === 'galleryModal') closeGalleryModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (!document.getElementById('galleryModal')?.classList.contains('open')) return;
+  if (e.key === 'Escape') closeGalleryModal();
+  else if (e.key === 'ArrowLeft') galleryNav(-1);
+  else if (e.key === 'ArrowRight') galleryNav(1);
+});
 
 // ── Build URL and navigate to booking page ──
 function goEnquire() {
