@@ -183,31 +183,13 @@
   .dest-5 { grid-column: span 5; aspect-ratio: 5/4; }
   .dest-6 { grid-column: span 4; aspect-ratio: 4/5; }
 
-  /* ─── DIFFERENCE STRIP ─── */
-  .diff { background: var(--ink); color: var(--paper); padding: 96px 0; margin: 56px 0 0; }
-  .diff-inner { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
-  .diff-head { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: end; margin-bottom: 64px; }
-  .diff-head h2 { font-family: var(--serif); font-size: 72px; line-height: 0.95; letter-spacing: -0.025em; color: var(--paper); }
-  .diff-head h2 i { font-style: italic; color: var(--brick-2); }
-  .diff-head p { font-size: 16px; color: rgba(255,255,255,0.7); line-height: 1.6; }
-
-  /* COMPARISON TABLE */
-  .compare {
-    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 20px; overflow: hidden;
-  }
-  .compare .crow { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; padding: 22px 28px; border-bottom: 1px solid rgba(255,255,255,0.08); align-items: center; }
-  .compare .crow:last-child { border-bottom: none; }
-  .compare .crow.head { background: rgba(255,255,255,0.04); padding: 18px 28px; }
-  .compare .crow.head .h-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.5); }
-  .compare .crow.head .casa { color: var(--brick-2); }
-  .compare .crow.head .casa-pill { display: inline-flex; align-items: center; gap: 6px; font-family: var(--serif); font-style: italic; font-size: 28px; color: var(--brick-2); }
-  .compare .label-cell { font-size: 16px; color: var(--paper); }
-  .compare .label-cell .sub { display: block; font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
-  .compare .val { font-size: 15px; color: rgba(255,255,255,0.75); }
-  .compare .val.win { color: var(--brick-2); font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
-  .compare .val.win svg { width: 14px; height: 14px; stroke: var(--brick-2); fill: none; stroke-width: 2; }
-  .compare .val.lose { color: rgba(255,255,255,0.4); text-decoration: line-through; }
+  /* ─── FEE COMPARISON + FEED/MAP ─── */
+  .fee-compare { padding: 96px 0 48px; background: var(--paper); }
+  .fee-compare h2 { font-family: var(--serif); font-size: 52px; line-height: .95; letter-spacing: -.025em; margin-bottom: 16px; }
+  .fee-compare h2 i { font-style: italic; color: var(--brick); }
+  .fee-compare .fee-lede { font-size: 17px; color: var(--ink-2); max-width: 560px; line-height: 1.55; margin-bottom: 48px; }
+  .stats-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 48px; }
+  .feedmap-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
   /* ─── COMMUNITY ─── */
   .community { padding: 96px 0 48px; }
@@ -287,7 +269,6 @@
     .search { grid-template-columns: 1fr 1fr; }
     .search .seg { border-right: none; border-bottom: 1px solid var(--rule); }
     .search-go { grid-column: span 2; padding: 14px; }
-    .diff-head { grid-template-columns: 1fr; }
     .community-grid { grid-template-columns: 1fr; }
     .host-cta-inner { grid-template-columns: 1fr; padding: 48px 32px; }
     .dest-grid { grid-template-columns: repeat(6, 1fr); }
@@ -308,7 +289,7 @@
     .dest-1, .dest-2, .dest-3, .dest-4, .dest-5, .dest-6 { grid-column: span 1; aspect-ratio: 4/3; }
     .hero-strip { grid-template-columns: 1fr 1fr; margin: 32px -20px 0; padding: 0 20px; gap: 10px; }
     .hero-strip .ph, .hero-strip .ph:nth-child(2), .hero-strip .ph:nth-child(4) { aspect-ratio: 4/3; align-self: stretch; }
-    .diff-head h2 { font-size: 40px; }
+    .fee-compare h2 { font-size: 40px; }
     .community-head h2 { font-size: 36px; }
     .stats-grid-3 { grid-template-columns: 1fr !important; }
     .feedmap-grid { grid-template-columns: 1fr !important; }
@@ -429,7 +410,6 @@
   <div class="wrap">
     <div class="sec-head reveal">
       <div>
-        <div class="eyebrow" style="color:var(--brick);margin-bottom:8px">01 &mdash; Search</div>
         <h2><i>Search</i> the country, by county or by feeling.</h2>
       </div>
       <a href="browse.html" class="see">See all <span id="seeAllCount">stays</span>
@@ -485,14 +465,13 @@
 </section>
 
 <!-- DIFFERENCE — compact fee strip + Feed/Map panels -->
-<section style="padding:64px 0;background:var(--paper)">
+<section class="fee-compare">
   <div class="wrap">
-    <div class="eyebrow" style="color:var(--brick);margin-bottom:12px">02 &mdash; Direct booking</div>
-    <h2 style="font-family:var(--serif);font-size:52px;line-height:.95;letter-spacing:-.025em;margin-bottom:16px"><i>Stay direct.</i><br>Pay less. Talk directly.</h2>
-    <p style="font-size:17px;color:var(--ink-2);max-width:560px;line-height:1.55;margin-bottom:48px">The big platforms take 15–22% from every booking. Casa takes nothing from guests and charges hosts a flat £19/month. One booking more than covers it.</p>
+    <h2><i>Stay direct.</i><br>Pay less. Talk directly.</h2>
+    <p class="fee-lede">The big platforms take 15–22% from every booking. Casa takes nothing from guests and charges hosts a flat £19/month. One booking more than covers it.</p>
 
     <!-- Compact fee comparison — 3 stat cards -->
-    <div class="stats-grid-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:48px">
+    <div class="stats-grid-3">
       <div class="stat-card reveal">
         <div class="lbl">Guest booking fee</div>
         <div class="row">
@@ -519,7 +498,7 @@
     </div>
 
     <!-- Feed + Map panels -->
-    <div class="feedmap-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="feedmap-grid">
 
       <!-- Feed panel -->
       <a href="feed.html" class="diff-panel feed reveal">
@@ -560,8 +539,7 @@
 <section class="community">
   <div class="wrap">
     <div class="community-grid reveal">
-      <div>
-        <div class="eyebrow" style="color:var(--brick);margin-bottom:12px">03 &mdash; Connect</div>
+      <div class="community-head">
         <h2><i>Connect</i> with the people<br>who run the places.</h2>
         <p>Hosts post their stays. Guests share their reviews and ask questions. Conversations happen in the open &mdash; with hashtags, replies, and the people behind the listings. Follow a place, follow a host.</p>
         <a href="feed.html" class="btn btn-ink btn-lg">
