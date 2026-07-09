@@ -134,7 +134,7 @@ function renderHostProfile(host, listings) {
     <div class="ts-item"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg> £0 Casa booking fees</div>
     <div class="ts-item"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Direct host contact</div>`;
 
-  document.getElementById('hpBio').textContent = host.bio || 'This host hasn’t added a bio yet.';
+  document.getElementById('hpBio').textContent = host.bio || 'This host hasn\'t added a bio yet.';
   document.getElementById('hpStats').innerHTML = `
     <div class="stat-box"><div class="n">${host.rating || '—'}</div><div class="l">Rating</div></div>
     <div class="stat-box"><div class="n">${host.reviews || 0}</div><div class="l">Reviews</div></div>

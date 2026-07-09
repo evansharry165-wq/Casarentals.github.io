@@ -804,7 +804,7 @@ function validate() {
 
   check('f-checkin', 'checkin',
     v => v.length > 0 && new Date(v) >= today,
-    ci && new Date(ci) < today ? 'Check-in can’t be in the past' : 'Please choose a check-in date');
+    ci && new Date(ci) < today ? 'Check-in can\'t be in the past' : 'Please choose a check-in date');
 
   let checkoutOk = co.length > 0;
   let checkoutMsg = 'Please choose a check-out date';

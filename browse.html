@@ -782,7 +782,7 @@ function buildWherePop(filter) {
     html += `<div class="wp-group">Towns</div>`;
     html += towns.map(p => `<button class="where-opt" onclick="selectWhere('${esc(p.loc).replace(/'/g, "\\'")}')">${PIN_SVG} ${esc(p.loc)}<span class="wo-sub">, ${esc(p.rLabel)}</span></button>`).join('');
   }
-  if (!regions.length && !towns.length) html = `<div class="wp-group">Press Enter to search “${esc(filter)}”</div>`;
+  if (!regions.length && !towns.length) html = `<div class="wp-group">Press Enter to search "${esc(filter)}"</div>`;
   pop.innerHTML = html;
 }
 function openWherePop() { document.getElementById('navSearch')?.classList.add('where-open'); buildWherePop(document.getElementById('whereInput')?.value); }
