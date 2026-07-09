@@ -4,7 +4,7 @@
 const CASA_MAP_TAG_LABELS = {
   woodburner: 'Wood burner',
   hottub: 'Hot tub',
-  pets: 'Pets ok',
+  pets: 'Pets welcome',
   seaview: 'Sea view',
   offgrid: 'Off-grid',
 };

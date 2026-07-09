@@ -110,6 +110,54 @@
   .dest-card:hover { transform: translateY(-2px); }
   body.tech .dest-card { box-shadow: var(--lift-1); }
   body.tech .dest-card:hover { box-shadow: var(--lift-2); }
+  .dest-card .dest-bg-img { transition: transform .6s cubic-bezier(.22,1,.36,1); }
+  body.tech .dest-card:hover .dest-bg-img { transform: scale(1.06); }
+
+  /* ─── HERO IMAGE STRIP — depth + hover zoom ─── */
+  body.tech .hero-photo { box-shadow: var(--lift-1); }
+  body.tech .hero-photo:hover { transform: translateY(-4px); box-shadow: var(--lift-2); }
+  .hero-photo .casa-photo-img { transition: transform .6s cubic-bezier(.22,1,.36,1); }
+  body.tech .hero-photo:hover .casa-photo-img { transform: scale(1.07); }
+
+  /* ─── FEE STAT CARDS ─── */
+  .stat-card { background: var(--surface); border: 1px solid var(--rule); border-radius: 16px; padding: 22px 24px; transition: transform .25s cubic-bezier(.22,1,.36,1), box-shadow .25s; }
+  body.tech .stat-card { box-shadow: var(--lift-1); }
+  body.tech .stat-card:hover { transform: translateY(-3px); box-shadow: var(--lift-2); }
+  .stat-card .lbl { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 10px; }
+  .stat-card .row { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; }
+  .stat-card .was { font-family: var(--serif); font-size: 13px; color: var(--ink-3); text-decoration: line-through; }
+  .stat-card .now { font-family: var(--serif); font-style: italic; font-size: 38px; color: var(--brick); line-height: 1; }
+  .stat-card .now.sm { font-size: 28px; margin-top: 6px; }
+  .stat-card .note { font-size: 13px; color: var(--ink-3); }
+
+  /* ─── FEED / MAP PANELS ─── */
+  .diff-panel { border-radius: 20px; padding: 32px 36px; text-decoration: none; display: block; position: relative; overflow: hidden; transition: transform .3s cubic-bezier(.22,1,.36,1), box-shadow .3s; }
+  body.tech .diff-panel { box-shadow: var(--lift-1); }
+  body.tech .diff-panel:hover { transform: translateY(-4px); box-shadow: var(--lift-2); }
+  .diff-panel.feed { background: var(--ink); }
+  .diff-panel.feed::before { content: ''; position: absolute; right: -60px; top: -60px; width: 260px; height: 260px; border-radius: 50%; background: radial-gradient(circle at center, rgba(176,85,51,0.2), transparent 65%); pointer-events: none; }
+  .diff-panel.map { background: var(--brick-pale); border: 1px solid rgba(176,85,51,0.2); }
+  .diff-panel .dp-eye { font-family: var(--mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; margin-bottom: 16px; }
+  .diff-panel.feed .dp-eye { color: rgba(250,248,244,0.4); }
+  .diff-panel.map .dp-eye { color: var(--brick); opacity: .7; }
+  .diff-panel h3 { font-family: var(--serif); font-size: 36px; line-height: .95; letter-spacing: -.02em; margin-bottom: 12px; }
+  .diff-panel.feed h3 { color: var(--paper); }
+  .diff-panel.map h3 { color: var(--ink); }
+  .diff-panel p { font-size: 14px; line-height: 1.55; margin-bottom: 24px; }
+  .diff-panel.feed p { color: rgba(250,248,244,0.65); }
+  .diff-panel.map p { color: var(--ink-2); }
+  .diff-panel .dp-mini { border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; transition: transform .25s, background .2s; }
+  .diff-panel.feed .dp-mini { background: rgba(250,248,244,0.06); }
+  .diff-panel.feed:hover .dp-mini { background: rgba(250,248,244,0.1); transform: translateX(2px); }
+  .diff-panel .dp-mini .txt { font-size: 12px; color: rgba(250,248,244,0.9); line-height: 1.5; }
+  .diff-panel .dp-mini strong { color: var(--brick-2); }
+  .diff-panel .dp-mini .when { color: rgba(250,248,244,0.45); font-size: 11px; }
+  .diff-panel .dp-tags { background: rgba(176,85,51,0.08); border-radius: 12px; padding: 14px; margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .diff-panel .dp-tags span { padding: 4px 10px; border-radius: 999px; font-size: 12px; transition: transform .2s; }
+  .diff-panel.map:hover .dp-tags span { transform: translateY(-1px); }
+  .diff-panel .dp-cta { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; }
+  .diff-panel.feed .dp-cta { color: var(--brick-2); }
+  .diff-panel.map .dp-cta { color: var(--brick); }
   .dest-card .ph { width: 100%; height: 100%; }
   .dest-card .meta {
     position: absolute; left: 16px; right: 16px; bottom: 16px;
@@ -384,43 +432,43 @@
       </a>
     </div>
 
-    <div class="dest-grid reveal d1">
-      <a href="browse.html?region=lake-district" class="dest-card dest-1">
+    <div class="dest-grid">
+      <a href="browse.html?region=lake-district" class="dest-card dest-1 reveal">
         <img class="dest-bg-img" src="https://images.unsplash.com/photo-1732300070181-e7268d8a1b73?auto=format&fit=crop&w=900&q=80" alt="The Lake District" loading="lazy" decoding="async">
         <div class="meta">
           <div class="title">The <i style="font-style:italic">Lake District</i></div>
           <div class="sub" id="destSub-lake-district">&nbsp;</div>
         </div>
       </a>
-      <a href="browse.html?region=skye" class="dest-card dest-2">
+      <a href="browse.html?region=skye" class="dest-card dest-2 reveal d1">
         <img class="dest-bg-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Quiraing_Isle_of_Skye_Pano.jpg/960px-Quiraing_Isle_of_Skye_Pano.jpg" alt="Isle of Skye" loading="lazy" decoding="async">
         <div class="meta">
           <div class="title">Isle of <i>Skye</i></div>
           <div class="sub" id="destSub-skye">&nbsp;</div>
         </div>
       </a>
-      <a href="browse.html?region=cornwall" class="dest-card dest-3">
+      <a href="browse.html?region=cornwall" class="dest-card dest-3 reveal d2">
         <img class="dest-bg-img" src="https://images.unsplash.com/photo-1606413447153-b638e3e1d285?auto=format&fit=crop&w=900&q=80" alt="Cornwall" loading="lazy" decoding="async">
         <div class="meta">
           <div class="title"><i>Cornwall</i></div>
           <div class="sub" id="destSub-cornwall">&nbsp;</div>
         </div>
       </a>
-      <a href="browse.html?region=cotswolds" class="dest-card dest-4">
+      <a href="browse.html?region=cotswolds" class="dest-card dest-4 reveal d3">
         <img class="dest-bg-img" src="https://images.unsplash.com/photo-1510004868592-324954d4d45a?auto=format&fit=crop&w=900&q=80" alt="The Cotswolds" loading="lazy" decoding="async">
         <div class="meta">
           <div class="title">The <i>Cotswolds</i></div>
           <div class="sub" id="destSub-cotswolds">&nbsp;</div>
         </div>
       </a>
-      <a href="browse.html?region=snowdonia" class="dest-card dest-5">
+      <a href="browse.html?region=snowdonia" class="dest-card dest-5 reveal d4">
         <img class="dest-bg-img" src="https://images.unsplash.com/photo-1596083331697-46711183497f?auto=format&fit=crop&w=900&q=80" alt="Snowdonia" loading="lazy" decoding="async">
         <div class="meta">
           <div class="title"><i>Snowdonia</i></div>
           <div class="sub" id="destSub-snowdonia">&nbsp;</div>
         </div>
       </a>
-      <a href="browse.html?region=causeway" class="dest-card dest-6">
+      <a href="browse.html?region=causeway" class="dest-card dest-6 reveal">
         <img class="dest-bg-img" src="https://images.unsplash.com/photo-1565057386288-be45581ae226?auto=format&fit=crop&w=900&q=80" alt="The Causeway Coast" loading="lazy" decoding="async">
         <div class="meta">
           <div class="title">Causeway <i>Coast</i></div>
@@ -440,28 +488,28 @@
 
     <!-- Compact fee comparison — 3 stat cards -->
     <div class="stats-grid-3" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:48px">
-      <div style="background:var(--surface);border:1px solid var(--rule);border-radius:16px;padding:22px 24px">
-        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px">Guest booking fee</div>
-        <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px">
-          <div style="font-family:var(--serif);font-size:13px;color:var(--ink-3);text-decoration:line-through">£183</div>
-          <div style="font-family:var(--serif);font-style:italic;font-size:38px;color:var(--brick);line-height:1">£0</div>
+      <div class="stat-card reveal">
+        <div class="lbl">Guest booking fee</div>
+        <div class="row">
+          <div class="was">£183</div>
+          <div class="now">£0</div>
         </div>
-        <div style="font-size:13px;color:var(--ink-3)">Booking.com charges £183 on a £1,225 week. Casa charges nothing.</div>
+        <div class="note">Booking.com charges £183 on a £1,225 week. Casa charges nothing.</div>
       </div>
-      <div style="background:var(--surface);border:1px solid var(--rule);border-radius:16px;padding:22px 24px">
-        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px">Host commission</div>
-        <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px">
-          <div style="font-family:var(--serif);font-size:13px;color:var(--ink-3);text-decoration:line-through">17%</div>
-          <div style="font-family:var(--serif);font-style:italic;font-size:38px;color:var(--brick);line-height:1">0%</div>
+      <div class="stat-card reveal d1">
+        <div class="lbl">Host commission</div>
+        <div class="row">
+          <div class="was">17%</div>
+          <div class="now">0%</div>
         </div>
-        <div style="font-size:13px;color:var(--ink-3)">Airbnb takes up to 17% from hosts. Casa takes 0%. Flat £19/month.</div>
+        <div class="note">Airbnb takes up to 17% from hosts. Casa takes 0%. Flat £19/month.</div>
       </div>
-      <div style="background:var(--surface);border:1px solid var(--rule);border-radius:16px;padding:22px 24px">
-        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px">You talk to the host</div>
-        <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px">
-          <div style="font-family:var(--serif);font-style:italic;font-size:28px;color:var(--brick);line-height:1;margin-top:6px">Always.</div>
+      <div class="stat-card reveal d2">
+        <div class="lbl">You talk to the host</div>
+        <div class="row">
+          <div class="now sm">Always.</div>
         </div>
-        <div style="font-size:13px;color:var(--ink-3)">Not a call centre. Not a chatbot. Directly to the person who owns the place.</div>
+        <div class="note">Not a call centre. Not a chatbot. Directly to the person who owns the place.</div>
       </div>
     </div>
 
@@ -469,35 +517,34 @@
     <div class="feedmap-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
 
       <!-- Feed panel -->
-      <a href="feed.html" style="background:var(--ink);border-radius:20px;padding:32px 36px;text-decoration:none;display:block;position:relative;overflow:hidden;transition:transform .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-        <div style="position:absolute;right:-60px;top:-60px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle at center,rgba(176,85,51,0.2),transparent 65%);pointer-events:none"></div>
-        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(250,248,244,0.4);margin-bottom:16px">Community feed</div>
-        <h3 style="font-family:var(--serif);font-size:36px;line-height:.95;letter-spacing:-.02em;margin-bottom:12px;color:var(--paper)"><i>Where hosts and guests talk.</i></h3>
-        <p style="font-size:14px;color:rgba(250,248,244,0.65);line-height:1.55;margin-bottom:24px">Availability posts, local tips, walk recommendations, reviews. Organised by county, searchable by hashtag. No algorithm — just people.</p>
+      <a href="feed.html" class="diff-panel feed reveal">
+        <div class="dp-eye">Community feed</div>
+        <h3><i>Where hosts and guests talk.</i></h3>
+        <p>Availability posts, local tips, walk recommendations, reviews. Organised by county, searchable by hashtag. No algorithm — just people.</p>
         <!-- Mini feed preview -->
-        <div style="background:rgba(250,248,244,0.06);border-radius:12px;padding:12px 14px;margin-bottom:10px">
-          <div style="font-size:12px;color:rgba(250,248,244,0.9);line-height:1.5">🏡 <strong style="color:var(--brick-2)">Sarah R.</strong> — Stone Cottage just got a cancellation. 12–19 July open. Sleeps 6. <span style="color:rgba(250,248,244,0.45);font-size:11px">2 hrs ago</span></div>
+        <div class="dp-mini">
+          <div class="txt">🏡 <strong>Sarah R.</strong> — Stone Cottage just got a cancellation. 12–19 July open. Sleeps 6. <span class="when">2 hrs ago</span></div>
         </div>
-        <div style="background:rgba(250,248,244,0.06);border-radius:12px;padding:12px 14px;margin-bottom:20px">
-          <div style="font-size:12px;color:rgba(250,248,244,0.9);line-height:1.5">🥾 <strong style="color:var(--brick-2)">Hannah F.</strong> — Old Man of Coniston before 8am — completely empty. Park Walna Scar Road (free). <span style="color:rgba(250,248,244,0.45);font-size:11px">2 days ago</span></div>
+        <div class="dp-mini" style="margin-bottom:20px">
+          <div class="txt">🥾 <strong>Hannah F.</strong> — Old Man of Coniston before 8am — completely empty. Park Walna Scar Road (free). <span class="when">2 days ago</span></div>
         </div>
-        <div style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--brick-2)">Open the feed <svg style="width:14px;height:14px;stroke:var(--brick-2);fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></div>
+        <div class="dp-cta">Open the feed <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></div>
       </a>
 
       <!-- Map panel -->
-      <a href="map.html" style="background:var(--brick-pale);border:1px solid rgba(176,85,51,0.2);border-radius:20px;padding:32px 36px;text-decoration:none;display:block;transition:transform .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-        <div style="font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--brick);opacity:0.7;margin-bottom:16px">Live map</div>
-        <h3 style="font-family:var(--serif);font-size:36px;line-height:.95;letter-spacing:-.02em;margin-bottom:12px;color:var(--ink)">Find stays <i>and</i><br><i>community activity</i><br>by location.</h3>
-        <p style="font-size:14px;color:var(--ink-2);line-height:1.55;margin-bottom:24px">Properties on one layer. Feed activity on another — walks, tips, availability posts, reviews — all pinned to where they happen.</p>
+      <a href="map.html" class="diff-panel map reveal d1">
+        <div class="dp-eye">Live map</div>
+        <h3>Find stays <i>and</i><br><i>community activity</i><br>by location.</h3>
+        <p>Properties on one layer. Feed activity on another — walks, tips, availability posts, reviews — all pinned to where they happen.</p>
         <!-- Mini map preview -->
-        <div style="background:rgba(176,85,51,0.08);border-radius:12px;padding:14px;margin-bottom:20px;display:flex;gap:10px;flex-wrap:wrap">
-          <span style="background:var(--brick);color:white;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:500">🏔️ Lake District</span>
-          <span style="background:white;border:1px solid var(--rule);color:var(--ink);padding:4px 10px;border-radius:999px;font-size:12px">🌊 Cornwall</span>
-          <span style="background:white;border:1px solid var(--rule);color:var(--ink);padding:4px 10px;border-radius:999px;font-size:12px">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Highlands</span>
-          <span style="background:white;border:1px solid var(--rule);color:var(--ink);padding:4px 10px;border-radius:999px;font-size:12px">🌾 Norfolk</span>
-          <span style="background:white;border:1px solid var(--rule);color:var(--ink);padding:4px 10px;border-radius:999px;font-size:12px">+8 regions</span>
+        <div class="dp-tags">
+          <span style="background:var(--brick);color:white;font-weight:500">🏔️ Lake District</span>
+          <span style="background:white;border:1px solid var(--rule);color:var(--ink)">🌊 Cornwall</span>
+          <span style="background:white;border:1px solid var(--rule);color:var(--ink)">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Highlands</span>
+          <span style="background:white;border:1px solid var(--rule);color:var(--ink)">🌾 Norfolk</span>
+          <span style="background:white;border:1px solid var(--rule);color:var(--ink)">+8 regions</span>
         </div>
-        <div style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:var(--brick)">Open the map <svg style="width:14px;height:14px;stroke:var(--brick);fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></div>
+        <div class="dp-cta">Open the map <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></div>
       </a>
 
     </div>
