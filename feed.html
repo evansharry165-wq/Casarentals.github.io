@@ -2,12 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- Privacy-respecting analytics (Plausible) — see supabase/README.md Phase 11 -->
+<script defer data-domain="casa.co.uk" src="https://plausible.io/js/script.js"></script>
+<!-- Error monitoring (Sentry) — inert until CASA_SENTRY_DSN is set for real, see casa-monitoring.js -->
+<script src="https://browser.sentry-cdn.com/7.120.0/bundle.min.js" crossorigin="anonymous"></script>
+<script src="casa-monitoring.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Feed — Casa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="casa.css?v=2">
+<link rel="stylesheet" href="casa.css?v=3">
 <link rel="stylesheet" href="casa-tech.css?v=5">
 <style>
   /* ── LAYOUT ── */
@@ -663,7 +668,7 @@ function renderPost(p, i) {
   }
   if (!propImg && listing) propImg = `<div class="ph ${listing.col || 'warm'}"></div>`;
   const propH = listing ? `<a class="post-prop" href="property.html?id=${listing.id}"><div class="pi">${propImg}</div><div class="pinfo"><div class="pname">${casaEscapeHtml(listing.title)}, <i>${casaEscapeHtml(listing.loc)}</i></div><div class="pdets"><span>★ ${listing.rating ? listing.rating.toFixed(1) : 'New'}</span><span>·</span><span>Sleeps ${listing.sleeps}</span></div></div><div class="price">£${listing.price}<span>/night</span></div></a>` : '';
-  const imgH = p.imageUrls && p.imageUrls.length ? `<div class="post-images ${p.imageUrls.length===1?'one':p.imageUrls.length===2?'two':'three'}">${p.imageUrls.map(u=>`<img class="casa-photo-img" src="${u}" loading="lazy">`).join('')}</div>` : '';
+  const imgH = p.imageUrls && p.imageUrls.length ? `<div class="post-images ${p.imageUrls.length===1?'one':p.imageUrls.length===2?'two':'three'}">${p.imageUrls.map((u,ix)=>`<img class="casa-photo-img" src="${u}" alt="Photo ${ix+1} from ${casaEscapeHtml(p.authorName || 'a post')}'s post" loading="lazy">`).join('')}</div>` : '';
   const revH = p.reviewStars ? `<div class="post-review-card"><div class="review-stars">${renderStars(p.reviewStars)}</div><div class="review-text">${casaFormatFeedBody(p.body)}</div><div class="review-meta">${casaRelativeTime(p.createdAt)}</div></div>` : '';
   const ctaH = p.type === 'looking' ? `<div class="looking-cta"><p>Are you a host? <i>Reply with your availability below</i> — guests are waiting.</p><a href="messages.html">Message directly</a></div>` : '';
   const enquireH = listing ? `<a class="pa pa-enquire" href="booking.html?id=${listing.id}&prop=${encodeURIComponent(listing.title + ', ' + listing.loc)}&price=${listing.price}">Enquire →</a>` : '';

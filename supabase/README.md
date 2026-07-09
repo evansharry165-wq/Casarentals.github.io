@@ -248,6 +248,122 @@ Two linked pilot decisions, made together since they both come down to
 
 **Apply once, manually** in the SQL editor, after `schema.sql`.
 
+## Phase 11 — Production readiness
+
+Five items. Two (accessibility, real map tiles) are code-only and are
+done. Three (email, error monitoring, analytics) need a real account +
+credentials from Harry before they do anything — the code for all three
+is real and deployed-ready, but **none of the three will actually send
+an email, report an error, or record a pageview until that setup
+happens.** Nothing was stubbed silently; each gap is called out below.
+
+### 1. Email notifications — needs a Resend account + deployment
+
+**Chose Resend over Postmark**: simpler API (one JSON POST, no XML), a
+free tier (100/day, 3,000/month) that comfortably covers a 20–30-host
+pilot, and it's the more common pairing with Supabase Edge Functions in
+current docs/examples, so less friction if this needs revisiting later.
+
+Reuses `notifications.sql`'s existing triggers rather than duplicating
+their logic — those already fire on exactly the 3 requested events (new
+enquiry -> host, confirmed/declined -> guest, new message -> recipient)
+and write a row into `notifications`. `email-notifications.sql` adds one
+more trigger on that same table: after insert, if the row's `type` is
+`enquiry` or `reply`, call the `send-notification-email` Edge Function
+(`supabase/functions/send-notification-email/index.ts`) via `pg_net`,
+which looks up the recipient's real email (`auth.admin.getUserById`,
+service-role only) and sends it through Resend.
+
+**What Harry needs to do, in order:**
+1. Create a Resend account at resend.com, verify a sending domain (or
+   use their shared test domain while the pilot is small).
+2. Copy the API key.
+3. Install the Supabase CLI (`brew install supabase/tap/supabase` or see
+   supabase.com/docs/guides/cli) and run `supabase login`, then
+   `supabase link --project-ref <your-project-ref>` from this repo root.
+4. `supabase functions deploy send-notification-email`
+5. `supabase secrets set RESEND_API_KEY=re_xxx FROM_EMAIL="Casa <notifications@casa.co.uk>"`
+   (the `FROM_EMAIL` address must be on the domain verified in step 1).
+6. Open `supabase/email-notifications.sql`, replace `<YOUR-PROJECT-REF>`
+   and `<YOUR-SERVICE-ROLE-KEY>` (Project Settings -> API) with the real
+   values, and run it in the SQL editor **from a local copy — do not
+   commit the filled-in version, the service role key must never reach
+   this public repo.**
+
+Until all six steps are done, the trigger will fire and the function
+will run, but step 4 not being deployed means the `net.http_post` call
+fails silently (pg_net logs the failure server-side; it doesn't block
+the notification row itself), and step 2/5 missing means the function
+returns a real, logged 500 rather than sending anything.
+
+### 2. Error monitoring — needs a Sentry account
+
+`casa-monitoring.js` (loaded on all 32 real pages, after the Sentry CDN
+bundle) is genuinely wired up and was verified live: the SDK loads
+(confirmed 200 on `browser.sentry-cdn.com`), and `casa-monitoring.js`
+correctly detects that `CASA_SENTRY_DSN` is still the placeholder string
+and skips `Sentry.init()` — logging one clear console line instead of
+silently pretending to work. **What Harry needs to do:** create a free
+Sentry account, create a JavaScript project, copy its DSN, and paste it
+in as `CASA_SENTRY_DSN` at the top of `casa-monitoring.js`. That one-line
+edit is the entire remaining step — no redeploy of anything else needed.
+
+### 3. Accessibility pass — done, no external dependency
+
+- **Alt text**: audited every static `<img>` and every JS template
+  string across the site. `property.html`'s gallery and `browse.html`'s
+  cards already had real, descriptive alt text
+  (`"{title}, {loc}"`/`"{title}, {loc} — photo N"`) from earlier work —
+  the one real gap found was `feed.html`'s post-attachment photos
+  (`<img class="casa-photo-img" src="${u}" loading="lazy">`, no `alt` at
+  all), now fixed to `"Photo N from {author}'s post"`.
+- **Keyboard focus states**: added one global rule to `casa.css`
+  (loaded on every page) — `a:focus-visible, button:focus-visible,
+  input:focus-visible, select:focus-visible, textarea:focus-visible,
+  summary:focus-visible, [tabindex]:focus-visible { outline: 2px solid
+  var(--brick); outline-offset: 2px; border-radius: 4px; }`. Before this,
+  only form inputs had any focus treatment at all (`.field input:focus`)
+  — nav links, buttons, and every card type relied entirely on whatever
+  the browser's unstyled default happened to be. `:focus-visible` (not
+  `:focus`) so it only shows for keyboard navigation, not mouse clicks.
+- **Contrast check** (computed, not eyeballed): `--brick` (#B05533) on
+  `--paper` (#F4EFE5) is **4.37:1** — passes WCAG AA for large text/UI
+  components (needs 3:1) but is a hair under AA for normal body text
+  (needs 4.5:1). On `--surface` (#FBFAF6, the card background) it's
+  **4.80:1**, a clean pass. The palette already has a dedicated
+  higher-contrast variant for exactly this situation — `--brick-text`
+  (#7A3920) is **7.53:1** on paper. Not changed site-wide here: `--brick`
+  is a deliberate, load-bearing brand device (used dozens of times as
+  large italic-serif emphasis, which passes outright), and blanket-
+  swapping it would be a colour-usage decision, not an accessibility
+  bug fix. The one place this is a real, measurable near-miss is small
+  (11px mono) eyebrow labels that override the default `--ink-3` color
+  to `--brick` — if Harry wants those swapped to `--brick-text`, it's a
+  one-line-per-instance change, flagged here rather than done silently.
+
+### 4. Real map tiles — already done, tracker was stale
+
+`map.html` already loads real Leaflet (`leaflet@1.9.4`) with a real
+`L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', ...)`
+and marker clustering (`casa-map-page.js`) — confirmed live (25 real
+OSM tiles loaded, `casaMapInstance` a genuine `L.map` instance, region
+polygon overlays, working search/filter sidebar). No "static pin layer"
+exists on this page. Nothing changed here; the launch tracker's item was
+out of date, not the code — per `CASA_PROJECT_BRIEF.md`'s own rule to
+verify code before trusting a tracker.
+
+### 5. Analytics — code is live now, needs a Plausible account to show data
+
+`<script defer data-domain="casa.co.uk" src="https://plausible.io/js/script.js"></script>`
+added to all 32 real pages (confirmed loading, 200 OK). Unlike the other
+two, this needs no secret key baked into the code — Plausible's script
+just needs a Plausible account with `casa.co.uk` added as a tracked
+site, which **Harry needs to create**; the moment that exists, this
+script starts reporting to it with zero further code changes. If the
+site launches on a different domain first (no CNAME is committed yet —
+see the repo-hygiene phase), the `data-domain` value here needs to match
+whatever the real deployed domain is.
+
 ## Recommended next phase (deferred, not urgent)
 
 Real image upload for feed posts (the "Photo" post type has no working
