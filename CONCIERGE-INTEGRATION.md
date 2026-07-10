@@ -34,14 +34,14 @@ real incoming enquiry yet.
    Concierge itself (however it eventually gets charged) is out of scope
    for this file entirely, same as the rest of Casa's billing.
 
-   **Found while scoping this, not fixed here (out of scope — this pass
-   is schema + docs only, no page copy):** `how-it-works.html` and
-   `list.html` both still advertise Concierge as **"£24/month per
-   listing or 2% on AI-confirmed bookings"** — a live contradiction of
-   the flat-fee-only guardrail `host.html` and `casa-concierge.js`
-   already correctly state. This is a one-line copy fix in two files,
-   not a data model problem, but it's real and live on the site today.
-   Flagged for a separate follow-up.
+   **Found while scoping this in an earlier pass, since fixed**:
+   `how-it-works.html` and `list.html` (and, found in the same sweep,
+   `terms.html`) briefly advertised Concierge as "£24/month per listing
+   or 2% on AI-confirmed bookings" — a live contradiction of this exact
+   guardrail. All three now read "£24/month per listing, flat — never a
+   % of your bookings", matching `host.html` exactly (pushed as
+   `455adc6`). Re-confirmed still true as of this pass — no page
+   advertises a %-of-bookings fee for Concierge anywhere on the site.
 
 2. **Concierge only ever drafts — it must never auto-send a WhatsApp
    message or email to a guest without a human reading and sending it.**
@@ -161,6 +161,26 @@ two separate reasons:
    either way.
 
 **What Harry needs to do, once ready to proceed:**
+0. **Own and DNS-point `casa.co.uk` itself, first.** Every step below —
+   and, it turns out, the *existing* transactional Resend setup in
+   Phase 11 too — assumes `casa.co.uk` is a real domain Casa controls
+   the DNS for. As of this pass, it isn't: the live site is still served
+   from GitHub Pages' default domain, no CNAME is committed to this
+   repo, and `supabase/README.md` Phase 11 flags this as an outstanding
+   item, not a done one. This isn't Concierge-specific — it's a
+   prerequisite for the transactional Resend domain, the Sentry
+   `environment` check in `casa-monitoring.js`, and the notification
+   email's own guest-facing links, all of which already reference
+   `casa.co.uk` as if it were live. Concierge's dedicated subdomain
+   (step 2 below) can't be verified in Resend before this is done,
+   since a subdomain verification is meaningless without the parent
+   domain existing and being DNS-controlled by Casa. Realistic
+   timeline: domain registration itself is same-day; DNS propagation
+   for the records Resend/GitHub Pages need is typically minutes to a
+   few hours, rarely more than 24–48 hours worst case — the slow part
+   of "going live on casa.co.uk" is deciding to do it and updating
+   every place that currently points at the GitHub Pages URL, not the
+   DNS mechanics themselves.
 1. Decide on the Concierge sending subdomain/address (e.g.
    `concierge@mail.casa.co.uk` or similar — distinct from the
    transactional `FROM_EMAIL` already configured).
@@ -181,6 +201,32 @@ two separate reasons:
    `VERIFICATION-POLICY.md`'s host ID checks are Harry's own manual
    action today, not a self-service toggle.
 
+## Separately: are Resend and Sentry (already built) actually ready?
+
+Re-verified this pass, not assumed — full detail in `supabase/README.md`
+Phase 11's new addendum, summarised plainly here:
+
+- **Sentry**: yes, code-ready, re-confirmed live in the browser this
+  session. The SDK loads on every page and correctly stays inert (logs
+  one clear console line, initialises nothing) because
+  `CASA_SENTRY_DSN` in `casa-monitoring.js` is still the placeholder
+  string. The **entire** remaining step is Harry creating a Sentry
+  account and pasting a real DSN into that one constant — no other code
+  changes needed.
+- **Resend**: yes, code-ready — re-read `send-notification-email/
+  index.ts` and `email-notifications.sql` in full; both match their
+  original description exactly, the two SQL placeholders are still
+  genuinely unfilled, and nothing regressed. **One dependency worth
+  surfacing, not previously called out as sharply**: both this existing
+  transactional setup *and* everything in this document about a
+  Concierge-specific domain assume `casa.co.uk` is a real, DNS-pointed
+  domain. It isn't yet — see the step-0 prerequisite above. This doesn't
+  block creating the Resend account or deploying the function today
+  (Resend's shared test domain covers a small pilot fine in the
+  meantime), but going fully live on real guest-facing email — with
+  working "Open on Casa" links — needs the domain step done too, not
+  just the Resend account.
+
 ## What this pass deliberately did not do
 
 - No connection to a real WhatsApp Business account or Resend Concierge
@@ -191,5 +237,6 @@ two separate reasons:
 - No Edge Function that would actually call the WhatsApp API or Resend —
   that's real integration work for once the accounts above exist, and
   belongs in its own session against `supabase/concierge.sql`'s tables.
-- No change to Concierge pricing, or to the unrelated £24/mo vs 2%
-  inconsistency flagged above.
+- No change to Concierge pricing (the £24/mo-vs-2% copy inconsistency
+  found in an earlier pass is already fixed — see above — and this pass
+  made no further pricing changes).

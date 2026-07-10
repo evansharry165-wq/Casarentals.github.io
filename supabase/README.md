@@ -257,6 +257,48 @@ is real and deployed-ready, but **none of the three will actually send
 an email, report an error, or record a pageview until that setup
 happens.** Nothing was stubbed silently; each gap is called out below.
 
+**Re-verified while scoping Concierge (see `CONCIERGE-INTEGRATION.md`),
+not just assumed still true:**
+
+- **Resend** (§1 below) — re-read `supabase/functions/send-notification-
+  email/index.ts` and `supabase/email-notifications.sql` end to end.
+  Both are still exactly as described: correct env var usage, fails
+  loudly (logs + a real error response) rather than silently if
+  `RESEND_API_KEY` is unset, correct HTML-escaping on user-supplied
+  `title`/`body`, and the two placeholders in `email-notifications.sql`
+  (`<YOUR-PROJECT-REF>`, `<YOUR-SERVICE-ROLE-KEY>`) are still genuinely
+  unfilled — confirmed nothing here regressed or accidentally got a real
+  secret committed. **One real gap found, not previously called out**:
+  the Edge Function hard-codes guest-facing links as
+  `https://casa.co.uk/${href}` (`index.ts` line 62) — this only resolves
+  to something real once Harry actually owns and has pointed
+  `casa.co.uk` (see the domain-ownership note below). Until then, a
+  sent email's "Open on Casa" button would link to a domain that isn't
+  live yet. Not a code bug — the code is correct for the domain the
+  project is named after — just a dependency worth having in view
+  alongside the Resend/Sentry account setup itself.
+- **Sentry** (§2 below) — re-verified live in the browser this session:
+  `browser.sentry-cdn.com/7.120.0/bundle.min.js` still loads (200) on
+  every page, and the console still logs exactly `[Casa] Sentry SDK
+  loaded but not initialised — CASA_SENTRY_DSN is still a placeholder`
+  — the SDK is present and correctly inert, unchanged from the original
+  Phase 11 verification.
+- **Domain ownership (`casa.co.uk`) — a real, separate prerequisite,
+  not previously called out as one.** §5 below already notes "no CNAME
+  is committed yet" for the live GitHub Pages deployment, but that
+  caveat was easy to miss because it's phrased as a footnote to
+  analytics specifically. It applies more broadly: `FROM_EMAIL="Casa
+  <notifications@casa.co.uk>"` (§1), the Sentry `environment` check
+  (`location.hostname === 'casa.co.uk'`, `casa-monitoring.js`), and the
+  Edge Function's guest-facing links above all assume `casa.co.uk` is
+  Casa's real, DNS-pointed domain. As of this pass, it isn't yet — the
+  live site is still served from GitHub Pages' default domain. None of
+  this blocks setting up Resend/Sentry accounts today (Resend's shared
+  test domain works fine for a small pilot in the meantime, per §1's
+  existing guidance), but registering and pointing `casa.co.uk` is
+  itself a real step on the path to all of this working end-to-end for
+  real guests, not just an assumed given.
+
 ### 1. Email notifications — needs a Resend account + deployment
 
 **Chose Resend over Postmark**: simpler API (one JSON POST, no XML), a

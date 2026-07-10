@@ -116,6 +116,17 @@ create table concierge_channels (
 -- external conversation with a guest contact, on one channel. Optionally
 -- bridges to a real internal `conversations` row (nullable: a WhatsApp
 -- contact may never have gone through Casa's own enquiry flow at all).
+-- `host_id` is denormalised here rather than only reachable via a join
+-- through `channel_id` -> concierge_channels.host_id — deliberately, so
+-- every RLS check in this file needs at most one join (thread ->
+-- channel would otherwise be a second hop on every single policy in
+-- concierge_messages too). Not client-writable (no INSERT policy on
+-- this table at all, see below), so it can only ever be set by the
+-- same trusted service-role code that resolves channel_id in the first
+-- place — that code is responsible for keeping the two in sync, the
+-- same way schema.sql already trusts create_conversation_for_enquiry to
+-- keep enquiries.conversation_id consistent rather than re-deriving it
+-- via a constraint on every read.
 create table concierge_threads (
   id bigint generated always as identity primary key,
   host_id uuid not null references profiles(id) on delete cascade,
@@ -142,7 +153,14 @@ create table concierge_messages (
   status text not null default 'received' check (status in ('draft', 'sent', 'discarded', 'received')),
   body text not null,
   drafted_by text check (drafted_by in ('concierge_ai', 'host')),  -- who wrote it; null for inbound
-  sent_by uuid references profiles(id) on delete set null,          -- who actually sent it (always a real host, never 'concierge_ai' — see casa_send_concierge_message below); null until sent
+  -- Who actually sent it (always a real host, never 'concierge_ai' —
+  -- see casa_send_concierge_message below); null until sent. Deliberately
+  -- `on delete set null`, not `on delete cascade` like schema.sql's own
+  -- `messages.sender_id` — a message that genuinely reached a guest is a
+  -- real historical record of what was said, and shouldn't disappear
+  -- just because the sending host's account is deleted later. Only the
+  -- attribution is lost, not the record.
+  sent_by uuid references profiles(id) on delete set null,
   external_message_id text,   -- WhatsApp message id / email Message-ID header, for later delivery/read-receipt reconciliation
   created_at timestamptz not null default now(),
   sent_at timestamptz,
