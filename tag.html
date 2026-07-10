@@ -84,6 +84,7 @@
 </footer>
 
 <script src="casa-properties.js?v=1"></script>
+<script src="casa-tags.js"></script>
 <script src="casa-hosts.js"></script>
 <script src="casa-feed-posts.js"></script>
 <script src="casa-editorial-attractions.js"></script>
@@ -91,28 +92,9 @@
 <script src="casa-supabase.js"></script>
 <script src="casa.js?v=3"></script>
 <script>
-const TAG_MAP = {
-  lakedistrict: { label: 'Lake District', regions: ['lake-district'], tags: ['woodburner'] },
-  cornwall: { label: 'Cornwall', regions: ['cornwall'], tags: ['seaview'] },
-  highlands: { label: 'Scottish Highlands', regions: ['highlands', 'skye'], tags: ['offgrid'] },
-  norfolk: { label: 'Norfolk', regions: ['norfolk'], tags: ['seaview'] },
-  cotswolds: { label: 'The Cotswolds', regions: ['cotswolds'], tags: ['woodburner'] },
-  snowdonia: { label: 'Snowdonia', regions: ['snowdonia'], tags: ['offgrid'] },
-  causeway: { label: 'Causeway Coast', regions: ['causeway'], tags: ['seaview'] },
-  yorkshire: { label: 'Yorkshire', regions: ['yorkshire'], tags: ['woodburner'] },
-  petfriendly: { label: 'Pet friendly', regions: [], tags: ['pets'] },
-  woodburner: { label: 'Wood burner', regions: [], tags: ['woodburner'] },
-  seaview: { label: 'Sea view', regions: [], tags: ['seaview'] },
-  lastminute: { label: 'Last minute', regions: [], tags: [] },
-  hottub: { label: 'Hot tub', regions: [], tags: ['hottub'] },
-  romantic: { label: 'Romantic getaways', regions: [], tags: ['romantic'] },
-  garden: { label: 'Garden stays', regions: [], tags: ['garden'] },
-  sauna: { label: 'Sauna', regions: [], tags: ['sauna'] },
-};
-
 const qp = new URLSearchParams(location.search);
 const rawTag = (qp.get('tag') || 'lakedistrict').toLowerCase().replace(/[^a-z0-9-]/g, '');
-const meta = TAG_MAP[rawTag] || { label: rawTag, regions: [], tags: [rawTag] };
+const meta = CASA_TAG_MAP[rawTag] || { label: rawTag, regions: [], tags: [rawTag] };
 
 document.getElementById('tagTitle').innerHTML = `<i>#${rawTag}</i>`;
 document.getElementById('tagDesc').textContent = `Explore ${meta.label} on Casa — fee-free stays and community tips.`;
@@ -129,21 +111,10 @@ if (meta.regions.length) {
     '<button class="tab" data-tab="tips" onclick="setTab(this)">Local tips</button>');
 }
 
-// Region-scoped tags (regions.length > 0) must match the actual region —
-// the amenity-tag fallback is nationwide, so applying it to e.g. "cotswolds"
-// would match any woodburner property in the UK, not just Cotswolds stays.
-// Amenity-only tags (regions: []) keep the original tag-match behaviour.
+// Shared matching logic lives in casa-tags.js now (casaMatchPropertiesForTag)
+// — reused as-is by index.html's homepage carousels, not a parallel copy.
 function matchProps() {
-  return CASA_PROPERTIES.filter(p => {
-    if (meta.regions.length) {
-      return meta.regions.includes(p.region) ||
-        p.title.toLowerCase().includes(rawTag) ||
-        p.loc.toLowerCase().includes(rawTag);
-    }
-    return meta.tags.some(t => p.tags.includes(t)) ||
-      p.title.toLowerCase().includes(rawTag) ||
-      p.loc.toLowerCase().includes(rawTag);
-  });
+  return casaMatchPropertiesForTag(rawTag, meta);
 }
 
 function renderStays() {

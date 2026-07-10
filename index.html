@@ -108,15 +108,43 @@
   .hero-strip a:nth-child(2) .casa-photo-img { object-position: center 70%; }
   .hero-strip a:nth-child(3) .casa-photo-img { object-position: center 55%; }
 
-  /* ─── DESTINATIONS ─── */
+  /* ─── DESTINATIONS → real scrollable discovery carousels ───
+     Was a static 6-image teaser grid (no real listings, no scroll) —
+     replaced with real horizontally-scrollable rows of actual
+     CASA_PROPERTIES cards (last-minute, one per major TAG_MAP region,
+     one lifestyle collection), built by buildCarousels() below. Cards
+     reuse the exact .pc/.pc-image/.badge-row/.save-heart markup and
+     classes browse.html's cards use, so casa-tech.css's existing
+     `body.tech .pc` depth + hover-lift rules apply with no new CSS
+     needed for the material-system requirement — only the carousel
+     scroll-track and compact card sizing are new. */
   .dest { padding: 96px 0 48px; }
-  .dest-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
-  .dest-card { position: relative; border-radius: 16px; overflow: hidden; cursor: pointer; transition: transform .25s, box-shadow .25s; }
-  .dest-card:hover { transform: translateY(-2px); }
-  body.tech .dest-card { box-shadow: var(--lift-1); }
-  body.tech .dest-card:hover { box-shadow: var(--lift-2); }
-  .dest-card .dest-bg-img { transition: transform .6s cubic-bezier(.22,1,.36,1); }
-  body.tech .dest-card:hover .dest-bg-img { transform: scale(1.06); }
+  .carousel-row { padding: 6px 0 32px; }
+  .carousel-row .cr-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+  .carousel-row .cr-head h3 { font-family: var(--serif); font-size: 25px; letter-spacing: -.01em; line-height: 1; }
+  .carousel-row .cr-head h3 i { font-style: italic; color: var(--brick); }
+  .carousel-row .cr-head .cr-sub { font-size: 12.5px; color: var(--ink-3); margin-top: 5px; }
+  .carousel-row .cr-head .see { font-size: 13px; color: var(--ink-2); text-decoration: none; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .carousel-row .cr-head .see:hover { color: var(--brick); }
+  .carousel-track { display: flex; gap: 18px; overflow-x: auto; scroll-snap-type: x proximity; padding: 2px 2px 10px; scrollbar-width: none; }
+  .carousel-track::-webkit-scrollbar { display: none; }
+  .pc { background: transparent; border-radius: 14px; overflow: visible; cursor: pointer; text-decoration: none; color: inherit; display: block; transition: transform .2s; }
+  .carousel-track .pc { flex: 0 0 258px; scroll-snap-align: start; }
+  .carousel-track .pc-image { position: relative; aspect-ratio: 4/3.2; border-radius: 14px; overflow: hidden; }
+  .carousel-track .pc-image .ph { width: 100%; height: 100%; }
+  .carousel-track .pc-image .save-heart { position: absolute; top: 10px; right: 10px; z-index: 3; }
+  .carousel-track .pc-image .badge-row { position: absolute; top: 10px; left: 10px; display: flex; gap: 6px; z-index: 3; }
+  .carousel-track .pc-body { padding: 12px 2px 0; }
+  .carousel-track .pc-title { font-family: var(--serif); font-size: 18px; line-height: 1.15; letter-spacing: -.005em; }
+  .carousel-track .pc-title i { font-style: italic; color: var(--brick); }
+  .carousel-track .pc-meta { font-size: 12px; color: var(--ink-3); margin-top: 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .carousel-track .pc-rating { display: inline-flex; align-items: center; gap: 3px; color: var(--ink); }
+  .carousel-track .pc-rating svg { width: 11px; height: 11px; fill: var(--ink); stroke: none; }
+  .carousel-track .pc-price { margin-top: 9px; font-family: var(--serif); font-size: 19px; }
+  .carousel-track .pc-price i { font-style: italic; color: var(--brick); }
+  .carousel-track .pc-price span { font-size: 11px; color: var(--ink-3); font-family: var(--sans); font-style: normal; }
+  .carousel-empty { padding: 28px 0; color: var(--ink-3); font-size: 13px; }
+  @media (max-width: 640px) { .carousel-track .pc { flex-basis: 220px; } }
 
   /* ─── HERO IMAGE STRIP — depth + hover zoom ─── */
   body.tech .hero-photo { box-shadow: var(--lift-1); }
@@ -163,25 +191,6 @@
   .diff-panel .dp-cta { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; }
   .diff-panel.feed .dp-cta { color: var(--brick-2); }
   .diff-panel.map .dp-cta { color: var(--brick); }
-  .dest-card .ph { width: 100%; height: 100%; }
-  .dest-card .meta {
-    position: absolute; left: 16px; right: 16px; bottom: 16px;
-    color: white; z-index: 2;
-  }
-  .dest-card .ph::after { display: none; }
-  .dest-card::after {
-    content: ''; position: absolute; inset: 0;
-    background: linear-gradient(to top, rgba(22,20,15,0.6) 0%, transparent 60%);
-    z-index: 1;
-  }
-  .dest-card .title { font-family: var(--serif); font-style: italic; font-size: 32px; line-height: 1; }
-  .dest-card .sub { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(255,255,255,0.75); margin-top: 6px; }
-  .dest-1 { grid-column: span 5; aspect-ratio: 5/6; }
-  .dest-2 { grid-column: span 4; aspect-ratio: 4/5; }
-  .dest-3 { grid-column: span 3; aspect-ratio: 3/4; }
-  .dest-4 { grid-column: span 3; aspect-ratio: 4/5; }
-  .dest-5 { grid-column: span 5; aspect-ratio: 5/4; }
-  .dest-6 { grid-column: span 4; aspect-ratio: 4/5; }
 
   /* ─── FEE COMPARISON + FEED/MAP ─── */
   .fee-compare { padding: 96px 0 48px; background: var(--paper); }
@@ -271,10 +280,6 @@
     .search-go { grid-column: span 2; padding: 14px; }
     .community-grid { grid-template-columns: 1fr; }
     .host-cta-inner { grid-template-columns: 1fr; padding: 48px 32px; }
-    .dest-grid { grid-template-columns: repeat(6, 1fr); }
-    .dest-1, .dest-5 { grid-column: span 6; }
-    .dest-2, .dest-6 { grid-column: span 3; }
-    .dest-3, .dest-4 { grid-column: span 3; }
   }
 
   @media (max-width: 640px) {
@@ -285,8 +290,6 @@
     .hero-aside .stat-row { gap: 20px; flex-wrap: wrap; }
     .search { grid-template-columns: 1fr; }
     .search-go { grid-column: span 1; }
-    .dest-grid { grid-template-columns: 1fr; gap: 12px; }
-    .dest-1, .dest-2, .dest-3, .dest-4, .dest-5, .dest-6 { grid-column: span 1; aspect-ratio: 4/3; }
     .hero-strip { grid-template-columns: 1fr 1fr; margin: 32px -20px 0; padding: 0 20px; gap: 10px; }
     .hero-strip .ph, .hero-strip .ph:nth-child(2), .hero-strip .ph:nth-child(4) { aspect-ratio: 4/3; align-self: stretch; }
     .fee-compare h2 { font-size: 40px; }
@@ -417,50 +420,11 @@
       </a>
     </div>
 
-    <div class="dest-grid">
-      <a href="browse.html?region=lake-district" class="dest-card dest-1 reveal">
-        <img class="dest-bg-img" src="https://images.unsplash.com/photo-1732300070181-e7268d8a1b73?auto=format&fit=crop&w=900&q=80" alt="The Lake District" loading="lazy" decoding="async">
-        <div class="meta">
-          <div class="title">The <i style="font-style:italic">Lake District</i></div>
-          <div class="sub" id="destSub-lake-district">&nbsp;</div>
-        </div>
-      </a>
-      <a href="browse.html?region=skye" class="dest-card dest-2 reveal d1">
-        <img class="dest-bg-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Quiraing_Isle_of_Skye_Pano.jpg/960px-Quiraing_Isle_of_Skye_Pano.jpg" alt="Isle of Skye" loading="lazy" decoding="async">
-        <div class="meta">
-          <div class="title">Isle of <i>Skye</i></div>
-          <div class="sub" id="destSub-skye">&nbsp;</div>
-        </div>
-      </a>
-      <a href="browse.html?region=cornwall" class="dest-card dest-3 reveal d2">
-        <img class="dest-bg-img" src="https://images.unsplash.com/photo-1606413447153-b638e3e1d285?auto=format&fit=crop&w=900&q=80" alt="Cornwall" loading="lazy" decoding="async">
-        <div class="meta">
-          <div class="title"><i>Cornwall</i></div>
-          <div class="sub" id="destSub-cornwall">&nbsp;</div>
-        </div>
-      </a>
-      <a href="browse.html?region=cotswolds" class="dest-card dest-4 reveal d3">
-        <img class="dest-bg-img" src="https://images.unsplash.com/photo-1510004868592-324954d4d45a?auto=format&fit=crop&w=900&q=80" alt="The Cotswolds" loading="lazy" decoding="async">
-        <div class="meta">
-          <div class="title">The <i>Cotswolds</i></div>
-          <div class="sub" id="destSub-cotswolds">&nbsp;</div>
-        </div>
-      </a>
-      <a href="browse.html?region=snowdonia" class="dest-card dest-5 reveal d4">
-        <img class="dest-bg-img" src="https://images.unsplash.com/photo-1596083331697-46711183497f?auto=format&fit=crop&w=900&q=80" alt="Snowdonia" loading="lazy" decoding="async">
-        <div class="meta">
-          <div class="title"><i>Snowdonia</i></div>
-          <div class="sub" id="destSub-snowdonia">&nbsp;</div>
-        </div>
-      </a>
-      <a href="browse.html?region=causeway" class="dest-card dest-6 reveal">
-        <img class="dest-bg-img" src="https://images.unsplash.com/photo-1565057386288-be45581ae226?auto=format&fit=crop&w=900&q=80" alt="The Causeway Coast" loading="lazy" decoding="async">
-        <div class="meta">
-          <div class="title">Causeway <i>Coast</i></div>
-          <div class="sub" id="destSub-causeway">&nbsp;</div>
-        </div>
-      </a>
-    </div>
+    <!-- Populated by buildCarousels() below: a "last-minute availability"
+         row, one row per major TAG_MAP region, then one lifestyle
+         collection row — real CASA_PROPERTIES data, same regions/tags
+         casa-tags.js and browse.html already use, not a static teaser. -->
+    <div id="carouselRows"><p class="carousel-empty">Loading stays…</p></div>
   </div>
 </section>
 
@@ -637,6 +601,7 @@
 </footer>
 
 <script src="casa-properties.js?v=1"></script>
+<script src="casa-tags.js"></script>
 <script src="casa-search.js?v=1"></script>
 <script>
 // The home search now uses the shared engine (location autocomplete +
@@ -673,17 +638,103 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('seeAllCount').textContent = `${stats.stays} stay${stats.stays === 1 ? '' : 's'}`;
 })();
 
-(async () => {
-  if (typeof casaGetRegionStats !== 'function') return;
-  const stats = await casaGetRegionStats();
-  const regions = ['lake-district', 'skye', 'cornwall', 'cotswolds', 'snowdonia', 'causeway'];
-  regions.forEach(r => {
-    const el = document.getElementById(`destSub-${r}`);
-    if (!el) return;
-    const s = stats[r];
-    el.textContent = s ? `${s.count} stay${s.count === 1 ? '' : 's'} · from £${s.minPrice}` : 'No stays yet';
+/* ─── Destinations → real scrollable discovery carousels ───
+   Reuses casa-tags.js's CASA_TAG_MAP + casaMatchPropertiesForTag (the
+   exact same region/tag matching tag.html's own regional pages use —
+   not a second lookup) to build: one "available now" row from the same
+   instantly-bookable signal last-minute.html already uses, one row per
+   major region already in CASA_TAG_MAP, and one lifestyle-tag row.
+   Cards reuse browse.html's .pc/.pc-image/.badge-row/.save-heart markup
+   so casa-tech.css's existing depth + hover-lift rules apply for free. */
+function homeBadgeHtml(p) {
+  if (p.badge === 'verified') return `<span class="badge verified-badge"><svg class="i i-sm" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.6"><path d="m4 12 5 5 11-11"/></svg> Verified</span>`;
+  if (p.badge === 'new') return `<span class="badge ink">New</span>`;
+  if (p.badge === 'editors') return `<span class="badge">Editor's pick</span>`;
+  return '';
+}
+function homeCardHtml(p) {
+  // Rating/review count renders only once a listing has a genuinely
+  // real, non-zero review count from the real `reviews` table (present
+  // on p.reviews only after casaRefreshProperties/casaMapSupabaseRow
+  // has run) — never the seed catalogue's placeholder numbers, and the
+  // reason buildCarousels() below awaits casaRefreshProperties() before
+  // ever rendering a card. Right now this is every listing site-wide
+  // (the reviews table is genuinely empty), so no card shows a rating
+  // yet — exactly correct, not a bug.
+  const showRating = p.reviews > 0;
+  const esc = typeof casaEscapeHtml === 'function' ? casaEscapeHtml : String;
+  return `
+    <a class="pc rise" href="property.html?id=${p.id}">
+      <div class="pc-image">
+        ${p.photos && p.photos[0] ? `<img class="ph" src="${esc(p.photos[0])}" alt="${esc(p.title)}, ${esc(p.loc)}" loading="lazy" decoding="async">` : `<div class="ph" style="background:${p.col}" data-label="${esc(p.title.toUpperCase())} · ${esc(p.loc.toUpperCase())}"></div>`}
+        <div class="badge-row">${homeBadgeHtml(p)}</div>
+        <button class="save-heart${typeof casaIsSaved === 'function' && casaIsSaved(p.id) ? ' saved' : ''}" onclick="event.preventDefault();event.stopPropagation();casaToggleSaved(${p.id},this);"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.5-9.5-9c-1.5-2.8.4-6 3.5-6 1.8 0 3.2 1 4 2.5C10.8 6 12.2 5 14 5c3.1 0 5 3.2 3.5 6C15 15.5 12 20 12 20z"/></svg></button>
+      </div>
+      <div class="pc-body">
+        <div class="pc-title">${esc(p.title)}, <i>${esc(p.loc)}</i></div>
+        <div class="pc-meta">${showRating ? `<span class="pc-rating"><svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 1-5 5 1.5 7L12 18l-6.5 3.5L7 14.5l-5-5 7-1z"/></svg> ${p.rating.toFixed(1)} (${p.reviews})</span> ·` : ''} ${esc(p.rLabel)} · Sleeps ${p.sleeps}</div>
+        <div class="pc-price"><i>£${p.price}</i><span> / night</span></div>
+      </div>
+    </a>`;
+}
+function carouselRowHtml(id, titleHtml, sub, seeHref, cardsHtml) {
+  return `
+    <div class="carousel-row reveal" id="cr-${id}">
+      <div class="cr-head">
+        <div>
+          <h3>${titleHtml}</h3>
+          ${sub ? `<div class="cr-sub">${sub}</div>` : ''}
+        </div>
+        <a href="${seeHref}" class="see">See all <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>
+      </div>
+      <div class="carousel-track">${cardsHtml}</div>
+    </div>`;
+}
+async function buildCarousels() {
+  const container = document.getElementById('carouselRows');
+  if (!container) return;
+  if (typeof casaRefreshProperties === 'function') await casaRefreshProperties();
+  if (typeof CASA_PROPERTIES === 'undefined' || typeof CASA_TAG_MAP === 'undefined') return;
+
+  const esc = typeof casaEscapeHtml === 'function' ? casaEscapeHtml : String;
+  const rows = [];
+
+  // "Available now" — the same real instantly-bookable signal
+  // last-minute.html already uses (verified host OR a high enough
+  // rating/review-volume badge), not a fake countdown or "X people
+  // viewing" pressure badge.
+  const lastMinute = CASA_PROPERTIES.filter(p => p.badge === 'verified' || p.instantBook).slice(0, 10);
+  if (lastMinute.length) {
+    rows.push(carouselRowHtml('lastminute', 'Available <i>now</i>',
+      `${lastMinute.length} instantly-bookable stay${lastMinute.length === 1 ? '' : 's'}`,
+      'last-minute.html', lastMinute.map(homeCardHtml).join('')));
+  }
+
+  // One row per major region already in CASA_TAG_MAP.
+  ['lakedistrict', 'cornwall', 'highlands', 'norfolk', 'yorkshire', 'cotswolds'].forEach(slug => {
+    const meta = CASA_TAG_MAP[slug];
+    const props = casaMatchPropertiesForTag(slug).slice(0, 10);
+    if (!props.length) return;
+    const minPrice = Math.min(...props.map(p => p.price));
+    rows.push(carouselRowHtml(slug, `<i>${esc(meta.label)}</i>`,
+      `${props.length} stay${props.length === 1 ? '' : 's'} · from £${minPrice}`,
+      `tag.html?tag=${slug}`, props.map(homeCardHtml).join('')));
   });
-})();
+
+  // One lifestyle-collection row.
+  const lifestyleSlug = 'petfriendly';
+  const lifestyleMeta = CASA_TAG_MAP[lifestyleSlug];
+  const lifestyleProps = casaMatchPropertiesForTag(lifestyleSlug).slice(0, 10);
+  if (lifestyleProps.length) {
+    rows.push(carouselRowHtml(lifestyleSlug, `<i>${esc(lifestyleMeta.label)}</i>`,
+      `${lifestyleProps.length} stay${lifestyleProps.length === 1 ? '' : 's'}`,
+      `tag.html?tag=${lifestyleSlug}`, lifestyleProps.map(homeCardHtml).join('')));
+  }
+
+  container.innerHTML = rows.length ? rows.join('') : '<p class="carousel-empty">No stays to show yet.</p>';
+  if (typeof window.casaTechScan === 'function') window.casaTechScan();
+}
+buildCarousels();
 
 /* Connect section mini-post previews — real feed posts, not fabricated
    ones. Same data source and hashtag-linking as feed.html/tag.html. */
