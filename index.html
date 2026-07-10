@@ -713,18 +713,31 @@ async function fetchPersonalization() {
   const prefs = prefRow && ((prefRow.regions || []).length || (prefRow.tags || []).length || (prefRow.property_types || []).length) ? prefRow : null;
 
   // Smart default: the region a signed-in user has saved/enquired about
-  // most, from real behaviour already in the database — works even if
-  // they've never opened the new "Personalize your homepage" section.
-  const excludeIds = [...new Set([...(savedRows || []).map(r => r.property_id), ...(enquiryRows || []).map(r => r.property_id)])];
+  // most, from real behaviour already in the database (saved_properties,
+  // enquiries — nothing new tracked or logged) — works even if they've
+  // never opened the new "Personalize your homepage" section. `excludeIds`
+  // is deduplicated (a property already saved AND enquired about should
+  // only be excluded from recommendations once), but the region tally
+  // below deliberately counts every saved_properties/enquiries ROW, not
+  // deduplicated ids — two separate saves in the same region is a real,
+  // countable pattern even if it were somehow the same property twice.
+  const savedIds = (savedRows || []).map(r => r.property_id);
+  const enquiryIds = (enquiryRows || []).map(r => r.property_id);
+  const excludeIds = [...new Set([...savedIds, ...enquiryIds])];
+
+  // Require a real, repeated pattern — not a single save or one enquiry
+  // dressed up as an insight. 2+ combined saves/enquiries in the same
+  // region before the carousel is inferred at all.
+  const CASA_INFERENCE_THRESHOLD = 2;
   let inferredRegionSlug = null;
-  if (excludeIds.length && typeof CASA_PROPERTIES !== 'undefined') {
+  if (typeof CASA_PROPERTIES !== 'undefined') {
     const counts = {};
-    excludeIds.forEach(id => {
+    [...savedIds, ...enquiryIds].forEach(id => {
       const p = CASA_PROPERTIES.find(x => x.id === id);
       if (p && p.region) counts[p.region] = (counts[p.region] || 0) + 1;
     });
-    const topRegion = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
-    if (topRegion && typeof CASA_TAG_MAP !== 'undefined') {
+    const [topRegion, topCount] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0] || [];
+    if (topRegion && topCount >= CASA_INFERENCE_THRESHOLD && typeof CASA_TAG_MAP !== 'undefined') {
       inferredRegionSlug = Object.keys(CASA_TAG_MAP).find(k => CASA_TAG_MAP[k].regions.includes(topRegion)) || null;
     }
   }
@@ -758,7 +771,8 @@ async function buildCarousels() {
       .filter(p => !excludeIds.includes(p.id)).filter(typeFilter).slice(0, 10);
     if (props.length) {
       rows.push(carouselRowHtml(`inferred-${inferredRegionSlug}`,
-        `Because you&rsquo;ve stayed in <i>${esc(meta.label)}</i> before`, '',
+        `Because you&rsquo;ve stayed in <i>${esc(meta.label)}</i> before`,
+        'Based on stays you&rsquo;ve saved or enquired about — not something you set',
         `tag.html?tag=${inferredRegionSlug}`, props.map(homeCardHtml).join('')));
     }
   }

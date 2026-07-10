@@ -559,13 +559,20 @@ their chosen tags (matched against both `casa-properties.js`'s real
 `tags` array and a keyword check against the listing's real description
 text — `casaPropertyMatchesTagKeyword()` in `casa-tags.js`), and every
 row is filtered to their preferred property types where set. A separate
-"Because you've stayed in `<region>` before" row is inferred from real
-`saved_properties`/`enquiries` rows — no manual setup required, works
-for a user who's never touched the new profile.html settings at all. A
-signed-out visitor, or a signed-in user with nothing set and no saved/
-enquiry history, sees exactly the same default carousel order the
-previous phase already built — this is additive, not a requirement to
-configure anything.
+"Because you've stayed in `<region>` before" row is inferred purely from
+real `saved_properties`/`enquiries` rows — no new tracking, no manual
+setup required, works for a user who's never touched the new
+profile.html settings at all. Gated by a real threshold (`fetchPersonalization()`,
+`CASA_INFERENCE_THRESHOLD = 2`): a single save or one enquiry never
+triggers it, only 2+ combined saves/enquiries landing in the same
+region — a single interaction reads as a guess dressed up as an
+insight, not a genuine pattern. A signed-out visitor, or a signed-in
+user with nothing set and no saved/enquiry history below that
+threshold, sees exactly the same default carousel order the previous
+phase already built — this is additive, not a requirement to configure
+anything. The inferred row and the manually-chosen rows are not
+mutually exclusive — both render together when both conditions are met,
+confirmed live.
 
 `profile.html` gets a new "Personalize your homepage" section (reusing
 browse.html's existing `.fm-chip`/`.fm-group` pill pattern, not a new
