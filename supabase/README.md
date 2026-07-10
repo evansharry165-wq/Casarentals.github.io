@@ -453,6 +453,48 @@ session — a real UI feature, not a data-integrity issue):
 `alert('Open gallery (12 photos)')` — a real dead end for anyone
 who clicks it expecting a photo lightbox.
 
+## Phase 13 — Concierge data model (`concierge.sql`) — SCOPING ONLY, NOT APPLIED
+
+Unlike every other phase above, this one is **not live**. It's a real
+migration file, written and reviewed, deliberately not run against the
+project yet — Concierge's actual value (drafting replies over a real
+WhatsApp/email channel) depends on two external accounts only Harry can
+create: a Meta-verified WhatsApp Business API setup, and a
+Concierge-specific Resend sending domain distinct from the transactional
+one already live. See `CONCIERGE-INTEGRATION.md` at the repo root for
+exactly what each of those requires outside of code, with realistic
+timelines (Meta business verification in particular commonly takes
+weeks, not days).
+
+What the schema adds, once applied: `concierge_settings` (the real,
+server-side home for what's currently only in the browser's
+`casa:concierge` localStorage key — needed because a server-side process
+drafting a reply to an inbound WhatsApp message can't read a browser
+tab's localStorage), `concierge_channels` (a host's connected WhatsApp
+number / Concierge email address, starting `pending_verification` and
+never client-settable to `active`), `concierge_threads` (one per
+external conversation, optionally bridging to a real `conversations` row
+when the same guest also has one — nullable, since an external contact
+may never have used Casa's own enquiry flow), and `concierge_messages`
+(inbound/draft/sent/discarded, with no UPDATE policy at all for
+signed-in users and a `SECURITY DEFINER` function,
+`casa_send_concierge_message()`, as the *only* path from draft to sent —
+the actual data-level mechanism making "Concierge only ever drafts,
+never auto-sends" true, not just an app-level promise). Full reasoning
+for each design choice, including why this doesn't duplicate
+`conversations`/`messages`, is in the file's own comments.
+
+**Found while scoping this, not fixed here** (a copy fix, not a schema
+issue — out of scope for this pass): `how-it-works.html` and `list.html`
+both still advertise Concierge at "£24/month or 2% on AI-confirmed
+bookings," contradicting the flat-fee-only guardrail `host.html` and
+`casa-concierge.js` already correctly state elsewhere. Flagged in
+`CONCIERGE-INTEGRATION.md` for a separate follow-up.
+
+**Do not run `concierge.sql` yet** — review it and
+`CONCIERGE-INTEGRATION.md` together first. No UI reads or writes these
+tables; `host-concierge.html`'s rules simulator is unchanged.
+
 ## Recommended next phase (deferred, not urgent)
 
 Real image upload for feed posts (the "Photo" post type has no working
