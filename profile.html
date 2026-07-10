@@ -133,6 +133,22 @@
   .ef-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
   .ef-grid .full { grid-column: 1 / -1; }
 
+  /* Preference chips — same .fm-chip pattern as browse.html's filter
+     modal, reused as-is (not a new UI component) for the homepage
+     personalization section below. */
+  .fm-group { margin-bottom: 22px; }
+  .fm-group:last-child { margin-bottom: 0; }
+  .fm-group > h4 { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 11px; }
+  .fm-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fm-chip {
+    display: inline-flex; align-items: center; gap: 7px; padding: 8px 13px;
+    border-radius: 999px; border: 1px solid var(--rule); background: var(--paper);
+    font-family: var(--sans); font-size: 13px; color: var(--ink-2); cursor: pointer; transition: all .12s;
+  }
+  .fm-chip:hover { border-color: var(--ink); }
+  .fm-chip.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .fm-chip svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.6; }
+
   /* Verifications */
   .verif-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .verif { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 12px; background: var(--paper); }
@@ -368,6 +384,7 @@
     <a href="#reviews" class="stab">Reviews <span class="ct guest-only" id="subnavReviewsGuestCt">—</span><span class="ct host-only" id="subnavReviewsHostCt">—</span></a>
     <a href="#feed" class="stab">My feed</a>
     <a href="saved.html" class="stab guest-only">Saved <span class="ct" id="subnavSavedCt">—</span></a>
+    <a href="#homepage" class="stab">Homepage</a>
     <a href="#preferences" class="stab">Preferences</a>
     <div style="flex:1"></div>
     <a href="host.html" class="stab" style="color: var(--brick); font-weight: 500">→ Open host dashboard</a>
@@ -496,6 +513,36 @@
     </div>
 
     <!-- PREFERENCES (account) -->
+    <!-- Homepage personalization — real, saved preferences that
+         actually change what index.html's carousels show; see
+         buildCarousels()/buildPersonalizedCarousels() there. Reuses
+         browse.html's .fm-chip pattern, not a new UI component; region/
+         tag/type vocabulary comes from casa-tags.js's CASA_TAG_MAP and
+         casa-properties.js's real tags/type fields, not a second list. -->
+    <div class="pf-block" id="homepage">
+      <div class="b-head">
+        <h2><i>Personalize</i> your homepage</h2>
+        <button class="edit-cta" onclick="saveHomepagePreferences()">Save changes</button>
+      </div>
+      <p style="font-size:13px;color:var(--ink-3);margin-bottom:20px;max-width:62ch;line-height:1.5">
+        Pick the regions, styles, and property types you're drawn to — your homepage carousels
+        will prioritise these first, on top of Casa's own picks. Leave everything unselected and
+        you'll just see Casa's defaults.
+      </p>
+      <div class="fm-group">
+        <h4>Regions</h4>
+        <div class="fm-chips" id="prefRegionChips"></div>
+      </div>
+      <div class="fm-group">
+        <h4>Holiday styles</h4>
+        <div class="fm-chips" id="prefTagChips"></div>
+      </div>
+      <div class="fm-group">
+        <h4>Property types</h4>
+        <div class="fm-chips" id="prefTypeChips"></div>
+      </div>
+    </div>
+
     <div class="pf-block" id="preferences">
       <div class="b-head"><h2><i>Preferences</i> &amp; notifications</h2></div>
       <div class="ef-grid">
@@ -656,6 +703,7 @@
 </div>
 
 <script src="casa-properties.js?v=1"></script>
+<script src="casa-tags.js"></script>
 <script src="casa-feed-posts.js"></script>
 <script src="casa-images.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -1167,6 +1215,98 @@ window.saveProfileChanges = saveProfileChanges;
 
 function esc(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+// ═══════════════════════════════════════════════════════════════
+// Homepage personalization — reuses browse.html's exact region/
+// amenity/type index functions (same live-derived-from-CASA_PROPERTIES
+// approach, same .fm-chip markup pattern) rather than inventing a
+// second filter vocabulary or a new UI component.
+// ═══════════════════════════════════════════════════════════════
+function prefRegionsIndex() {
+  const m = {};
+  CASA_PROPERTIES.forEach(p => {
+    if (!p.region) return;
+    if (!m[p.region]) m[p.region] = { region: p.region, count: 0, labels: {} };
+    m[p.region].count++;
+    if (p.rLabel) m[p.region].labels[p.rLabel] = (m[p.region].labels[p.rLabel] || 0) + 1;
+  });
+  return Object.values(m).map(r => {
+    const labels = Object.entries(r.labels).sort((a, b) => b[1] - a[1]);
+    r.label = labels.length ? labels[0][0] : r.region;
+    return r;
+  }).sort((a, b) => b.count - a.count);
+}
+function prefAmenitiesIndex() {
+  const m = {};
+  CASA_PROPERTIES.forEach(p => (p.tags || []).forEach(t => { m[t] = (m[t] || 0) + 1; }));
+  return Object.entries(m).map(([tag, count]) => ({ tag, count })).sort((a, b) => b.count - a.count);
+}
+function prefTypesIndex() {
+  const m = {};
+  CASA_PROPERTIES.forEach(p => { if (p.type) m[p.type] = (m[p.type] || 0) + 1; });
+  return Object.entries(m).map(([type, count]) => ({ type, count })).sort((a, b) => b.count - a.count);
+}
+
+let CURRENT_PREFS = { regions: [], tags: [], property_types: [] };
+
+async function loadAndRenderHomepagePreferences() {
+  if (!document.getElementById('prefRegionChips')) return;
+  if (typeof casaRefreshProperties === 'function') await casaRefreshProperties();
+
+  if (window.casaSupabase) {
+    const { data: { session } } = await window.casaSupabase.auth.getSession();
+    if (session) {
+      const { data } = await window.casaSupabase.from('homepage_preferences')
+        .select('regions, tags, property_types').eq('user_id', session.user.id).maybeSingle();
+      if (data) CURRENT_PREFS = { regions: data.regions || [], tags: data.tags || [], property_types: data.property_types || [] };
+    }
+  }
+
+  // Regions — same slugs as CASA_TAG_MAP's region-scoped entries, so a
+  // pick here is directly usable by index.html's casaMatchPropertiesForTag.
+  const regionSlugFor = region => typeof CASA_TAG_MAP !== 'undefined'
+    ? Object.keys(CASA_TAG_MAP).find(k => CASA_TAG_MAP[k].regions.includes(region))
+    : null;
+  document.getElementById('prefRegionChips').innerHTML = prefRegionsIndex().map(({ region, label, count }) => {
+    const slug = regionSlugFor(region) || region;
+    const on = CURRENT_PREFS.regions.includes(slug);
+    return `<button class="fm-chip${on ? ' on' : ''}" data-region="${esc(slug)}" onclick="this.classList.toggle('on')">${esc(label)} <span style="opacity:.5;font-family:var(--mono);font-size:10px">${count}</span></button>`;
+  }).join('');
+
+  document.getElementById('prefTagChips').innerHTML = prefAmenitiesIndex().map(({ tag, count }) => {
+    const meta = typeof casaAmenityMeta === 'function' ? casaAmenityMeta(tag) : { label: tag };
+    const on = CURRENT_PREFS.tags.includes(tag);
+    return `<button class="fm-chip${on ? ' on' : ''}" data-tag="${esc(tag)}" onclick="this.classList.toggle('on')">${esc(meta.label)} <span style="opacity:.5;font-family:var(--mono);font-size:10px">${count}</span></button>`;
+  }).join('');
+
+  document.getElementById('prefTypeChips').innerHTML = prefTypesIndex().map(({ type, count }) => {
+    const label = type.charAt(0).toUpperCase() + type.slice(1);
+    const on = CURRENT_PREFS.property_types.includes(type);
+    return `<button class="fm-chip${on ? ' on' : ''}" data-type="${esc(type)}" onclick="this.classList.toggle('on')">${esc(label)} <span style="opacity:.5;font-family:var(--mono);font-size:10px">${count}</span></button>`;
+  }).join('');
+}
+
+// Real save path — the same Supabase-write-then-toast pattern
+// saveProfileChanges() above already uses, not the old dead saveEdit
+// path (saveEdit() itself just delegates to saveProfileChanges now).
+async function saveHomepagePreferences() {
+  if (!window.casaSupabase) return false;
+  const { data: { session } } = await window.casaSupabase.auth.getSession();
+  if (!session) { if (window.casaToast) casaToast('Please sign in first'); return false; }
+
+  const regions = [...document.querySelectorAll('#prefRegionChips .fm-chip.on')].map(c => c.dataset.region);
+  const tags = [...document.querySelectorAll('#prefTagChips .fm-chip.on')].map(c => c.dataset.tag);
+  const property_types = [...document.querySelectorAll('#prefTypeChips .fm-chip.on')].map(c => c.dataset.type);
+
+  const { error } = await window.casaSupabase.from('homepage_preferences')
+    .upsert({ user_id: session.user.id, regions, tags, property_types, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+
+  if (error) { if (window.casaToast) casaToast('Could not save: ' + error.message); return false; }
+  CURRENT_PREFS = { regions, tags, property_types };
+  if (window.casaToast) casaToast('Homepage preferences saved');
+  return true;
+}
+window.saveHomepagePreferences = saveHomepagePreferences;
+
 function recentCardHtml(p) {
   const photo = p.photos && p.photos[0];
   const loc = p.rLabel || p.loc || p.town || '';
@@ -1203,6 +1343,7 @@ async function renderRecentlyViewed() {
 
 renderProfileReal();
 renderRecentlyViewed();
+loadAndRenderHomepagePreferences();
 </script>
 
 <footer class="casa-foot">

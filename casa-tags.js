@@ -17,6 +17,7 @@ const CASA_TAG_MAP = {
   snowdonia: { label: 'Snowdonia', regions: ['snowdonia'], tags: ['offgrid'] },
   causeway: { label: 'Causeway Coast', regions: ['causeway'], tags: ['seaview'] },
   yorkshire: { label: 'Yorkshire', regions: ['yorkshire'], tags: ['woodburner'] },
+  pembrokeshire: { label: 'Pembrokeshire', regions: ['pembrokeshire'], tags: ['seaview'] },
   petfriendly: { label: 'Pet friendly', regions: [], tags: ['pets'] },
   woodburner: { label: 'Wood burner', regions: [], tags: ['woodburner'] },
   seaview: { label: 'Sea view', regions: [], tags: ['seaview'] },
@@ -54,3 +55,49 @@ function casaMatchPropertiesForTag(tagSlug, metaOverride) {
 
 window.CASA_TAG_MAP = CASA_TAG_MAP;
 window.casaMatchPropertiesForTag = casaMatchPropertiesForTag;
+
+// ─── Homepage personalization support ───
+// Keyword synonyms per existing amenity tag, checked against a listing's
+// real description text (the hand-written per-listing copy, not the old
+// auto-generated fallback — see property.html's applyListingToPage) so a
+// genuinely good match for a chosen lifestyle tag isn't missed just
+// because a host ticked the box for a related-but-different amenity, or
+// didn't tick anything at all. Every key here is an EXISTING tag already
+// in CASA_TAG_MAP/casa-properties.js's tags array — this adds a second
+// signal for matching an existing tag, never a new tag of its own.
+const CASA_TAG_KEYWORDS = {
+  pets: ['dog', 'dogs', 'pet'],
+  woodburner: ['wood burner', 'log fire', 'open fire', 'fireplace', 'stove'],
+  hottub: ['hot tub'],
+  seaview: ['sea view', 'coast', 'coastal', 'beach', 'estuary', 'harbour', 'cliff'],
+  offgrid: ['off-grid', 'off grid', 'remote', 'solar', 'no wifi', 'no signal'],
+  romantic: ['romantic', 'anniversary', 'honeymoon', 'couple'],
+  garden: ['garden'],
+  sauna: ['sauna'],
+  accessible: ['wheelchair', 'step-free', 'accessible'],
+};
+
+function casaPropertyMatchesTagKeyword(p, tag) {
+  const words = CASA_TAG_KEYWORDS[tag];
+  if (!words || !p.description) return false;
+  const desc = p.description.toLowerCase();
+  return words.some(w => desc.includes(w));
+}
+window.casaPropertyMatchesTagKeyword = casaPropertyMatchesTagKeyword;
+
+// A NEW, additive function for the homepage personalization "your
+// styles" carousel only — deliberately not folded into
+// casaMatchPropertiesForTag above, which tag.html's regional pages and
+// the previous task's default homepage carousels already depend on
+// unchanged (no changes to existing search/browse matching behaviour).
+// Matches on ANY of a user's chosen tags (OR, not AND — a stricter AND
+// would shrink to near-nothing fast once someone picks 2-3 styles), each
+// checked against both the real tags array and the description-keyword
+// fallback above.
+function casaMatchPropertiesForPreferredTags(tagList) {
+  if (!Array.isArray(tagList) || !tagList.length || typeof CASA_PROPERTIES === 'undefined') return [];
+  return CASA_PROPERTIES.filter(p =>
+    tagList.some(t => (p.tags || []).includes(t) || casaPropertyMatchesTagKeyword(p, t))
+  );
+}
+window.casaMatchPropertiesForPreferredTags = casaMatchPropertiesForPreferredTags;

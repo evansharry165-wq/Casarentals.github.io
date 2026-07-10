@@ -690,45 +690,130 @@ function carouselRowHtml(id, titleHtml, sub, seeHref, cardsHtml) {
       <div class="carousel-track">${cardsHtml}</div>
     </div>`;
 }
+// ─── Personalization ───
+// Signed-out visitor, Supabase unavailable, or a signed-in user with no
+// saved preferences and no saved/enquiry history: every field below
+// stays null/empty, and buildCarousels() below produces exactly the
+// same default rows/order the previous (non-personalized) pass built —
+// this is additive, never a requirement to configure anything.
+// `homepage_preferences` is a real migration (supabase/homepage-
+// preferences.sql) not yet applied — if it hasn't been run yet, this
+// query harmlessly returns an error (not a thrown exception, matching
+// every other Supabase call in this codebase) and prefs stays null.
+async function fetchPersonalization() {
+  if (!window.casaSupabase) return { prefs: null, inferredRegionSlug: null, excludeIds: [] };
+  const { data: { session } } = await window.casaSupabase.auth.getSession();
+  if (!session) return { prefs: null, inferredRegionSlug: null, excludeIds: [] };
+
+  const [{ data: prefRow }, { data: savedRows }, { data: enquiryRows }] = await Promise.all([
+    window.casaSupabase.from('homepage_preferences').select('regions, tags, property_types').eq('user_id', session.user.id).maybeSingle(),
+    window.casaSupabase.from('saved_properties').select('property_id').eq('user_id', session.user.id),
+    window.casaSupabase.from('enquiries').select('property_id').eq('guest_id', session.user.id),
+  ]);
+  const prefs = prefRow && ((prefRow.regions || []).length || (prefRow.tags || []).length || (prefRow.property_types || []).length) ? prefRow : null;
+
+  // Smart default: the region a signed-in user has saved/enquired about
+  // most, from real behaviour already in the database — works even if
+  // they've never opened the new "Personalize your homepage" section.
+  const excludeIds = [...new Set([...(savedRows || []).map(r => r.property_id), ...(enquiryRows || []).map(r => r.property_id)])];
+  let inferredRegionSlug = null;
+  if (excludeIds.length && typeof CASA_PROPERTIES !== 'undefined') {
+    const counts = {};
+    excludeIds.forEach(id => {
+      const p = CASA_PROPERTIES.find(x => x.id === id);
+      if (p && p.region) counts[p.region] = (counts[p.region] || 0) + 1;
+    });
+    const topRegion = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0];
+    if (topRegion && typeof CASA_TAG_MAP !== 'undefined') {
+      inferredRegionSlug = Object.keys(CASA_TAG_MAP).find(k => CASA_TAG_MAP[k].regions.includes(topRegion)) || null;
+    }
+  }
+  return { prefs, inferredRegionSlug, excludeIds };
+}
+
 async function buildCarousels() {
   const container = document.getElementById('carouselRows');
   if (!container) return;
-  if (typeof casaRefreshProperties === 'function') await casaRefreshProperties();
+  const [, personalization] = await Promise.all([
+    typeof casaRefreshProperties === 'function' ? casaRefreshProperties() : Promise.resolve(),
+    fetchPersonalization(),
+  ]);
   if (typeof CASA_PROPERTIES === 'undefined' || typeof CASA_TAG_MAP === 'undefined') return;
 
   const esc = typeof casaEscapeHtml === 'function' ? casaEscapeHtml : String;
+  const { prefs, inferredRegionSlug, excludeIds } = personalization;
+  const typeFilter = (prefs && (prefs.property_types || []).length)
+    ? p => prefs.property_types.includes(p.type)
+    : () => true;
   const rows = [];
 
-  // "Available now" — the same real instantly-bookable signal
-  // last-minute.html already uses (verified host OR a high enough
-  // rating/review-volume badge), not a fake countdown or "X people
-  // viewing" pressure badge.
-  const lastMinute = CASA_PROPERTIES.filter(p => p.badge === 'verified' || p.instantBook).slice(0, 10);
+  // "Because you've stayed in X before" — inferred, not chosen; kept
+  // visually/structurally separate from the explicit-preference rows
+  // below so it's clear what Casa noticed vs. what the user picked.
+  // Excludes properties already saved/enquired-about — recommending
+  // something the guest has already interacted with isn't useful.
+  if (inferredRegionSlug) {
+    const meta = CASA_TAG_MAP[inferredRegionSlug];
+    const props = casaMatchPropertiesForTag(inferredRegionSlug)
+      .filter(p => !excludeIds.includes(p.id)).filter(typeFilter).slice(0, 10);
+    if (props.length) {
+      rows.push(carouselRowHtml(`inferred-${inferredRegionSlug}`,
+        `Because you&rsquo;ve stayed in <i>${esc(meta.label)}</i> before`, '',
+        `tag.html?tag=${inferredRegionSlug}`, props.map(homeCardHtml).join('')));
+    }
+  }
+
+  // "Available now" — same real instantly-bookable signal last-minute.html
+  // already uses, filtered to the user's preferred property types if set.
+  const lastMinute = CASA_PROPERTIES.filter(p => (p.badge === 'verified' || p.instantBook) && typeFilter(p)).slice(0, 10);
   if (lastMinute.length) {
     rows.push(carouselRowHtml('lastminute', 'Available <i>now</i>',
       `${lastMinute.length} instantly-bookable stay${lastMinute.length === 1 ? '' : 's'}`,
       'last-minute.html', lastMinute.map(homeCardHtml).join('')));
   }
 
-  // One row per major region already in CASA_TAG_MAP.
-  ['lakedistrict', 'cornwall', 'highlands', 'norfolk', 'yorkshire', 'cotswolds'].forEach(slug => {
+  // Region carousels — the same default 6, reordered (not duplicated) so
+  // any region the user explicitly picked in profile.html comes first; a
+  // picked region outside the usual 6 (e.g. Snowdonia) is added rather
+  // than dropped. No preferences set -> identical order to the default.
+  const defaultRegionSlugs = ['lakedistrict', 'cornwall', 'highlands', 'norfolk', 'yorkshire', 'cotswolds'];
+  const prefRegionSlugs = (prefs && prefs.regions) ? prefs.regions.filter(s => CASA_TAG_MAP[s] && CASA_TAG_MAP[s].regions.length) : [];
+  const regionSlugs = [...new Set([...prefRegionSlugs, ...defaultRegionSlugs])];
+  const orderedRegionSlugs = [...regionSlugs.filter(s => prefRegionSlugs.includes(s)), ...regionSlugs.filter(s => !prefRegionSlugs.includes(s))];
+  orderedRegionSlugs.forEach(slug => {
     const meta = CASA_TAG_MAP[slug];
-    const props = casaMatchPropertiesForTag(slug).slice(0, 10);
+    const props = casaMatchPropertiesForTag(slug).filter(typeFilter).slice(0, 10);
     if (!props.length) return;
     const minPrice = Math.min(...props.map(p => p.price));
+    const pickTag = prefRegionSlugs.includes(slug) ? ' · your pick' : '';
     rows.push(carouselRowHtml(slug, `<i>${esc(meta.label)}</i>`,
-      `${props.length} stay${props.length === 1 ? '' : 's'} · from £${minPrice}`,
+      `${props.length} stay${props.length === 1 ? '' : 's'} · from £${minPrice}${pickTag}`,
       `tag.html?tag=${slug}`, props.map(homeCardHtml).join('')));
   });
 
-  // One lifestyle-collection row.
+  // "Your styles" — only when the user has picked at least one lifestyle
+  // tag. casaMatchPropertiesForPreferredTags (casa-tags.js) matches on
+  // both the real tags array and a description-keyword fallback, so a
+  // genuinely good match isn't missed over an unticked amenity box.
+  if (prefs && (prefs.tags || []).length && typeof casaMatchPropertiesForPreferredTags === 'function') {
+    const props = casaMatchPropertiesForPreferredTags(prefs.tags).filter(typeFilter).slice(0, 10);
+    if (props.length) {
+      const labels = prefs.tags.map(t => (CASA_TAG_MAP[t] && CASA_TAG_MAP[t].label) || t).join(', ');
+      rows.push(carouselRowHtml('pref-styles', 'Your <i>styles</i>', `Matching ${esc(labels)}`, 'browse.html', props.map(homeCardHtml).join('')));
+    }
+  }
+
+  // Default lifestyle row — skipped if the user's own explicit tag
+  // choices already cover it, so the same collection doesn't show twice.
   const lifestyleSlug = 'petfriendly';
-  const lifestyleMeta = CASA_TAG_MAP[lifestyleSlug];
-  const lifestyleProps = casaMatchPropertiesForTag(lifestyleSlug).slice(0, 10);
-  if (lifestyleProps.length) {
-    rows.push(carouselRowHtml(lifestyleSlug, `<i>${esc(lifestyleMeta.label)}</i>`,
-      `${lifestyleProps.length} stay${lifestyleProps.length === 1 ? '' : 's'}`,
-      `tag.html?tag=${lifestyleSlug}`, lifestyleProps.map(homeCardHtml).join('')));
+  if (!(prefs && (prefs.tags || []).includes('pets'))) {
+    const lifestyleMeta = CASA_TAG_MAP[lifestyleSlug];
+    const lifestyleProps = casaMatchPropertiesForTag(lifestyleSlug).filter(typeFilter).slice(0, 10);
+    if (lifestyleProps.length) {
+      rows.push(carouselRowHtml(lifestyleSlug, `<i>${esc(lifestyleMeta.label)}</i>`,
+        `${lifestyleProps.length} stay${lifestyleProps.length === 1 ? '' : 's'}`,
+        `tag.html?tag=${lifestyleSlug}`, lifestyleProps.map(homeCardHtml).join('')));
+    }
   }
 
   container.innerHTML = rows.length ? rows.join('') : '<p class="carousel-empty">No stays to show yet.</p>';

@@ -537,6 +537,43 @@ bookings," contradicting the flat-fee-only guardrail `host.html` and
 `CONCIERGE-INTEGRATION.md` together first. No UI reads or writes these
 tables; `host-concierge.html`'s rules simulator is unchanged.
 
+## Phase 14 — Homepage personalization (`homepage-preferences.sql`) — NOT APPLIED
+
+Also not yet run — review before applying, same status as `concierge.sql`.
+
+One new table, `homepage_preferences` (`user_id` primary key, `regions`/
+`tags`/`property_types` text arrays) — deliberately **not** a jsonb
+column on `profiles`, even though the data is 1:1-per-user: `profiles`'
+own SELECT policy is `using (true)` (publicly readable, by design, so
+host-profile.html can show a host's bio to any visitor), and RLS can't
+hide one column on an otherwise-public row without a view or column-
+level grants — a second security mechanism this codebase doesn't
+otherwise use. A separate table with a real own-row-only policy (no
+`using (true)` anywhere) is simpler and actually private. Full reasoning
+in the file's own header comment.
+
+Once applied, `index.html`'s homepage carousels (built in the previous
+pass) read this table for a signed-in user: their preferred regions'
+carousels reorder to the front, a lifestyle-tag carousel is added from
+their chosen tags (matched against both `casa-properties.js`'s real
+`tags` array and a keyword check against the listing's real description
+text — `casaPropertyMatchesTagKeyword()` in `casa-tags.js`), and every
+row is filtered to their preferred property types where set. A separate
+"Because you've stayed in `<region>` before" row is inferred from real
+`saved_properties`/`enquiries` rows — no manual setup required, works
+for a user who's never touched the new profile.html settings at all. A
+signed-out visitor, or a signed-in user with nothing set and no saved/
+enquiry history, sees exactly the same default carousel order the
+previous phase already built — this is additive, not a requirement to
+configure anything.
+
+`profile.html` gets a new "Personalize your homepage" section (reusing
+browse.html's existing `.fm-chip`/`.fm-group` pill pattern, not a new
+UI component) saving through the same real `saveProfileChanges()`-style
+Supabase write every other real field on this page already uses — not
+the old dead `saveEdit` pattern `saveEdit()` itself now just delegates
+to.
+
 ## Recommended next phase (deferred, not urgent)
 
 Real image upload for feed posts (the "Photo" post type has no working
