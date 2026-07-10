@@ -110,6 +110,11 @@
   .field .err-msg { font-size: 12px; color: #C0392B; display: none; }
   .field.has-error .err-msg { display: block; }
   .field.has-error input, .field.has-error select, .field.has-error textarea { border-color: #C0392B; }
+  .blocked-dates-note {
+    font-size: 12.5px; color: var(--ink-3); line-height: 1.5;
+    margin: -4px 0 14px; padding: 10px 12px;
+    background: var(--brick-pale); border-radius: 10px; border: 1px solid rgba(176,85,51,0.15);
+  }
 
   /* ── GUEST COUNT STEPPER ── */
   .guest-stepper {
@@ -356,6 +361,7 @@
             <span class="err-msg">Please choose a check-out date</span>
           </div>
         </div>
+        <p class="blocked-dates-note" id="blockedDatesNote" hidden></p>
 
         <div class="field" id="f-guests" style="margin-bottom:14px">
           <label>Guests <span class="req">*</span></label>
@@ -581,6 +587,7 @@
 </div>
 
 <script src="casa-properties.js?v=1"></script>
+<script src="casa-availability.js"></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="casa-supabase.js"></script>
 <script>
@@ -668,6 +675,7 @@ async function initBookingProperty() {
     if (typeof updatePricing === 'function') updatePricing();
   }
   await resolvePropertyHost();
+  await loadConfirmedRanges();
   const propUrl = `property.html?id=${listing.id}`;
   document.getElementById('backToProperty').href = propUrl;
   const crumbLink = document.getElementById('crumbPropLink');
@@ -677,6 +685,25 @@ async function initBookingProperty() {
   }
 }
 const propertyHostReady = initBookingProperty();
+
+let CONFIRMED_RANGES = [];
+
+async function loadConfirmedRanges() {
+  if (typeof casaGetConfirmedRanges !== 'function') return;
+  CONFIRMED_RANGES = await casaGetConfirmedRanges(PROPERTY.id);
+  const note = document.getElementById('blockedDatesNote');
+  if (!note) return;
+  if (!CONFIRMED_RANGES.length) {
+    note.hidden = true;
+    return;
+  }
+  const formatted = typeof casaFormatBlockedRanges === 'function'
+    ? casaFormatBlockedRanges(CONFIRMED_RANGES) : '';
+  note.hidden = !formatted;
+  note.textContent = formatted
+    ? `Already booked: ${formatted}. Choose dates outside these ranges.`
+    : '';
+}
 
 if (qp.get('checkin'))  document.getElementById('checkin').value  = qp.get('checkin');
 if (qp.get('checkout')) document.getElementById('checkout').value = qp.get('checkout');
@@ -816,6 +843,9 @@ function validate() {
     } else if (nights < PROPERTY.minNights) {
       checkoutOk = false;
       checkoutMsg = `This property has a minimum stay of ${PROPERTY.minNights} nights`;
+    } else if (typeof casaRangesOverlap === 'function' && casaRangesOverlap(ci, co, CONFIRMED_RANGES)) {
+      checkoutOk = false;
+      checkoutMsg = 'Those dates overlap a confirmed booking — try different dates';
     }
   }
   check('f-checkout', 'checkout', () => checkoutOk, checkoutMsg);

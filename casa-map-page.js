@@ -427,9 +427,11 @@ function casaMapUpdateBreadcrumb() {
 }
 
 function casaMapRegionBlurb(region, subareaLabel, counts) {
+  const live = typeof CASA_CONFIG !== 'undefined' && CASA_CONFIG.mode === 'live';
+  const staysWord = counts.stays === 1 ? 'stay' : 'stays';
   const previewNote = counts.stays
-    ? `${counts.stays} preview ${counts.stays === 1 ? 'stay' : 'stays'}`
-  : 'Preview listings';
+    ? `${counts.stays} ${live ? staysWord : `preview ${staysWord}`}`
+    : (live ? 'No stays' : 'Preview listings');
   const feedNote = counts.feed ? ` · ${counts.feed} feed ${counts.feed === 1 ? 'post' : 'posts'}` : '';
   const place = subareaLabel || region.label;
   const desc = region.blurb || region.activity || '';
@@ -439,11 +441,17 @@ function casaMapRegionBlurb(region, subareaLabel, counts) {
 function casaMapUpdateRegionCard() {
   const card = document.getElementById('regionCard');
   const hint = document.getElementById('mapHint');
+  const overviewPrompt = document.getElementById('mapOverviewPrompt');
+  const canvas = document.querySelector('.map-canvas');
   if (casaMapState.region === 'all') {
     card.classList.add('hidden');
-    hint.textContent = 'Tap a region on the map or pick an area in the sidebar';
+    if (hint) hint.textContent = 'Stays and feed pins appear once you pick a region';
+    overviewPrompt?.classList.remove('hidden');
+    canvas?.classList.add('is-overview');
     return;
   }
+  overviewPrompt?.classList.add('hidden');
+  canvas?.classList.remove('is-overview');
   const r = CASA_MAP_REGIONS[casaMapState.region];
   const sa = casaMapState.subarea && r.subareas?.[casaMapState.subarea];
   const c = casaMapState.subarea && typeof casaMapCountForSubarea === 'function'

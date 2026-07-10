@@ -18,6 +18,9 @@ const CASA_TAG_MAP = {
   causeway: { label: 'Causeway Coast', regions: ['causeway'], tags: ['seaview'] },
   yorkshire: { label: 'Yorkshire', regions: ['yorkshire'], tags: ['woodburner'] },
   pembrokeshire: { label: 'Pembrokeshire', regions: ['pembrokeshire'], tags: ['seaview'] },
+  scottishhighlands: { label: 'Scottish Highlands', regions: ['highlands', 'skye'], tags: ['offgrid'] },
+  cottage: { label: 'Cottage', regions: [], tags: [], types: ['cottage'] },
+  glamping: { label: 'Glamping', regions: [], tags: [], types: ['glamping'] },
   petfriendly: { label: 'Pet friendly', regions: [], tags: ['pets'] },
   woodburner: { label: 'Wood burner', regions: [], tags: ['woodburner'] },
   seaview: { label: 'Sea view', regions: [], tags: ['seaview'] },
@@ -42,6 +45,7 @@ function casaMatchPropertiesForTag(tagSlug, metaOverride) {
   const meta = metaOverride || CASA_TAG_MAP[tagSlug];
   if (!meta || typeof CASA_PROPERTIES === 'undefined') return [];
   return CASA_PROPERTIES.filter(p => {
+    if (meta.types?.length && meta.types.includes(p.type)) return true;
     if (meta.regions.length) {
       return meta.regions.includes(p.region) ||
         p.title.toLowerCase().includes(tagSlug) ||
@@ -52,6 +56,48 @@ function casaMatchPropertiesForTag(tagSlug, metaOverride) {
       p.loc.toLowerCase().includes(tagSlug);
   });
 }
+
+// Homepage community tag wall — real post counts only (no fabricated numbers).
+const CASA_HOME_TAG_WALL = [
+  { slug: 'lakedistrict', label: 'lakedistrict' },
+  { slug: 'cornwall', label: 'cornwall' },
+  { slug: 'scottishhighlands', label: 'scottishhighlands', aliases: ['highlands'] },
+  { slug: 'norfolk', label: 'norfolk' },
+  { slug: 'cotswolds', label: 'cotswolds' },
+  { slug: 'snowdonia', label: 'snowdonia' },
+  { slug: 'cottage', label: 'cottage' },
+  { slug: 'seaview', label: 'seaview' },
+  { slug: 'petfriendly', label: 'petfriendly', aliases: ['pets'] },
+  { slug: 'glamping', label: 'glamping' },
+  { slug: 'hottub', label: 'hottub' },
+  { slug: 'offgrid', label: 'offgrid' },
+  { slug: 'causeway', label: 'causewaycoast' },
+  { slug: 'yorkshire', label: 'yorkshire' },
+];
+
+function casaCountPostsForHashtags(posts, needles) {
+  const tags = (needles || []).map(n => String(n).toLowerCase());
+  return (posts || []).filter(p => {
+    const body = (p.body || '').toLowerCase();
+    return tags.some(t => body.includes('#' + t));
+  }).length;
+}
+
+async function casaRenderHomeTagWall(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const posts = typeof casaFetchFeedPosts === 'function' ? await casaFetchFeedPosts() : [];
+  const esc = typeof casaEscapeHtml === 'function' ? casaEscapeHtml : String;
+  el.innerHTML = CASA_HOME_TAG_WALL.map(def => {
+    const needles = [def.slug, def.label, ...(def.aliases || [])];
+    const postCount = casaCountPostsForHashtags(posts, needles);
+    const ct = postCount > 0 ? `<span class="ct">${postCount}</span>` : '';
+    return `<a class="ch" href="tag.html?tag=${encodeURIComponent(def.slug)}"><span class="tag-name">#${esc(def.label)}</span>${ct}</a>`;
+  }).join('');
+}
+
+window.CASA_HOME_TAG_WALL = CASA_HOME_TAG_WALL;
+window.casaRenderHomeTagWall = casaRenderHomeTagWall;
 
 window.CASA_TAG_MAP = CASA_TAG_MAP;
 window.casaMatchPropertiesForTag = casaMatchPropertiesForTag;

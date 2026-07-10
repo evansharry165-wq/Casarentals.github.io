@@ -328,6 +328,38 @@ function casaAvailApplyGuestCalendar(propertyId, year, months, gridSelector) {
   });
 }
 
+/** Confirmed enquiry ranges from Supabase (availability.sql) — guest-safe, dates only. */
+async function casaGetConfirmedRanges(propertyId) {
+  if (!window.casaSupabase) return [];
+  const { data, error } = await window.casaSupabase.rpc('casa_get_confirmed_ranges', {
+    p_property_id: Number(propertyId),
+  });
+  if (error) {
+    console.error('casa_get_confirmed_ranges failed', error);
+    return [];
+  }
+  return data || [];
+}
+
+function casaRangesOverlap(checkIn, checkOut, ranges) {
+  if (!checkIn || !checkOut || !ranges?.length) return null;
+  const start = new Date(checkIn);
+  const end = new Date(checkOut);
+  if (Number.isNaN(start) || Number.isNaN(end)) return null;
+  for (const r of ranges) {
+    const rStart = new Date(r.check_in);
+    const rEnd = new Date(r.check_out);
+    if (start < rEnd && end > rStart) return r;
+  }
+  return null;
+}
+
+function casaFormatBlockedRanges(ranges) {
+  if (!ranges?.length) return '';
+  const fmt = (iso) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  return ranges.slice(0, 4).map((r) => `${fmt(r.check_in)} – ${fmt(r.check_out)}`).join(' · ');
+}
+
 casaAvailSeedDefaults();
 
 window.casaAvailPropertyId = casaAvailPropertyId;
@@ -343,5 +375,8 @@ window.casaAvailBuildFeedDraft = casaAvailBuildFeedDraft;
 window.casaAvailRenderSources = casaAvailRenderSources;
 window.casaAvailApplyGuestCalendar = casaAvailApplyGuestCalendar;
 window.casaAvailExportNote = casaAvailExportNote;
+window.casaGetConfirmedRanges = casaGetConfirmedRanges;
+window.casaRangesOverlap = casaRangesOverlap;
+window.casaFormatBlockedRanges = casaFormatBlockedRanges;
 window.CASA_HOST_PROP_IDS = CASA_HOST_PROP_IDS;
 window.CASA_CAL_PLATFORMS = CASA_CAL_PLATFORMS;

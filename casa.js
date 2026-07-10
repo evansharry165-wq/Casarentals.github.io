@@ -1,9 +1,14 @@
 /* Casa shared utilities — safe to load on every page */
 
+const CASA_IS_LOCAL_PREVIEW = typeof location !== 'undefined'
+  && (location.hostname === 'localhost'
+    || location.hostname === '127.0.0.1'
+    || location.protocol === 'file:');
+
 const CASA_CONFIG = {
-  mode: 'preview',
+  mode: CASA_IS_LOCAL_PREVIEW ? 'preview' : 'live',
   domain: 'casa.co.uk',
-  authProvider: 'local',
+  authProvider: 'supabase',
 };
 
 function casaNormalizeUser(raw) {
@@ -25,7 +30,7 @@ function casaInitPreviewBanner() {
   const bar = document.createElement('div');
   bar.id = 'casaPreviewBanner';
   bar.className = 'casa-preview-banner';
-  bar.innerHTML = '<p>Preview build for <strong>casa.co.uk</strong> — sign-in, calendars, and messages are stored on this device until launch.</p>';
+  bar.innerHTML = '<p>Local preview — data may use this browser&rsquo;s cache. Deployed builds at <strong>casa.co.uk</strong> sync to your Casa account.</p>';
   document.body.prepend(bar);
   document.body.classList.add('has-preview-banner');
 }
@@ -319,15 +324,6 @@ function casaUnreadNotifCount() {
   return casaGetNotifications().filter(n => !n.read).length;
 }
 
-function casaSeedNotificationsIfEmpty() {
-  if (casaGetNotifications().length) return;
-  casaSaveNotifications([
-    { id: 1, type: 'welcome', title: 'Welcome to Casa', body: 'Browse fee-free UK stays and connect with hosts directly.', href: 'how-it-works.html', read: false, time: 'Today' },
-    { id: 2, type: 'tip', title: 'Save stays you love', body: 'Tap the heart on any listing — they appear in Saved.', href: 'saved.html', read: false, time: 'Today' },
-    { id: 3, type: 'community', title: 'Join the feed', body: 'Hosts post availability and guests share tips across the UK.', href: 'feed.html', read: false, time: 'Yesterday' },
-  ]);
-}
-
 function casaUpdateNotifBadge() {
   const badge = document.getElementById('casaNotifBadge');
   if (!badge) return;
@@ -503,8 +499,6 @@ function casaInitNav() {
   const nav = document.querySelector('.casa-nav');
   if (!nav || nav.dataset.casaInit) return;
   nav.dataset.casaInit = '1';
-
-  casaSeedNotificationsIfEmpty();
 
   // .nav-right collapses to display:none on mobile until the menu is opened.
   // The toggle and notification bell need to stay visible regardless, so they

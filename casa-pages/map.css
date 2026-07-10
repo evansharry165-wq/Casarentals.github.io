@@ -824,6 +824,39 @@ html, body { height: 100vh; overflow: hidden; }
   line-height: 1.35;
 }
 
+.map-overview-prompt {
+  position: absolute;
+  inset: 0;
+  z-index: 450;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  text-align: center;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(251,250,246,0.72) 0%, rgba(251,250,246,0.2) 55%, transparent 75%);
+}
+
+.map-overview-prompt.hidden { display: none; }
+
+.map-overview-prompt p {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--ink);
+  margin: 0;
+}
+
+.map-overview-prompt p strong { font-weight: 400; font-style: italic; color: var(--brick); }
+
+.map-overview-prompt .sub {
+  font-size: 13px;
+  color: var(--ink-3);
+  max-width: 280px;
+  line-height: 1.45;
+}
+
 /* Leaflet overrides */
 .leaflet-container { font-family: var(--sans); background: #f2efe9; }
 

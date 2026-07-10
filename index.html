@@ -341,7 +341,7 @@
         <div class="stat-row">
           <div class="stat"><div class="n" id="heroStatStays">—</div><div class="l">UK stays</div></div>
           <div class="stat"><div class="n">£0</div><div class="l">Booking fees</div></div>
-          <div class="stat"><div class="n" id="heroStatRating">—</div><div class="l">Avg. rating</div></div>
+          <div class="stat" id="heroStatRatingWrap"><div class="n" id="heroStatRating">—</div><div class="l">Avg. rating</div></div>
         </div>
       </div>
     </div>
@@ -511,22 +511,7 @@
           <svg class="i" viewBox="0 0 24 24"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
         </a>
 
-        <div class="tag-wall" style="margin-top: 40px;">
-          <a class="ch" href="tag.html?tag=lakedistrict"><span class="tag-name">#lakedistrict</span><span class="ct">214</span></a>
-          <a class="ch" href="tag.html?tag=cornwall"><span class="tag-name">#cornwall</span><span class="ct">198</span></a>
-          <a class="ch" href="tag.html?tag=highlands"><span class="tag-name">#scottishhighlands</span><span class="ct">145</span></a>
-          <a class="ch" href="tag.html?tag=norfolk"><span class="tag-name">#norfolk</span><span class="ct">112</span></a>
-          <a class="ch" href="tag.html?tag=cotswolds"><span class="tag-name">#cotswolds</span><span class="ct">87</span></a>
-          <a class="ch" href="tag.html?tag=snowdonia"><span class="tag-name">#snowdonia</span><span class="ct">54</span></a>
-          <a class="ch" href="tag.html?tag=cottage"><span class="tag-name">#cottage</span><span class="ct">341</span></a>
-          <a class="ch" href="tag.html?tag=seaview"><span class="tag-name">#seaview</span><span class="ct">156</span></a>
-          <a class="ch" href="tag.html?tag=petfriendly"><span class="tag-name">#petfriendly</span><span class="ct">134</span></a>
-          <a class="ch" href="tag.html?tag=glamping"><span class="tag-name">#glamping</span><span class="ct">89</span></a>
-          <a class="ch" href="tag.html?tag=hottub"><span class="tag-name">#hottub</span><span class="ct">71</span></a>
-          <a class="ch" href="tag.html?tag=offgrid"><span class="tag-name">#offgrid</span><span class="ct">62</span></a>
-          <a class="ch" href="tag.html?tag=causeway"><span class="tag-name">#causewaycoast</span><span class="ct">29</span></a>
-          <a class="ch" href="tag.html?tag=yorkshire"><span class="tag-name">#yorkshire</span><span class="ct">38</span></a>
-        </div>
+        <div class="tag-wall" id="homeTagWall" style="margin-top: 40px;"></div>
       </div>
 
       <div class="post-feed" id="postFeed">
@@ -634,9 +619,16 @@ document.addEventListener('DOMContentLoaded', function () {
   const stats = await casaGetPlatformStats();
   if (!stats) return;
   document.getElementById('heroStatStays').textContent = casaFormatCount(stats.stays);
-  document.getElementById('heroStatRating').textContent = stats.avgRating || 'New';
+  const ratingWrap = document.getElementById('heroStatRatingWrap');
+  if (stats.reviewCount > 0) {
+    if (ratingWrap) ratingWrap.style.display = '';
+    document.getElementById('heroStatRating').textContent = stats.avgRating;
+  } else if (ratingWrap) {
+    ratingWrap.style.display = 'none';
+  }
   document.getElementById('seeAllCount').textContent = `${stats.stays} stay${stats.stays === 1 ? '' : 's'}`;
 })();
+if (typeof casaRenderHomeTagWall === 'function') casaRenderHomeTagWall('homeTagWall');
 
 /* ─── Destinations → real scrollable discovery carousels ───
    Reuses casa-tags.js's CASA_TAG_MAP + casaMatchPropertiesForTag (the
