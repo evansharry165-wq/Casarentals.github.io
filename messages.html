@@ -16,8 +16,14 @@
 <link rel="stylesheet" href="casa-tech.css?v=5">
 <style>
   html,body{height:100vh;overflow:hidden}
-  .msg-page{display:grid;grid-template-columns:340px 1fr 300px;height:calc(100vh - 64px);overflow:hidden}
-  .conv-list{border-right:1px solid var(--rule);display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
+  /* The 3-column app shell used to sit flush edge-to-edge — correct for
+     a chat app, but it meant .glass/.depth (which read as a shadow cast
+     against surrounding space) had nothing to show against. Padding +
+     gap turns each pane into a real elevated card, the same "lift"
+     property.html's .book-card and host.html's .kpi already use, just
+     applied to a 3-pane layout instead of a single card. */
+  .msg-page{display:grid;grid-template-columns:340px 1fr 300px;height:calc(100vh - 64px);overflow:hidden;gap:14px;padding:14px}
+  .conv-list{display:flex;flex-direction:column;background:var(--paper);overflow:hidden;border:1px solid var(--rule);border-radius:20px}
   .cl-head{padding:22px 20px 14px;border-bottom:1px solid var(--rule);flex-shrink:0}
   .cl-head h1{font-family:var(--serif);font-size:32px;line-height:1;letter-spacing:-.02em;margin-bottom:12px}
   .cl-head h1 i{font-style:italic;color:var(--brick)}
@@ -57,8 +63,8 @@
   .conv-tag.confirmed{background:var(--moss-pale);color:var(--moss)}
   .conv-tag.stayed{background:var(--paper-2);color:var(--ink-3)}
   .conv-tag.community{background:var(--surface);color:var(--ink-3);border:1px solid var(--rule)}
-  .no-res{padding:28px 20px;text-align:center;font-size:13px;color:var(--ink-3);display:none}
-  .thread{display:flex;flex-direction:column;background:var(--paper);overflow:hidden}
+  .no-res{padding:22px 20px;text-align:center;font-size:12.5px;color:var(--ink-3);line-height:1.5;display:none}
+  .thread{display:flex;flex-direction:column;background:var(--paper);overflow:hidden;border:1px solid var(--rule);border-radius:20px}
   .th-head{padding:16px 22px;border-bottom:1px solid var(--rule);flex-shrink:0;display:flex;align-items:center;gap:12px;background:var(--paper)}
   .th-av{width:40px;height:40px;border-radius:50%;background:var(--brick);color:white;display:inline-flex;align-items:center;justify-content:center;font-family:var(--serif);font-style:italic;font-size:17px;flex-shrink:0}
   .th-av.moss{background:var(--moss)}
@@ -155,7 +161,7 @@
   .emoji-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:2px}
   .em{font-size:18px;padding:4px;border-radius:6px;cursor:pointer;text-align:center;transition:background .1s;border:none;background:none}
   .em:hover{background:var(--surface)}
-  .side-prop{border-left:1px solid var(--rule);background:var(--paper);overflow-y:auto;padding:18px 16px 24px}
+  .side-prop{background:var(--paper);overflow-y:auto;padding:18px 16px 24px;border:1px solid var(--rule);border-radius:20px}
   .side-prop::-webkit-scrollbar{width:3px}
   .sp-card{background:var(--surface);border:1px solid var(--rule);border-radius:14px;overflow:hidden;margin-bottom:12px}
   .sp-img{aspect-ratio:16/9}
@@ -181,12 +187,86 @@
   .th-back:hover{background:var(--rule-2)}
   .th-back svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2}
   @media(max-width:720px){
-    .msg-page{grid-template-columns:1fr}
+    .msg-page{grid-template-columns:1fr;padding:8px;gap:8px}
     .thread{display:none}
     .msg-page.mobile-thread-open .conv-list{display:none}
     .msg-page.mobile-thread-open .thread{display:flex}
     .th-back{display:inline-flex}
   }
+
+  /* ── 1. Material system — the three app-shell panes get the same
+     depth treatment as property.html's .book-card / host.html's .kpi:
+     a warm layered shadow, not a literal .glass blur (this content is
+     text-heavy and read for long stretches — the same reason .book-card/
+     .kpi use plain depth rather than backdrop-filter too). ── */
+  body.tech .conv-list, body.tech .thread, body.tech .side-prop { box-shadow: var(--lift-1); }
+
+  /* Individual conversation rows lift on hover, same spirit as
+     .dest-card/.pc on index.html/browse.html — scaled down for a dense
+     list: a smaller translate + a rounded "card" outline appearing only
+     on hover, so it reads as one row lifting off the list rather than
+     shoving its neighbours. */
+  .conv{ transition: transform .18s cubic-bezier(.22,1,.36,1), box-shadow .18s, border-radius .18s; }
+  body.tech .conv:hover{ transform: translateY(-1px); box-shadow: var(--lift-1); border-radius: 12px; position: relative; z-index: 2; }
+  body.tech .conv.active{ border-radius: 0 12px 12px 0; }
+
+  /* ── 3. Message grouping — consecutive messages from the same sender
+     sit tighter together with the avatar only on the last of the run,
+     the same convention every real messaging product uses so a thread
+     reads as distinct "turns" rather than one flat list of identical
+     rows. Purely a render-loop presentational change (see renderThread)
+     — no change to what a message *is* or how it's sent/stored. ── */
+  .msg-row.grouped{ margin-top:-8px; }
+  .msg-row.grouped .av-sm{ visibility:hidden; }
+  body.tech .msg-bubble{ box-shadow: 0 1px 2px rgba(60,40,25,0.06); }
+  body.tech .msg-row.from-me .msg-bubble{ box-shadow: 0 2px 8px rgba(22,20,15,0.14); }
+
+  /* ── 4. Composer toolbar — instant custom tooltip, not the ~1.5s
+     native `title` delay. `title` is kept on each button for screen
+     readers; this is what's actually visible on hover/focus. ── */
+  .ct-btn[data-tip]{ position: relative; }
+  .ct-btn[data-tip]::after{
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 9px); left: 50%;
+    transform: translateX(-50%) translateY(4px); background: var(--ink); color: var(--paper);
+    font-family: var(--sans); font-size: 11px; line-height:1; white-space: nowrap;
+    padding: 6px 10px; border-radius: 7px; opacity: 0; pointer-events: none;
+    transition: opacity .14s, transform .14s; z-index: 60;
+  }
+  .ct-btn[data-tip]::before{
+    content: ''; position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%);
+    border: 4px solid transparent; border-top-color: var(--ink); opacity: 0; pointer-events: none;
+    transition: opacity .14s; z-index: 60;
+  }
+  .ct-btn[data-tip]:hover::after, .ct-btn[data-tip]:hover::before,
+  .ct-btn[data-tip]:focus-visible::after, .ct-btn[data-tip]:focus-visible::before{
+    opacity: 1; transform: translateX(-50%) translateY(0);
+  }
+
+  /* ── 2. Real empty states ──
+     Sidebar keeps a compact one-liner (340px is too narrow for a full
+     illustrated state); the thread pane — the dominant, central column,
+     genuinely the first thing a brand-new host or guest sees — gets the
+     full treatment: an on-brand icon, role-aware copy, and a real next
+     action, not a generic inbox glyph or dead grey text. */
+  .thread-empty{ display:none; flex:1; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:16px; padding:40px; }
+  .thread-empty.show{ display:flex; }
+  .te-icon{ width:72px; height:72px; border-radius:50%; background:var(--brick-pale); display:flex; align-items:center; justify-content:center; }
+  .te-icon svg{ width:30px; height:30px; stroke:var(--brick); fill:none; stroke-width:1.6; }
+  .thread-empty h2{ font-family:var(--serif); font-size:26px; line-height:1.1; letter-spacing:-.01em; }
+  .thread-empty h2 i{ font-style:italic; color:var(--brick); }
+  .thread-empty p{ font-size:14px; color:var(--ink-3); line-height:1.55; max-width:320px; }
+
+  /* ── 5. Booking confirmed — the single most important line on this
+     page (the payment/cancellation guidance a guest needs to act on)
+     gets real weight: a warm glow instead of a flat dark bar, using the
+     same --brick-glow token .glow-brick already uses elsewhere, plus a
+     settle-in entrance so it reads as a moment when a thread opens. ── */
+  .th-status.confirmed{ padding: 15px 18px; border: 1px solid rgba(176,85,51,0.35); animation: statusIn .4s cubic-bezier(.22,1,.36,1) both; }
+  body.tech .th-status.confirmed{ box-shadow: 0 8px 26px var(--brick-glow), inset 0 1px 0 rgba(255,255,255,0.12); }
+  .th-status.confirmed .si{ width:32px; height:32px; }
+  .th-status.confirmed .sb h4{ font-size:15.5px; }
+  @keyframes statusIn{ from{ opacity:0; transform:translateY(-6px) scale(.98); } to{ opacity:1; transform:none; } }
+  @media (prefers-reduced-motion: reduce){ .th-status.confirmed{ animation:none; } }
 </style>
 </head>
 <body class="tech">
@@ -219,12 +299,23 @@
     </div>
     <div class="cl-scroll" id="convList"></div>
     <div class="no-res" id="noRes">No conversations match that search.</div>
-    <div class="no-res" id="emptyState" style="display:none">No messages yet. Enquiries you send or receive will show up here.</div>
+    <div class="no-res" id="emptyState" style="display:none">Nothing here yet — new enquiries will appear in this list.</div>
     <div class="no-res" id="signedOutState" style="display:none">Sign in to view your messages.</div>
   </aside>
 
   <main class="thread">
-    <div class="th-head">
+    <div class="thread-empty" id="threadEmptyState">
+      <div class="te-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="8" cy="9" r="3.5"/><circle cx="16" cy="9" r="3.5"/>
+          <path d="M3 20c0-3 2-5.5 5-5.5s5 2.5 5 5.5"/><path d="M11 20c0-3 2-5.5 5-5.5s5 2.5 5 5.5"/>
+        </svg>
+      </div>
+      <h2 id="teTitle">Your inbox is quiet — <i>for now</i></h2>
+      <p id="teBody">Enquiries you send or receive will show up here, with the host or guest right on the other end.</p>
+      <a class="btn btn-primary" id="teCta" href="browse.html">Browse stays</a>
+    </div>
+    <div class="th-head" id="thHead">
       <button class="th-back" onclick="closeThreadMobile()" aria-label="Back to inbox">
         <svg class="i" viewBox="0 0 24 24"><path d="M19 12H5M11 5l-7 7 7 7"/></svg>
       </button>
@@ -248,26 +339,26 @@
       <div class="si" id="thStatusIcon"><svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:white;fill:none;stroke-width:1.8"><path d="m4 12 5 5 11-11"/></svg></div>
       <div class="sb"><h4 id="thStatusTitle"></h4><p id="thStatusBody"></p></div>
     </div>
-    <div class="th-stream" id="thStream"></div>
+    <div class="th-stream reveal" id="thStream"></div>
     <div class="typing-row" id="typingRow">
       <div class="av-sm" id="typingAv">S</div>
       <div class="typing-dots"><span></span><span></span><span></span></div>
     </div>
     <div class="quick-replies" id="quickReplies"></div>
-    <div class="composer">
+    <div class="composer" id="composer">
       <div class="cw">
         <textarea id="msgTA" placeholder="Type a message…" rows="1" oninput="onType()" onkeydown="onKey(event)"></textarea>
         <div class="ctools">
           <div style="position:relative">
-            <button class="ct-btn" id="emojiBtn" onclick="toggleEmoji()" title="Emoji">
+            <button class="ct-btn" id="emojiBtn" onclick="toggleEmoji()" title="Emoji" data-tip="Insert an emoji">
               <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><circle cx="9.5" cy="10" r="1" fill="currentColor" stroke="none"/><circle cx="14.5" cy="10" r="1" fill="currentColor" stroke="none"/></svg>
             </button>
             <div class="emoji-panel" id="emojiPanel"><div class="emoji-grid" id="emojiGrid"></div></div>
           </div>
-          <button class="ct-btn" onclick="insertTpl('dates')" title="Suggest dates">
+          <button class="ct-btn" onclick="insertTpl('dates')" title="Suggest dates" data-tip="Suggest dates">
             <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
           </button>
-          <button class="ct-btn" onclick="insertTpl('price')" title="Share price">
+          <button class="ct-btn" onclick="insertTpl('price')" title="Share price" data-tip="Share a price">
             <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           </button>
           <button class="send-btn" id="sendBtn" onclick="sendMsg()" disabled>
@@ -379,6 +470,7 @@ async function loadConversations() {
   if (!merged.length) {
     CONVOS = [];
     document.getElementById('emptyState').style.display = 'block';
+    await showEmptyThread();
     renderList();
     return;
   }
@@ -400,6 +492,39 @@ async function loadConversations() {
   const qpConvo = new URLSearchParams(location.search).get('c');
   const initial = qpConvo && CONVOS.some(c => String(c.convId) === qpConvo) ? Number(qpConvo) : (CONVOS[0]?.convId ?? null);
   if (initial != null) switchConvo(initial);
+}
+
+// A genuinely empty inbox (no enquiries sent or received yet) hides the
+// normal thread chrome — there's nothing to reply to — and shows a
+// role-aware next action instead of a blank pane. "Role-aware" means a
+// real query against this person's own published listings, not a guess
+// from their signup role: a "host" account with zero live listings has
+// nothing to check on as a host yet, so still gets the guest-leaning
+// prompt until they actually have something for a guest to message about.
+async function showEmptyThread() {
+  ['thHead', 'thStatus', 'thStream', 'typingRow', 'quickReplies', 'composer'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('threadEmptyState').classList.add('show');
+
+  const { data: myListings } = await window.casaSupabase.from('properties')
+    .select('id, title').eq('host_id', USER_ID).eq('published', true).limit(1);
+  const listing = myListings && myListings[0];
+
+  const title = document.getElementById('teTitle');
+  const body = document.getElementById('teBody');
+  const cta = document.getElementById('teCta');
+  if (listing) {
+    title.innerHTML = 'No messages yet';
+    body.textContent = `Guest enquiries for ${listing.title} will land here the moment someone reaches out.`;
+    cta.textContent = 'View your listing';
+    cta.href = `property.html?id=${listing.id}`;
+  } else {
+    title.innerHTML = 'Your inbox is quiet — <i>for now</i>';
+    body.textContent = 'Enquire about a stay and the conversation will show up here the moment a host replies.';
+    cta.textContent = 'Browse stays';
+    cta.href = 'browse.html';
+  }
 }
 
 function subscribeRealtime(convIds) {
@@ -463,6 +588,15 @@ function renderThread() {
   if (!c) return;
   updateReportButtonState();
 
+  // Defensive restore: if the inbox started genuinely empty (see
+  // showEmptyThread) and a conversation becomes available without a full
+  // page reload, make sure the real thread chrome comes back rather than
+  // staying hidden underneath the empty state.
+  document.getElementById('threadEmptyState').classList.remove('show');
+  ['thHead', 'thStatus', 'thStream', 'typingRow', 'quickReplies', 'composer'].forEach(id => {
+    document.getElementById(id).style.display = '';
+  });
+
   const name = c.other?.full_name || (c.iAmHost ? 'Guest' : 'Host');
   const tier = verifiedTierFromProfile(c.other);
 
@@ -495,11 +629,18 @@ function renderThread() {
     `<button class="qr-chip" onclick="useQR(this.dataset.v)" data-v="${r.replace(/"/g,'&quot;')}">✦ ${r}</button>`).join('');
 
   const stream = document.getElementById('thStream');
+  stream.classList.remove('in');
   stream.innerHTML = '';
   c.msgs.forEach((m, i) => {
     const row = document.createElement('div');
     const fromMe = m.sender_id === USER_ID;
-    row.className = `msg-row${fromMe ? ' from-me' : ''}`;
+    // Grouping: back-to-back messages from the same sender sit tighter
+    // together with the avatar only on the last of the run — the
+    // convention every real messaging product uses so a thread reads as
+    // distinct turns at a glance, not one flat list of identical rows.
+    const prev = c.msgs[i - 1];
+    const grouped = prev && (prev.sender_id === m.sender_id);
+    row.className = `msg-row${fromMe ? ' from-me' : ''}${grouped ? ' grouped' : ''}`;
     row.style.animationDelay = (i * 0.03) + 's';
     const av = fromMe ? 'Me' : esc(name).charAt(0).toUpperCase();
     const ts = new Date(m.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
@@ -507,6 +648,12 @@ function renderThread() {
     stream.appendChild(row);
   });
   stream.scrollTop = stream.scrollHeight;
+  // requestAnimationFrame, not a synchronous call: removing 'in' above and
+  // re-adding it in the same tick would let the browser coalesce both
+  // style changes into one paint with no visible transition. One frame's
+  // gap is enough for it to register the "hidden" state before animating
+  // back in.
+  if (typeof casaTechScan === 'function') requestAnimationFrame(casaTechScan);
 
   // Sidebar
   document.getElementById('sideProp').style.display = '';
@@ -700,7 +847,10 @@ async function blockCurrentConvo() {
   active = CONVOS[0]?.convId ?? null;
   renderList();
   if (active != null) renderThread();
-  else document.getElementById('emptyState').style.display = 'block';
+  else {
+    document.getElementById('emptyState').style.display = 'block';
+    await showEmptyThread();
+  }
 }
 
 function esc(t) { return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
