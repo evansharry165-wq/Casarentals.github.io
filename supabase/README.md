@@ -581,6 +581,43 @@ Supabase write every other real field on this page already uses — not
 the old dead `saveEdit` pattern `saveEdit()` itself now just delegates
 to.
 
+## Phase 15 — Backfill real seed-listing descriptions (`backfill-seed-descriptions.sql`) — NOT APPLIED
+
+Also not yet run — review before applying, same status as `concierge.sql`
+and `homepage-preferences.sql`.
+
+A real gap found while building Phase 14: the 36 seed listings' real,
+distinct descriptive copy has only ever lived in `casa-properties.js`'s
+local `CASA_PROPERTY_DESCRIPTIONS` object — `supabase/seed.sql`'s
+original insert never included a `description` value at all, so the
+real `properties.description` column for ids 1–36 has always been
+null/empty. `property.html` masks this: it only calls
+`casaRefreshProperties()` for an id it doesn't recognise locally, so
+seed ids never take that path and the rich local text keeps rendering.
+Every other page that calls `casaRefreshProperties()` unconditionally
+(`browse.html`, `index.html`, `search.html`, `saved.html`,
+`profile.html`, `map.html`, `feed.html`, `host-profile.html`) replaces
+the local array with the real Supabase rows and silently loses the
+description — confirmed live: `CASA_PROPERTIES.find(p =>
+p.title.includes('Boathouse')).description` returns `""` immediately
+after a refresh. This also undercuts Phase 14's own lifestyle-tag
+matching (`casaPropertyMatchesTagKeyword()` in `casa-tags.js`), which
+reads `p.description` as a real signal.
+
+The migration is a single idempotent `UPDATE ... FROM (VALUES ...)`,
+matching `seed.sql`'s own bulk-data style, copying the exact text
+already in `CASA_PROPERTY_DESCRIPTIONS` verbatim into the real column
+for ids 1–36. Dollar-quoted string literals (`$desc$...$desc$`) carry
+each description's apostrophes and literal paragraph-break newline
+with no manual escaping. Guarded to only touch rows where
+`description` is currently null/empty, so it can never clobber a real
+edit made through `list.html` and is safe to re-run.
+
+**Do not run without review.** Once applied, seed-listing descriptions
+will survive a `casaRefreshProperties()` call on every page, not just
+property.html's local-fallback path — worth spot-checking live on
+`browse.html`/`index.html` after applying.
+
 ## Recommended next phase (deferred, not urgent)
 
 Real image upload for feed posts (the "Photo" post type has no working
