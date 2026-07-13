@@ -19,6 +19,7 @@ until applied, related features fail open or no-op gracefully.
 | 9 | `supabase/community.sql` | ⬜ | Voting, spaces, hot-rank view, threaded replies |
 | 10 | `supabase/homepage-preferences.sql` | ⬜ | Profile → “Personalize your homepage” saves |
 | 11 | `supabase/concierge.sql` | ⬜ **scoped only** | Do not apply until WhatsApp/Resend accounts exist — see `CONCIERGE-INTEGRATION.md` |
+| 12 | `supabase/backfill-seed-descriptions.sql` | ⬜ | Real descriptions for the 36 seed listings survive `casaRefreshProperties()` on browse/index/etc, not just property.html's local fallback |
 
 ## After applying `rls-hardening.sql`
 
